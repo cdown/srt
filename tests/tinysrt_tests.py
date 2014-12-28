@@ -20,15 +20,16 @@ def test_parse_general():
         00:01:51,980 --> 00:01:55,910
         我快要渴死了 快点倒酒!
 
+        8
+        00:01:56,480 --> 00:01:58,460
+        - 给你  - 谢了
         '''
     )
     subs = list(tinysrt.parse(srt_data))
 
-    eq(1, len(subs))
+    eq(2, len(subs))
 
-    sub = subs[0]
-
-    eq(7, sub.index)
+    eq(7, subs[0].index)
     eq(
         datetime.timedelta(
             hours=0,
@@ -36,7 +37,7 @@ def test_parse_general():
             seconds=51,
             milliseconds=980,
         ),
-        sub.start,
+        subs[0].start,
     )
     eq(
         datetime.timedelta(
@@ -45,9 +46,33 @@ def test_parse_general():
             seconds=55,
             milliseconds=910,
         ),
-        sub.end,
+        subs[0].end,
     )
     eq(
         '我快要渴死了 快点倒酒!',
-        sub.content,
+        subs[0].content,
+    )
+
+    eq(8, subs[1].index)
+    eq(
+        datetime.timedelta(
+            hours=0,
+            minutes=1,
+            seconds=56,
+            milliseconds=480,
+        ),
+        subs[1].start,
+    )
+    eq(
+        datetime.timedelta(
+            hours=0,
+            minutes=1,
+            seconds=58,
+            milliseconds=460,
+        ),
+        subs[1].end,
+    )
+    eq(
+        '- 给你  - 谢了',
+        subs[1].content,
     )
