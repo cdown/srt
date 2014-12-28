@@ -33,3 +33,12 @@ def parse(srt):
             index=int(raw_index), start=parse_time(raw_start),
             end=parse_time(raw_end), content=content,
         )
+
+def create_srt(subtitles):
+    output = ''
+    for subtitle in subtitles:
+        output += '%d\n%s --> %s\n%s\n\n' % (
+            subtitle.index, _timedelta_to_srt_timestamp(subtitle.start),
+            _timedelta_to_srt_timestamp(subtitle.end), subtitle.content,
+        )
+    return output

@@ -80,3 +80,19 @@ def test_parse_general():
         '- 给你  - 谢了',
         subs[1].content,
     )
+
+def test_create_srt():
+    srt_data = textwrap.dedent(
+        '''\
+        203
+        00:32:47,312 --> 00:32:53,239
+        蛋表面有一层薄膜，一碰就有反应
+
+        204
+        00:32:57,088 --> 00:33:00,012
+        肯恩，你没事吧？
+
+        '''
+    )
+    subs = tinysrt.parse(srt_data)
+    eq(srt_data, tinysrt.create_srt(subs))
