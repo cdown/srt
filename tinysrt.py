@@ -4,11 +4,13 @@ import re
 import datetime
 from collections import namedtuple
 
-SUBTITLE_REGEX = re.compile(r'''\
+SUBTITLE_PATTERN = '''\
 (\d+)
 (\d+:\d+:\d+,\d+) --> (\d+:\d+:\d+,\d+)
-(.+)
-''')
+(.+?)
+
+'''
+SUBTITLE_REGEX = re.compile(SUBTITLE_PATTERN, re.MULTILINE | re.DOTALL)
 
 Subtitle = namedtuple('Subtitle', ['index', 'start', 'end', 'content'])
 
