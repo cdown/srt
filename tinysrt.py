@@ -4,12 +4,7 @@ import re
 import datetime
 from collections import namedtuple
 
-SUBTITLE_PATTERN = '''\
-(\d+)
-(\d+:\d+:\d+,\d+) --> (\d+:\d+:\d+,\d+)
-(.+?)
-
-'''
+SUBTITLE_PATTERN = '(\d+)\n(\d+:\d+:\d+,\d+) --> (\d+:\d+:\d+,\d+)\n(.+?)\n\n'
 SUBTITLE_REGEX = re.compile(SUBTITLE_PATTERN, re.MULTILINE | re.DOTALL)
 
 Subtitle = namedtuple('Subtitle', ['index', 'start', 'end', 'content'])
@@ -18,17 +13,13 @@ Subtitle = namedtuple('Subtitle', ['index', 'start', 'end', 'content'])
 def parse_time(time):
     hours, minutes, seconds, milliseconds = map(int, re.split('[,:]', time))
     return datetime.timedelta(
-        hours=hours,
-        minutes=minutes,
-        seconds=seconds,
-        milliseconds=milliseconds,
+        hours=hours, minutes=minutes,
+        seconds=seconds, milliseconds=milliseconds,
     )
 
 
 def parse(srt):
-    # The SRT spec is not very clear about whether a newline is required at the
-    # beginning and/or end of the file. To mitigate this, we'll put them in
-    # there just in case.
+    # Pad the SRT to make sure the regex matches
     padded_srt = '\n%s\n' % srt
 
     for match in SUBTITLE_REGEX.finditer(padded_srt):
