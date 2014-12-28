@@ -12,7 +12,7 @@ Subtitle = namedtuple('Subtitle', ['index', 'start', 'end', 'content'])
 def _timedelta_to_srt_timestamp(td):
     hours, remainder = divmod(td.seconds, 3600)
     minutes, seconds = divmod(remainder, 60)
-    milliseconds = td.microseconds / 1000
+    milliseconds = td.microseconds // 1000
     return '%02d:%02d:%02d,%03d' % (hours, minutes, seconds, milliseconds)
 
 def parse_time(time):
