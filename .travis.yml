@@ -1,9 +1,17 @@
 language: python
-install: pip install -r tests/requirements.txt
+install:
+  - pip install --use-mirrors nose pep8 pylint flake8 coveralls
 python:
   - 2.6
   - 2.7
   - 3.2
   - 3.3
   - 3.4
-script: nosetests
+script:
+  # pylint's logilab dependencies are totally broken on 3.2
+  - 'case $(python -V 2>&1) in "Python 3.2."*) :;; *) pylint tinysrt.py; esac'
+  - pep8 tinysrt.py
+  - flake8 --max-complexity 2 tinysrt.py
+  - nosetests --with-coverage
+after_success:
+  - coveralls
