@@ -26,7 +26,12 @@ def parse_time(time):
 
 
 def parse(srt):
-    for match in SUBTITLE_REGEX.finditer(srt):
+    # The SRT spec is not very clear about whether a newline is required at the
+    # beginning and/or end of the file. To mitigate this, we'll put them in
+    # there just in case.
+    padded_srt = '\n%s\n' % srt
+
+    for match in SUBTITLE_REGEX.finditer(padded_srt):
         raw_index, raw_start, raw_end, content = match.groups()
         yield Subtitle(
             index=int(raw_index), start=parse_time(raw_start),
