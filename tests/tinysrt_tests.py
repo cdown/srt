@@ -8,7 +8,7 @@ from nose.tools import eq_ as eq
 
 def test_timedelta_to_srt_timestamp():
     dt = datetime.timedelta(hours=1, minutes=2, seconds=3, milliseconds=400)
-    eq(tinysrt._timedelta_to_srt_timestamp(dt), '01:02:03,400')
+    eq(tinysrt.timedelta_to_srt_timestamp(dt), '01:02:03,400')
 
 def test_parse_time():
     eq(

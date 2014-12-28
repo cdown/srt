@@ -9,11 +9,13 @@ SUBTITLE_REGEX = re.compile(SUBTITLE_PATTERN, re.MULTILINE | re.DOTALL)
 
 Subtitle = namedtuple('Subtitle', ['index', 'start', 'end', 'content'])
 
-def _timedelta_to_srt_timestamp(td):
+
+def timedelta_to_srt_timestamp(td):
     hours, remainder = divmod(td.seconds, 3600)
     minutes, seconds = divmod(remainder, 60)
     milliseconds = td.microseconds // 1000
     return '%02d:%02d:%02d,%03d' % (hours, minutes, seconds, milliseconds)
+
 
 def parse_time(time):
     hours, minutes, seconds, milliseconds = map(int, re.split('[,:]', time))
@@ -34,11 +36,12 @@ def parse(srt):
             end=parse_time(raw_end), content=content,
         )
 
+
 def create_srt(subtitles):
     output = ''
     for subtitle in subtitles:
         output += '%d\n%s --> %s\n%s\n\n' % (
-            subtitle.index, _timedelta_to_srt_timestamp(subtitle.start),
-            _timedelta_to_srt_timestamp(subtitle.end), subtitle.content,
+            subtitle.index, timedelta_to_srt_timestamp(subtitle.start),
+            timedelta_to_srt_timestamp(subtitle.end), subtitle.content,
         )
     return output
