@@ -23,8 +23,8 @@ def parse_time(time):
     )
 
 
-def parse(srt_file_handle):
-    for match in SUBTITLE_REGEX.finditer(srt_file_handle.read()):
+def parse(srt):
+    for match in SUBTITLE_REGEX.finditer(srt):
         raw_index, raw_start, raw_end, content = match.groups()
         yield Subtitle(
             index=int(raw_index), start=parse_time(raw_start),
