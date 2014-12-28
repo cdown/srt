@@ -9,7 +9,7 @@ python:
   - 3.4
 script:
   # pylint's logilab dependencies are totally broken on 3.2
-  - 'case $(python -V 2>&1) in "Python 3.2."*) :;; *) pylint tinysrt.py; esac'
+  - 'case $(python -V 2>&1) in "Python 3.2."*) :;; *) pylint -d bad-builtin tinysrt.py; esac'
   - pep8 tinysrt.py
   - flake8 --max-complexity 2 tinysrt.py
   - nosetests --with-coverage

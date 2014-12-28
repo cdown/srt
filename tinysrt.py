@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+'''
+A tiny library for manipulating back and forth from SRT to Python objects.
+'''
+
 import re
 import datetime
 from collections import namedtuple
@@ -10,14 +14,22 @@ SUBTITLE_REGEX = re.compile(SUBTITLE_PATTERN, re.MULTILINE | re.DOTALL)
 Subtitle = namedtuple('Subtitle', ['index', 'start', 'end', 'content'])
 
 
-def timedelta_to_srt_timestamp(td):
-    hours, remainder = divmod(td.seconds, 3600)
+def timedelta_to_srt_timestamp(timedelta):
+    '''
+    Convert a datetime.timedelta object to a SRT formatted timestamp.
+    '''
+
+    hours, remainder = divmod(timedelta.seconds, 3600)
     minutes, seconds = divmod(remainder, 60)
-    milliseconds = td.microseconds // 1000
+    milliseconds = timedelta.microseconds // 1000
     return '%02d:%02d:%02d,%03d' % (hours, minutes, seconds, milliseconds)
 
 
 def parse_time(time):
+    '''
+    Parse an SRT formatted time to HH:MM:SS,ms.
+    '''
+
     hours, minutes, seconds, milliseconds = map(int, re.split('[,:]', time))
     return datetime.timedelta(
         hours=hours, minutes=minutes,
@@ -26,6 +38,10 @@ def parse_time(time):
 
 
 def parse(srt):
+    '''
+    Parse an SRT formatted string into Subtitle objects.
+    '''
+
     # Pad the SRT to make sure the regex matches
     padded_srt = '\n%s\n' % srt
 
@@ -38,6 +54,11 @@ def parse(srt):
 
 
 def create_srt(subtitles):
+    '''
+    Create an SRT from an iterator of Subtitle objects (such as that returned
+    from parse()).
+    '''
+
     output = ''
     for subtitle in subtitles:
         output += '%d\n%s --> %s\n%s\n\n' % (
