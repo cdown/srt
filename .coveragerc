@@ -1,8 +1,11 @@
 [run]
 omit =
+    /usr/*
     */site-packages/*
     */dist-packages/*
+    */distutils/*
     */tests/*
+    *_test*
 
 exclude_lines =
     pragma: no cover
