@@ -15,9 +15,7 @@
 [requires]: https://requires.io/github/cdown/tinysrt/requirements/?branch=master
 [requires-image]: https://img.shields.io/requires/github/cdown/tinysrt.svg?label=deps
 
-tinysrt is a tiny library for parsing, modifying, and composing SRT files. It
-was created to save myself from the overcomplication and needless abstractions
-present in existing SRT libraries for Python.
+tinysrt is a tiny library for parsing, modifying, and composing SRT files.
 
 ## Usage
 
