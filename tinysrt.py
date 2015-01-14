@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
-'''
-A tiny library for manipulating back and forth from SRT to Python objects.
-'''
+'''A tiny library for parsing, modifying, and composing SRT files.'''
 
 import re
 import datetime
@@ -15,9 +13,7 @@ Subtitle = namedtuple('Subtitle', ['index', 'start', 'end', 'content'])
 
 
 def timedelta_to_srt_timestamp(timedelta):
-    '''
-    Convert a datetime.timedelta object to a SRT formatted timestamp.
-    '''
+    '''Convert a timedelta to an SRT timestamp.'''
 
     hours, remainder = divmod(timedelta.seconds, 3600)
     minutes, seconds = divmod(remainder, 60)
@@ -25,12 +21,10 @@ def timedelta_to_srt_timestamp(timedelta):
     return '%02d:%02d:%02d,%03d' % (hours, minutes, seconds, milliseconds)
 
 
-def parse_time(time):
-    '''
-    Parse an SRT formatted time to HH:MM:SS,ms.
-    '''
+def srt_timestamp_to_timedelta(srt_timestamp):
+    '''Convert an SRT timestamp to a timedelta.'''
 
-    split_time = [int(x) for x in re.split('[,:]', time)]
+    split_time = [int(x) for x in re.split('[,:]', srt_timestamp)]
     hours, minutes, seconds, milliseconds = split_time
     return datetime.timedelta(
         hours=hours, minutes=minutes,
@@ -39,31 +33,24 @@ def parse_time(time):
 
 
 def parse(srt):
-    '''
-    Parse an SRT formatted string into Subtitle objects.
-    '''
+    '''Convert an SRT formatted string into a generator of Subtitle objects.'''
 
-    # Pad the SRT to make sure the regex matches
     padded_srt = '\n%s\n' % srt
-
     for match in SUBTITLE_REGEX.finditer(padded_srt):
         raw_index, raw_start, raw_end, content = match.groups()
         yield Subtitle(
-            index=int(raw_index), start=parse_time(raw_start),
-            end=parse_time(raw_end), content=content,
+            index=int(raw_index), start=srt_timestamp_to_timedelta(raw_start),
+            end=srt_timestamp_to_timedelta(raw_end), content=content,
         )
 
 
 def compose(subtitles):
-    '''
-    Create an SRT from an iterator of Subtitle objects (such as that returned
-    from parse()).
-    '''
+    '''Convert an interator of Subtitle objects to an SRT formatted string.'''
 
-    output = ''
+    srt = []
     for subtitle in subtitles:
-        output += '%d\n%s --> %s\n%s\n\n' % (
+        srt.append('%d\n%s --> %s\n%s\n\n' % (
             subtitle.index, timedelta_to_srt_timestamp(subtitle.start),
             timedelta_to_srt_timestamp(subtitle.end), subtitle.content,
-        )
-    return output
+        ))
+    return ''.join(srt)
