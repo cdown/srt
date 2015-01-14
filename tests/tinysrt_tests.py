@@ -10,10 +10,10 @@ def test_timedelta_to_srt_timestamp():
     dt = datetime.timedelta(hours=1, minutes=2, seconds=3, milliseconds=400)
     eq(tinysrt.timedelta_to_srt_timestamp(dt), '01:02:03,400')
 
-def test_parse_time():
+def test_srt_timestamp_to_timedelta():
     eq(
         datetime.timedelta(hours=1, minutes=2, seconds=3, milliseconds=400),
-        tinysrt.parse_time('01:02:03,400'),
+        tinysrt.srt_timestamp_to_timedelta('01:02:03,400'),
     )
 
 def test_parse_general():
