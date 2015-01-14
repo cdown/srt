@@ -1,13 +1,11 @@
 language: python
 install:
-  - pip install --use-mirrors nose pep8 flake8 coveralls
+  - pip install nose coveralls
 python:
   - 2.7
   - 3.3
   - 3.4
 script:
-  - pep8 tinysrt.py
-  - flake8 --max-complexity 5 tinysrt.py
   - nosetests --with-coverage
 after_success:
   - coveralls

@@ -81,7 +81,7 @@ def test_parse_general():
         subs[1].content,
     )
 
-def test_create_srt():
+def test_compose():
     srt_data = textwrap.dedent(
         '''\
         203
@@ -95,4 +95,4 @@ def test_create_srt():
         '''
     )
     subs = tinysrt.parse(srt_data)
-    eq(srt_data, tinysrt.create_srt(subs))
+    eq(srt_data, tinysrt.compose(subs))

@@ -30,7 +30,8 @@ def parse_time(time):
     Parse an SRT formatted time to HH:MM:SS,ms.
     '''
 
-    hours, minutes, seconds, milliseconds = map(int, re.split('[,:]', time))
+    split_time = [int(x) for x in re.split('[,:]', time)]
+    hours, minutes, seconds, milliseconds = split_time
     return datetime.timedelta(
         hours=hours, minutes=minutes,
         seconds=seconds, milliseconds=milliseconds,
@@ -53,7 +54,7 @@ def parse(srt):
         )
 
 
-def create_srt(subtitles):
+def compose(subtitles):
     '''
     Create an SRT from an iterator of Subtitle objects (such as that returned
     from parse()).
