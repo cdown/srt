@@ -53,7 +53,7 @@ def parse(srt):
         )
 
 
-def create_srt(subtitles):
+def compose(subtitles):
     '''
     Create an SRT from an iterator of Subtitle objects (such as that returned
     from parse()).

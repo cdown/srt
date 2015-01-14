@@ -21,6 +21,8 @@ present in existing SRT libraries for Python.
 
 ## Usage
 
+### Parse an SRT to Python objects
+
 ```python
 >>> subtitle_generator = tinysrt.parse('''\
 ... 1
@@ -38,8 +40,12 @@ present in existing SRT libraries for Python.
 datetime.timedelta(0, 137, 440000)
 >>> subtitles[1].content
 'Very good, Lieutenant.'
->>>
->>> print(tinysrt.create_srt(subtitles))
+```
+
+### Compose an SRT from Python objects
+
+```python
+>>> print(tinysrt.compose(subtitles))
 1
 00:02:17,440 --> 00:02:20,375
 Senator, we're making
