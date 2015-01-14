@@ -58,8 +58,8 @@ Very good, Lieutenant.
 
 ## Installation
 
-tinysrt isn't on pip yet. For now, you can download it and run it by itself (it
-has no external dependencies).
+tinysrt isn't on PyPi yet. For now, you can download it and run it by itself
+(it has no external dependencies).
 
 ## Testing
 
