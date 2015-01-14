@@ -31,6 +31,7 @@ tinysrt is a tiny library for parsing, modifying, and composing SRT files.
 ... 2
 ... 00:02:20,476 --> 00:02:22,501
 ... Very good, Lieutenant.
+...
 ... ''')
 >>> subtitles = list(subtitle_generator)
 >>>
@@ -52,6 +53,7 @@ our final approach into Coruscant.
 2
 00:02:20,476 --> 00:02:22,501
 Very good, Lieutenant.
+
 ```
 
 ## Installation
