@@ -27,6 +27,7 @@ def test_parse_general():
         8
         00:01:56,480 --> 00:01:58,460
         - 给你  - 谢了
+
         '''
     )
     subs = list(tinysrt.parse(srt_data))

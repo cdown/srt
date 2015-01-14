@@ -35,8 +35,7 @@ def srt_timestamp_to_timedelta(srt_timestamp):
 def parse(srt):
     '''Convert an SRT formatted string into a generator of Subtitle objects.'''
 
-    padded_srt = '\n%s\n' % srt
-    for match in SUBTITLE_REGEX.finditer(padded_srt):
+    for match in SUBTITLE_REGEX.finditer(srt):
         raw_index, raw_start, raw_end, content = match.groups()
         yield Subtitle(
             index=int(raw_index), start=srt_timestamp_to_timedelta(raw_start),
