@@ -1,10 +1,13 @@
-[![Build status][travis-image]][travis-builds]
+[![Linux build status][travis-image]][travis-builds]
+[![Windows build status][appveyor-image]][appveyor-builds]
 [![Coverage][coveralls-image]][coveralls]
 [![Code quality][scrutinizer-image]][scrutinizer]
 [![Dependencies][requires-image]][requires]
 
 [travis-builds]: https://travis-ci.org/cdown/tinysrt
-[travis-image]: https://img.shields.io/travis/cdown/tinysrt/master.svg
+[travis-image]: https://img.shields.io/travis/cdown/tinysrt/master.svg?label=linux%20build
+[appveyor-builds]: https://ci.appveyor.com/project/cdown/tinysrt
+[appveyor-image]: https://img.shields.io/appveyor/ci/cdown/tinysrt/master.svg?label=windows%20build
 [coveralls]: https://coveralls.io/r/cdown/tinysrt
 [coveralls-image]: https://img.shields.io/coveralls/cdown/tinysrt/master.svg
 [scrutinizer]: https://scrutinizer-ci.com/g/cdown/tinysrt/code-structure/master/hot-spots
