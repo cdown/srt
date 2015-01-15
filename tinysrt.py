@@ -21,11 +21,10 @@ def timedelta_to_srt_timestamp(timedelta):
     return '%02d:%02d:%02d,%03d' % (hours, minutes, seconds, milliseconds)
 
 
-def srt_timestamp_to_timedelta(srt_timestamp):
+def srt_timestamp_to_timedelta(time):
     '''Convert an SRT timestamp to a timedelta.'''
 
-    split_time = [int(x) for x in re.split('[,:]', srt_timestamp)]
-    hours, minutes, seconds, milliseconds = split_time
+    hours, minutes, seconds, milliseconds = map(int, re.split('[,:]', time))
     return datetime.timedelta(
         hours=hours, minutes=minutes,
         seconds=seconds, milliseconds=milliseconds,
