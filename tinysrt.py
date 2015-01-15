@@ -12,13 +12,13 @@ SUBTITLE_REGEX = re.compile(SUBTITLE_PATTERN, re.MULTILINE | re.DOTALL)
 Subtitle = namedtuple('Subtitle', ['index', 'start', 'end', 'content'])
 
 
-def timedelta_to_srt_timestamp(timedelta):
+def timedelta_to_srt_timestamp(timedelta_timestamp):
     '''Convert a timedelta to an SRT timestamp.'''
 
-    hours, remainder = divmod(timedelta.seconds, 3600)
-    minutes, seconds = divmod(remainder, 60)
-    milliseconds = timedelta.microseconds // 1000
-    return '%02d:%02d:%02d,%03d' % (hours, minutes, seconds, milliseconds)
+    hrs, remainder = divmod(timedelta_timestamp.seconds, 3600)
+    mins, secs = divmod(remainder, 60)
+    msecs = timedelta_timestamp.microseconds // 1000
+    return '%02d:%02d:%02d,%03d' % (hrs, mins, secs, msecs)
 
 
 def srt_timestamp_to_timedelta(srt_timestamp):
