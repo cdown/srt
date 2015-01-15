@@ -8,4 +8,4 @@ omit =
     *_test*
 
 exclude_lines =
-    pragma: no cover
+    no cover
