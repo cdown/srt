@@ -1,0 +1,9 @@
+pylint:
+  disable:
+    - E0611  # Import failure. Usually false positive, easily caught elsewhere
+    - C0326  # Spacing around comma. Can result in some stupidity
+    - W0142  # * or ** magic. If these are reasonable, then they're worth using
+    - W0141  # Builtin warnings. map() is sometimes clearest
+
+pyroma:
+  run: true
