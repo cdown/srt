@@ -3,7 +3,7 @@
 '''A tiny library for parsing, modifying, and composing SRT files.'''
 
 import re
-import datetime
+from datetime import timedelta
 from collections import namedtuple
 
 SUBTITLE_PATTERN = r'(\d+)\n(\d+:\d+:\d+,\d+) --> (\d+:\d+:\d+,\d+)\n(.+?)\n\n'
@@ -21,14 +21,11 @@ def timedelta_to_srt_timestamp(timedelta):
     return '%02d:%02d:%02d,%03d' % (hours, minutes, seconds, milliseconds)
 
 
-def srt_timestamp_to_timedelta(time):
+def srt_timestamp_to_timedelta(srt_timestamp):
     '''Convert an SRT timestamp to a timedelta.'''
 
-    hours, minutes, seconds, milliseconds = map(int, re.split('[,:]', time))
-    return datetime.timedelta(
-        hours=hours, minutes=minutes,
-        seconds=seconds, milliseconds=milliseconds,
-    )
+    hrs, mins, secs, msecs = map(int, re.split('[,:]', srt_timestamp))
+    return timedelta(hours=hrs, minutes=mins, seconds=secs, milliseconds=msecs)
 
 
 def parse(srt):
