@@ -29,7 +29,7 @@ def srt_timestamp_to_timedelta(srt_timestamp):
 
 
 def parse(srt):
-    '''Convert an SRT formatted string into a generator of Subtitle objects.'''
+    '''Convert an SRT formatted string to a generator of Subtitle objects.'''
 
     for match in SUBTITLE_REGEX.finditer(srt):
         raw_index, raw_start, raw_end, content = match.groups()
@@ -40,7 +40,7 @@ def parse(srt):
 
 
 def compose(subtitles):
-    '''Convert an interator of Subtitle objects to an SRT formatted string.'''
+    '''Convert an iterator of Subtitle objects to an SRT formatted string.'''
 
     srt = []
     for subtitle in subtitles:
