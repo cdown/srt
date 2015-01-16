@@ -3,16 +3,16 @@
 
 import textwrap
 import tinysrt
-import datetime
+from datetime import timedelta
 from nose.tools import eq_ as eq
 
 def test_timedelta_to_srt_timestamp():
-    dt = datetime.timedelta(hours=1, minutes=2, seconds=3, milliseconds=400)
-    eq(tinysrt.timedelta_to_srt_timestamp(dt), '01:02:03,400')
+    timedelta_ts = timedelta(hours=1, minutes=2, seconds=3, milliseconds=400)
+    eq(tinysrt.timedelta_to_srt_timestamp(timedelta_ts), '01:02:03,400')
 
 def test_srt_timestamp_to_timedelta():
     eq(
-        datetime.timedelta(hours=1, minutes=2, seconds=3, milliseconds=400),
+        timedelta(hours=1, minutes=2, seconds=3, milliseconds=400),
         tinysrt.srt_timestamp_to_timedelta('01:02:03,400'),
     )
 
@@ -36,7 +36,7 @@ def test_parse_general():
 
     eq(7, subs[0].index)
     eq(
-        datetime.timedelta(
+        timedelta(
             hours=0,
             minutes=1,
             seconds=51,
@@ -45,7 +45,7 @@ def test_parse_general():
         subs[0].start,
     )
     eq(
-        datetime.timedelta(
+        timedelta(
             hours=0,
             minutes=1,
             seconds=55,
@@ -60,7 +60,7 @@ def test_parse_general():
 
     eq(8, subs[1].index)
     eq(
-        datetime.timedelta(
+        timedelta(
             hours=0,
             minutes=1,
             seconds=56,
@@ -69,7 +69,7 @@ def test_parse_general():
         subs[1].start,
     )
     eq(
-        datetime.timedelta(
+        timedelta(
             hours=0,
             minutes=1,
             seconds=58,
