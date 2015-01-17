@@ -14,7 +14,6 @@ Subtitle = namedtuple('Subtitle', ['index', 'start', 'end', 'content'])
 
 def timedelta_to_srt_timestamp(timedelta_timestamp):
     '''Convert a timedelta to an SRT timestamp.'''
-
     hrs, remainder = divmod(timedelta_timestamp.seconds, 3600)
     mins, secs = divmod(remainder, 60)
     msecs = timedelta_timestamp.microseconds // 1000
@@ -23,14 +22,12 @@ def timedelta_to_srt_timestamp(timedelta_timestamp):
 
 def srt_timestamp_to_timedelta(srt_timestamp):
     '''Convert an SRT timestamp to a timedelta.'''
-
     hrs, mins, secs, msecs = map(int, re.split('[,:]', srt_timestamp))
     return timedelta(hours=hrs, minutes=mins, seconds=secs, milliseconds=msecs)
 
 
 def parse(srt):
     '''Convert an SRT formatted string to a generator of Subtitle objects.'''
-
     for match in SUBTITLE_REGEX.finditer(srt):
         raw_index, raw_start, raw_end, content = match.groups()
         yield Subtitle(
@@ -41,7 +38,6 @@ def parse(srt):
 
 def compose(subtitles):
     '''Convert an iterator of Subtitle objects to an SRT formatted string.'''
-
     srt = []
     for subtitle in subtitles:
         srt.append('%d\n%s --> %s\n%s\n\n' % (
