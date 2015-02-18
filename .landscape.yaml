@@ -1,4 +1,0 @@
-strictness: veryhigh
-
-ignore-patterns:
-  - '# no lint'
