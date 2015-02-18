@@ -97,3 +97,30 @@ def test_compose():
     )
     subs = tinysrt.parse(srt_data)
     eq(srt_data, tinysrt.compose(subs))
+
+
+def test_default_subtitle_sorting_is_by_start_time():
+    srt_data = textwrap.dedent(
+        '''\
+        421
+        00:31:39,931 --> 00:31:41,931
+        我们要拿一堆汤匙
+
+        422
+        00:31:37,894 --> 00:31:39,928
+        我有个点子
+
+        423
+        00:31:41,933 --> 00:31:43,435
+        挖一条隧道 然后把她丢到野外去
+
+        '''
+    )
+
+    subs = tinysrt.parse(srt_data)
+    sorted_subs = sorted(subs)
+
+    eq(
+        [x.index for x in sorted_subs],
+        [422, 421, 423],
+    )

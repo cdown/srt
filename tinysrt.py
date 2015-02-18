@@ -9,7 +9,14 @@ from collections import namedtuple
 SUBTITLE_PATTERN = r'(\d+)\n(\d+:\d+:\d+,\d+) --> (\d+:\d+:\d+,\d+)\n(.+?)\n\n'
 SUBTITLE_REGEX = re.compile(SUBTITLE_PATTERN, re.MULTILINE | re.DOTALL)
 
-Subtitle = namedtuple('Subtitle', ['index', 'start', 'end', 'content'])
+
+class Subtitle(namedtuple('Subtitle', ['index', 'start', 'end', 'content'])):
+    def __eq__(self, other): return self.start == other.start
+    def __ne__(self, other): return self.start != other.start
+    def __lt__(self, other): return self.start <  other.start
+    def __le__(self, other): return self.start <= other.start
+    def __gt__(self, other): return self.start >  other.start
+    def __ge__(self, other): return self.start >= other.start
 
 
 def timedelta_to_srt_timestamp(timedelta_timestamp):
