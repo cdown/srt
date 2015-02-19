@@ -263,3 +263,28 @@ def test_subtitle_equality_true():
     subs_1 = list(tinysrt.parse(srt_data))
     subs_2 = list(tinysrt.parse(srt_data))
     eq(subs_1, subs_2)
+
+
+def test_compose_file():
+    srt_in_f = StringIO(textwrap.dedent(
+        u'''\
+        7
+        00:01:51,980 --> 00:01:55,910
+        我快要渴死了
+        快点倒酒!
+
+        8
+        00:01:56,480 --> 00:01:58,460
+        - 给你  - 谢了
+
+        '''
+    ))
+    srt_out_f = StringIO()
+
+    subs = list(tinysrt.parse_file(srt_in_f))
+    tinysrt.compose_file(subs, srt_out_f)
+
+    srt_in_f.seek(0)
+    srt_out_f.seek(0)
+
+    eq(srt_in_f.read(), srt_out_f.read())
