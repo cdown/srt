@@ -53,12 +53,11 @@ def parse_stream(srt_stream):
     Parse an SRT formatted stream into Subtitle objects in a
     memory-efficient way.
     '''
-
     for is_sep, lines in groupby(srt_stream, lambda line: line != '\n'):
         if is_sep:
             srt_block = ''.join(lines) + '\n'
-            for subtitle in parse(srt_block):
-                yield subtitle
+            subtitle, = parse(srt_block)
+            yield subtitle
 
 
 def compose(subtitles):
