@@ -75,10 +75,7 @@ def compose(subtitles):
 
 
 def reindex(subtitles):
-    '''
-    Fix erroneously indexed subtitles so that they are displayed in time order
-    with the correct index.
-    '''
+    '''Order all subtitles by start time and rewrite their indexes from 1.'''
     for index, subtitle in enumerate(sorted(subtitles), start=1):
         subtitle.index = index
         yield subtitle
