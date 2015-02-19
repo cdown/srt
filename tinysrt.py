@@ -26,8 +26,11 @@ class Subtitle(object):
             timedelta_to_srt_timestamp(self.end), self.content,
         )
 
-    def __eq__(self, other): return self.__dict__ == other.__dict__
-    def __lt__(self, other): return self.start < other.start
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
+    def __lt__(self, other):
+        return self.start < other.start
 
 
 def timedelta_to_srt_timestamp(timedelta_timestamp):
