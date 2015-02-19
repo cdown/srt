@@ -69,10 +69,3 @@ def parse_stream(srt_stream):
 def compose(subtitles):
     '''Convert an iterator of Subtitle objects to SRT formatted strings.'''
     return (str(subtitle) for subtitle in subtitles)
-
-
-def reindex(subtitles):
-    '''Order all subtitles by start time and rewrite their indexes from 1.'''
-    for index, subtitle in enumerate(sorted(subtitles), start=1):
-        subtitle.index = index
-        yield subtitle
