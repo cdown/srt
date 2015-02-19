@@ -196,7 +196,7 @@ def test_compose():
         '''
     )
     subs = tinysrt.parse(srt_data)
-    eq(srt_data, tinysrt.compose(subs))
+    eq(srt_data, ''.join(tinysrt.compose(subs)))
 
 
 def test_default_subtitle_sorting_is_by_start_time():
@@ -302,5 +302,5 @@ def test_fix_indexing():
         '''
     )
 
-    eq(expected, tinysrt.compose(reindexed_subs))
+    eq(expected, ''.join(tinysrt.compose(reindexed_subs)))
 
