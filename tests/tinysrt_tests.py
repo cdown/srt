@@ -4,7 +4,7 @@
 import textwrap
 import tinysrt
 from datetime import timedelta
-from nose.tools import eq_ as eq
+from nose.tools import eq_ as eq, assert_not_equal as neq
 
 def test_timedelta_to_srt_timestamp():
     timedelta_ts = timedelta(hours=1, minutes=2, seconds=3, milliseconds=400)
@@ -125,6 +125,44 @@ def test_default_subtitle_sorting_is_by_start_time():
         [422, 421, 423],
     )
 
+
+def test_subtitle_equality_false():
+    srt_data = textwrap.dedent(
+        '''\
+        203
+        00:32:47,312 --> 00:32:53,239
+        蛋表面有一层薄膜，一碰就有反应
+
+        204
+        00:32:57,088 --> 00:33:00,012
+        肯恩，你没事吧？
+
+        '''
+    )
+
+    subs_1 = list(tinysrt.parse(srt_data))
+    subs_2 = list(tinysrt.parse(srt_data))
+    subs_2[0].content += 'blah'
+
+    neq(subs_1, subs_2)
+
+
+def test_subtitle_equality_true():
+    srt_data = textwrap.dedent(
+        '''\
+        203
+        00:32:47,312 --> 00:32:53,239
+        蛋表面有一层薄膜，一碰就有反应
+
+        204
+        00:32:57,088 --> 00:33:00,012
+        肯恩，你没事吧？
+
+        '''
+    )
+    subs_1 = list(tinysrt.parse(srt_data))
+    subs_2 = list(tinysrt.parse(srt_data))
+    eq(subs_1, subs_2)
 
 def test_fix_indexing():
     srt_data = textwrap.dedent(

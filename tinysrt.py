@@ -19,7 +19,7 @@ class Subtitle(object):
         self.end = end
         self.content = content
 
-    def __eq__(self, other): return self.start == other.start
+    def __eq__(self, other): return self.__dict__ == other.__dict__
     def __lt__(self, other): return self.start < other.start
 
 
