@@ -23,36 +23,42 @@ tinysrt is a tiny library for parsing, modifying, and composing SRT files.
 
 ```python
 >>> subtitle_generator = tinysrt.parse('''\
-... 1
-... 00:02:17,440 --> 00:02:20,375
-... Senator, we're making
-... our final approach into Coruscant.
+... 421
+... 00:31:37,894 --> 00:31:39,928
+... OK, look, I think I have a plan here.
 ...
-... 2
-... 00:02:20,476 --> 00:02:22,501
-... Very good, Lieutenant.
+... 422
+... 00:31:39,931 --> 00:31:41,931
+... Using mainly spoons,
+...
+... 423
+... 00:31:41,933 --> 00:31:43,435
+... we dig a tunnel under the city and release it into the wild.
 ...
 ... ''')
 >>> subtitles = list(subtitle_generator)
 >>>
 >>> subtitles[0].start
-datetime.timedelta(0, 137, 440000)
+datetime.timedelta(0, 1897, 894000)
 >>> subtitles[1].content
-'Very good, Lieutenant.'
+'Using mainly spoons,'
 ```
 
 ### Compose an SRT from Python objects
 
 ```python
 >>> print(tinysrt.compose(subtitles))
-1
-00:02:17,440 --> 00:02:20,375
-Senator, we're making
-our final approach into Coruscant.
+421
+00:31:37,894 --> 00:31:39,928
+OK, look, I think I have a plan here.
 
-2
-00:02:20,476 --> 00:02:22,501
-Very good, Lieutenant.
+422
+00:31:39,931 --> 00:31:41,931
+Using mainly spoons,
+
+423
+00:31:41,933 --> 00:31:43,435
+we dig a tunnel under the city and release it into the wild.
 
 ```
 
