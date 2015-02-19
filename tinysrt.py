@@ -5,6 +5,7 @@
 import functools
 import re
 from datetime import timedelta
+from itertools import groupby
 
 
 SUBTITLE_PATTERN = r'(\d+)\n(\d+:\d+:\d+,\d+) --> (\d+:\d+:\d+,\d+)\n(.+?)\n\n'
@@ -47,25 +48,17 @@ def parse(srt):
         )
 
 
-def parse_stream(srt_stream, sub_buf_size=512):
+def parse_stream(srt_stream):
     '''
     Parse an SRT formatted stream into Subtitle objects in a
     memory-efficient way.
     '''
-    current_sub = 0
-    sub_buf = ''
-    last_flushed = 0
 
-    for line in srt_stream:
-        sub_buf += line
-        if line == '\n' and last_flushed + sub_buf_size > current_sub:
-            for subtitle in parse(sub_buf):
+    for is_sep, lines in groupby(srt_stream, lambda line: line != '\n'):
+        if is_sep:
+            srt_block = ''.join(lines) + '\n'
+            for subtitle in parse(srt_block):
                 yield subtitle
-            last_flushed = current_sub
-            sub_buf = ''
-
-    for subtitle in parse(sub_buf):
-        yield subtitle
 
 
 def compose(subtitles):

@@ -177,7 +177,7 @@ def test_parse_stream_buffer_size_irrelevant():
 
     for buf_size in range(4):
         srt_f.seek(0)
-        subs.append(list(tinysrt.parse_stream(srt_f, sub_buf_size=buf_size)))
+        subs.append(list(tinysrt.parse_stream(srt_f)))
 
     ok(all(sub == subs[0] for sub in subs))
 
