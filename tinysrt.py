@@ -5,21 +5,22 @@
 import functools
 import re
 from datetime import timedelta
-from collections import namedtuple
+
 
 SUBTITLE_PATTERN = r'(\d+)\n(\d+:\d+:\d+,\d+) --> (\d+:\d+:\d+,\d+)\n(.+?)\n\n'
 SUBTITLE_REGEX = re.compile(SUBTITLE_PATTERN, re.MULTILINE | re.DOTALL)
 
 
 @functools.total_ordering
-class _SubtitleSorting(object):
+class Subtitle(object):
+    def __init__(self, index, start, end, content):
+        self.index = index
+        self.start = start
+        self.end = end
+        self.content = content
+
     def __eq__(self, other): return self.start == other.start
-    def __lt__(self, other): return self.start <  other.start
-
-
-class Subtitle(_SubtitleSorting,
-               namedtuple('Subtitle', ['index', 'start', 'end', 'content'])):
-    pass
+    def __lt__(self, other): return self.start < other.start
 
 
 def timedelta_to_srt_timestamp(timedelta_timestamp):
