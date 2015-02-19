@@ -90,7 +90,7 @@ def test_parse_general():
         subs[1].content,
     )
 
-def test_parse_stream():
+def test_parse_file():
     srt_f = StringIO(textwrap.dedent(
         u'''\
         7
@@ -105,7 +105,7 @@ def test_parse_stream():
         '''
     ))
 
-    subs = list(tinysrt.parse_stream(srt_f))
+    subs = list(tinysrt.parse_file(srt_f))
 
     eq(2, len(subs))
 
@@ -158,7 +158,7 @@ def test_parse_stream():
     )
 
 
-def test_parse_stream_buffer_size_irrelevant():
+def test_parse_file_buffer_size_irrelevant():
     srt_f = StringIO(textwrap.dedent(
         u'''\
         7
@@ -177,7 +177,7 @@ def test_parse_stream_buffer_size_irrelevant():
 
     for buf_size in range(4):
         srt_f.seek(0)
-        subs.append(list(tinysrt.parse_stream(srt_f)))
+        subs.append(list(tinysrt.parse_file(srt_f)))
 
     ok(all(sub == subs[0] for sub in subs))
 
