@@ -56,3 +56,13 @@ def compose(subtitles):
             timedelta_to_srt_timestamp(subtitle.end), subtitle.content,
         ))
     return ''.join(srt)
+
+
+def reindex(subtitles):
+    '''
+    Fix erroneously indexed subtitles so that they are displayed in time order
+    with the correct index.
+    '''
+    for index, subtitle in enumerate(sorted(subtitles), start=1):
+        subtitle.index = index
+        yield subtitle
