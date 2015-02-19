@@ -2,6 +2,7 @@
 
 '''A tiny library for parsing, modifying, and composing SRT files.'''
 
+import functools
 import re
 from datetime import timedelta
 from collections import namedtuple
@@ -10,13 +11,15 @@ SUBTITLE_PATTERN = r'(\d+)\n(\d+:\d+:\d+,\d+) --> (\d+:\d+:\d+,\d+)\n(.+?)\n\n'
 SUBTITLE_REGEX = re.compile(SUBTITLE_PATTERN, re.MULTILINE | re.DOTALL)
 
 
-class Subtitle(namedtuple('Subtitle', ['index', 'start', 'end', 'content'])):
+@functools.total_ordering
+class _SubtitleSorting(object):
     def __eq__(self, other): return self.start == other.start
-    def __ne__(self, other): return self.start != other.start
     def __lt__(self, other): return self.start <  other.start
-    def __le__(self, other): return self.start <= other.start
-    def __gt__(self, other): return self.start >  other.start
-    def __ge__(self, other): return self.start >= other.start
+
+
+class Subtitle(_SubtitleSorting,
+               namedtuple('Subtitle', ['index', 'start', 'end', 'content'])):
+    pass
 
 
 def timedelta_to_srt_timestamp(timedelta_timestamp):
