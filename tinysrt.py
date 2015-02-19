@@ -47,6 +47,27 @@ def parse(srt):
         )
 
 
+def parse_stream(srt_stream, sub_buf_size=512):
+    '''
+    Parse an SRT formatted stream into Subtitle objects in a
+    memory-efficient way.
+    '''
+    current_sub = 0
+    sub_buf = ''
+    last_flushed = 0
+
+    for line in srt_stream:
+        sub_buf += line
+        if line == '\n' and last_flushed + sub_buf_size > current_sub:
+            for subtitle in parse(sub_buf):
+                yield subtitle
+            last_flushed = current_sub
+            sub_buf = ''
+
+    for subtitle in parse(sub_buf):
+        yield subtitle
+
+
 def compose(subtitles):
     '''Convert an iterator of Subtitle objects to an SRT formatted string.'''
     srt = []

@@ -4,17 +4,25 @@
 import textwrap
 import tinysrt
 from datetime import timedelta
-from nose.tools import eq_ as eq, assert_not_equal as neq
+from nose.tools import eq_ as eq, assert_not_equal as neq, ok_ as ok
+
+try:
+    from io import StringIO
+except ImportError:  # Python 2 fallback
+    from cStringIO import StringIO
+
 
 def test_timedelta_to_srt_timestamp():
     timedelta_ts = timedelta(hours=1, minutes=2, seconds=3, milliseconds=400)
     eq(tinysrt.timedelta_to_srt_timestamp(timedelta_ts), '01:02:03,400')
+
 
 def test_srt_timestamp_to_timedelta():
     eq(
         timedelta(hours=1, minutes=2, seconds=3, milliseconds=400),
         tinysrt.srt_timestamp_to_timedelta('01:02:03,400'),
     )
+
 
 def test_parse_general():
     srt_data = textwrap.dedent(
@@ -81,6 +89,98 @@ def test_parse_general():
         '- 给你  - 谢了',
         subs[1].content,
     )
+
+def test_parse_stream():
+    srt_f = StringIO(textwrap.dedent(
+        u'''\
+        7
+        00:01:51,980 --> 00:01:55,910
+        我快要渴死了
+        快点倒酒!
+
+        8
+        00:01:56,480 --> 00:01:58,460
+        - 给你  - 谢了
+
+        '''
+    ))
+
+    subs = list(tinysrt.parse_stream(srt_f))
+
+    eq(2, len(subs))
+
+    eq(7, subs[0].index)
+    eq(
+        timedelta(
+            hours=0,
+            minutes=1,
+            seconds=51,
+            milliseconds=980,
+        ),
+        subs[0].start,
+    )
+    eq(
+        timedelta(
+            hours=0,
+            minutes=1,
+            seconds=55,
+            milliseconds=910,
+        ),
+        subs[0].end,
+    )
+    eq(
+        u'我快要渴死了\n快点倒酒!',
+        subs[0].content,
+    )
+
+    eq(8, subs[1].index)
+    eq(
+        timedelta(
+            hours=0,
+            minutes=1,
+            seconds=56,
+            milliseconds=480,
+        ),
+        subs[1].start,
+    )
+    eq(
+        timedelta(
+            hours=0,
+            minutes=1,
+            seconds=58,
+            milliseconds=460,
+        ),
+        subs[1].end,
+    )
+    eq(
+        u'- 给你  - 谢了',
+        subs[1].content,
+    )
+
+
+def test_parse_stream_buffer_size_irrelevant():
+    srt_f = StringIO(textwrap.dedent(
+        u'''\
+        7
+        00:01:51,980 --> 00:01:55,910
+        我快要渴死了
+        快点倒酒!
+
+        8
+        00:01:56,480 --> 00:01:58,460
+        - 给你  - 谢了
+
+        '''
+    ))
+
+    subs = []
+
+    for buf_size in range(4):
+        srt_f.seek(0)
+        subs.append(list(tinysrt.parse_stream(srt_f, sub_buf_size=buf_size)))
+
+    ok(all(sub == subs[0] for sub in subs))
+
 
 def test_compose():
     srt_data = textwrap.dedent(
@@ -203,3 +303,4 @@ def test_fix_indexing():
     )
 
     eq(expected, tinysrt.compose(reindexed_subs))
+
