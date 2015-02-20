@@ -44,6 +44,13 @@ datetime.timedelta(0, 1897, 894000)
 'Using mainly spoons,'
 ```
 
+You can also read from a file:
+
+```python
+>>> with open('mwazowski.srt') as srt_f:
+...     subtitle_generator = tinysrt.parse_file(srt_f)
+```
+
 ### Compose an SRT from Python objects
 
 ```python
@@ -60,6 +67,13 @@ Using mainly spoons,
 00:31:41,933 --> 00:31:43,435
 we dig a tunnel under the city and release it into the wild.
 
+```
+
+You can also write to a file:
+
+```python
+>>> with open('mwazowski.srt') as srt_f:
+...     tinysrt.compose_file(subtitles, srt_f)
 ```
 
 ## Installation
