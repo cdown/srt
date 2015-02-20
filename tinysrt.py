@@ -68,9 +68,9 @@ def parse_file(srt_stream):
 
 def compose(subtitles):
     '''Convert an iterator of Subtitle objects to SRT formatted strings.'''
-    return (subtitle.to_srt() for subtitle in subtitles)
+    return ''.join(subtitle.to_srt() for subtitle in subtitles)
 
 
 def compose_file(subtitles, srt_stream):
-    for srt_block in compose(subtitles):
-        srt_stream.write(srt_block)
+    for subtitle in subtitles:
+        srt_stream.write(subtitle.to_srt())
