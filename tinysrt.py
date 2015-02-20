@@ -20,17 +20,17 @@ class Subtitle(object):
         self.end = end
         self.content = content
 
-    def __str__(self):
-        return '%d\n%s --> %s\n%s\n\n' % (
-            self.index, timedelta_to_srt_timestamp(self.start),
-            timedelta_to_srt_timestamp(self.end), self.content,
-        )
-
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
 
     def __lt__(self, other):
         return self.start < other.start
+
+    def to_srt(self):
+        return '%d\n%s --> %s\n%s\n\n' % (
+            self.index, timedelta_to_srt_timestamp(self.start),
+            timedelta_to_srt_timestamp(self.end), self.content,
+        )
 
 
 def timedelta_to_srt_timestamp(timedelta_timestamp):
@@ -68,7 +68,7 @@ def parse_file(srt_stream):
 
 def compose(subtitles):
     '''Convert an iterator of Subtitle objects to SRT formatted strings.'''
-    return (str(subtitle) for subtitle in subtitles)
+    return (subtitle.to_srt() for subtitle in subtitles)
 
 
 def compose_file(subtitles, srt_stream):
