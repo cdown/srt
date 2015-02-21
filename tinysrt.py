@@ -72,5 +72,6 @@ def compose(subtitles):
 
 
 def compose_file(subtitles, srt_stream):
+    '''Stream a sequence of Subtitle objects into an SRT formatted stream.'''
     for subtitle in subtitles:
         srt_stream.write(subtitle.to_srt())
