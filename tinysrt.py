@@ -60,7 +60,16 @@ def parse(srt):
 
 
 def parse_file(srt_stream):
-    '''Parse an SRT formatted stream into Subtitle objects.'''
+    '''
+    Parse an SRT formatted stream into Subtitle objects.
+
+    Args:
+        srt_stream: A stream containing SRT formatted data.
+
+    Returns:
+        A generator of the subtitles contained in the SRT file as Subtitle
+        objects.
+    '''
     srt_stream_chomped = (line.rstrip('\n') for line in srt_stream)
     srt_blocks = [
         '\n'.join(srt_lines) + '\n\n'
