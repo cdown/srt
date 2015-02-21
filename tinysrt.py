@@ -36,7 +36,16 @@ class Subtitle(object):
 
 
 def timedelta_to_srt_timestamp(timedelta_timestamp):
-    '''Convert a timedelta to an SRT timestamp.'''
+    '''
+    Convert a timedelta to an SRT timestamp.
+
+    Args:
+        timedelta_timestamp: A timestamp represented as a datetime timedelta.
+
+    Returns:
+        An SRT formatted (HH:MM:SS,mmm) string representing the same timestamp
+        passed in.
+    '''
     hrs, remainder = divmod(timedelta_timestamp.seconds, 3600)
     mins, secs = divmod(remainder, 60)
     msecs = timedelta_timestamp.microseconds // 1000
