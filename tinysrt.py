@@ -61,11 +61,16 @@ def parse(srt):
 
 def parse_file(srt_stream):
     '''Parse an SRT formatted stream into Subtitle objects.'''
-    for is_sep, lines in groupby(srt_stream, lambda line: line != '\n'):
-        if is_sep:
-            srt_block = ''.join(lines) + '\n'
-            subtitle, = parse(srt_block)
-            yield subtitle
+    srt_stream_chomped = (line.rstrip('\n') for line in srt_stream)
+    srt_blocks = [
+        '\n'.join(srt_lines) + '\n\n'
+        for line_has_content, srt_lines in groupby(srt_stream_chomped, bool)
+        if line_has_content
+    ]
+
+    for srt_block in srt_blocks:
+        subtitle, = parse(srt_block)
+        yield subtitle
 
 
 def compose(subtitles):
