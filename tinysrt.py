@@ -44,7 +44,15 @@ def timedelta_to_srt_timestamp(timedelta_timestamp):
 
 
 def srt_timestamp_to_timedelta(srt_timestamp):
-    '''Convert an SRT timestamp to a timedelta.'''
+    '''
+    Convert an SRT timestamp to a timedelta.
+
+    Args:
+        srt_timestamp: A timestamp in SRT format (HH:MM:SS,mmm).
+
+    Returns:
+        A timedelta object representing the same timestamp passed in.
+    '''
     hrs, mins, secs, msecs = map(int, re.split('[,:]', srt_timestamp))
     return timedelta(hours=hrs, minutes=mins, seconds=secs, milliseconds=msecs)
 
