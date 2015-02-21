@@ -78,7 +78,18 @@ def compose(subtitles):
     return ''.join(subtitle.to_srt() for subtitle in subtitles)
 
 
-def compose_file(subtitles, srt_stream):
-    '''Stream a sequence of Subtitle objects into an SRT formatted stream.'''
-    for subtitle in subtitles:
-        srt_stream.write(subtitle.to_srt())
+def compose_file(subtitles, output_stream):
+    '''
+    Stream a sequence of Subtitle objects into an SRT formatted stream.
+
+    Args:
+        subtitles: An iterator of Subtitle objects, in the order they should be
+            written to the file.
+        output_stream: A stream to write the resulting SRT blocks to.
+
+    Returns:
+        The number of subtitles that were written to the stream.
+    '''
+    for num_written, subtitle in enumerate(subtitles, start=1):
+        output_stream.write(subtitle.to_srt())
+    return num_written
