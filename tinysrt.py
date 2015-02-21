@@ -50,7 +50,16 @@ def srt_timestamp_to_timedelta(srt_timestamp):
 
 
 def parse(srt):
-    '''Convert an SRT formatted string to a generator of Subtitle objects.'''
+    '''
+    Convert an SRT formatted string to a generator of Subtitle objects.
+
+    Args:
+        srt: A string containing SRT formatted data.
+
+    Returns:
+        A generator of the subtitles contained in the SRT file as Subtitle
+        objects.
+    '''
     for match in SUBTITLE_REGEX.finditer(srt):
         raw_index, raw_start, raw_end, content = match.groups()
         yield Subtitle(
