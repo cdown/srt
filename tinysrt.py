@@ -14,7 +14,18 @@ SUBTITLE_REGEX = re.compile(SUBTITLE_PATTERN, re.MULTILINE | re.DOTALL)
 
 @functools.total_ordering
 class Subtitle(object):
-    '''The metadata relating to a single SRT block.'''
+    '''
+    The metadata relating to a single subtitle.
+
+    Attributes:
+        index: The SRT index for this subtitle.
+        start: A timedelta object representing the time that the subtitle
+            should start being shown
+        end: A timedelta object representing the time that the subtitle should
+            stop being shown
+        content: The subtitle content
+    '''
+
     def __init__(self, index, start, end, content):
         self.index = index
         self.start = start
@@ -28,7 +39,13 @@ class Subtitle(object):
         return self.start < other.start
 
     def to_srt(self):
-        '''Convert a Subtitle object to an SRT block.'''
+        '''
+        Convert the current subtitle to an SRT block.
+
+        Returns:
+            A string with the metadata of the current Subtitle object as an SRT
+            formatted subtitle block.
+        '''
         return '%d\n%s --> %s\n%s\n\n' % (
             self.index, timedelta_to_srt_timestamp(self.start),
             timedelta_to_srt_timestamp(self.end), self.content,
