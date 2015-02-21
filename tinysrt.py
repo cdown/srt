@@ -129,6 +129,12 @@ def compose(subtitles):
     '''
     Convert an iterator of Subtitle objects to a string of joined SRT blocks.
 
+    This may be a convienient interface when converting back and forth between
+    Python objects and SRT formatted blocks, but you may wish to consider using
+    the provided stream interface, `compose_file`, instead, which is
+    considerably more memory efficient when dealing with particularly large SRT
+    data.
+
     Args:
         subtitles: An iterator of Subtitle objects, in the order they should be
             in the output.
