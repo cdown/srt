@@ -17,13 +17,12 @@ class Subtitle(object):
     '''
     The metadata relating to a single subtitle.
 
-    Attributes:
-        index: The SRT index for this subtitle.
-        start: A timedelta object representing the time that the subtitle
-            should start being shown
-        end: A timedelta object representing the time that the subtitle should
-            stop being shown
-        content: The subtitle content
+    :param index: The SRT index for this subtitle
+    :param start: A timedelta object representing the time that the subtitle
+                  should start being shown
+    :param end: A timedelta object representing the time that the subtitle
+                should stop being shown
+    :param content: The subtitle content
     '''
 
     def __init__(self, index, start, end, content):
@@ -42,9 +41,8 @@ class Subtitle(object):
         '''
         Convert the current subtitle to an SRT block.
 
-        Returns:
-            A string with the metadata of the current Subtitle object as an SRT
-            formatted subtitle block.
+        :returns: A string with the metadata of the current Subtitle object as
+                  an SRT formatted subtitle block
         '''
         return '%d\n%s --> %s\n%s\n\n' % (
             self.index, timedelta_to_srt_timestamp(self.start),
@@ -56,12 +54,9 @@ def timedelta_to_srt_timestamp(timedelta_timestamp):
     '''
     Convert a timedelta to an SRT timestamp.
 
-    Args:
-        timedelta_timestamp: A timestamp represented as a datetime timedelta.
-
-    Returns:
-        An SRT formatted (HH:MM:SS,mmm) string representing the same timestamp
-        passed in.
+    :param timedelta_timestamp: A timestamp represented as a datetime timedelta
+    :returns: An SRT formatted (HH:MM:SS,mmm) string representing the same
+              timestamp passed in
     '''
     hrs, remainder = divmod(timedelta_timestamp.seconds, 3600)
     mins, secs = divmod(remainder, 60)
@@ -73,11 +68,8 @@ def srt_timestamp_to_timedelta(srt_timestamp):
     '''
     Convert an SRT timestamp to a timedelta.
 
-    Args:
-        srt_timestamp: A timestamp in SRT format (HH:MM:SS,mmm).
-
-    Returns:
-        A timedelta object representing the same timestamp passed in.
+    :param srt_timestamp: A timestamp in SRT format (HH:MM:SS,mmm)
+    :returns: A timedelta object representing the same timestamp passed in
     '''
     hrs, mins, secs, msecs = map(int, re.split('[,:]', srt_timestamp))
     return timedelta(hours=hrs, minutes=mins, seconds=secs, milliseconds=msecs)
@@ -87,12 +79,9 @@ def parse(srt):
     '''
     Convert an SRT formatted string to a generator of Subtitle objects.
 
-    Args:
-        srt: A string containing SRT formatted data.
-
-    Returns:
-        A generator of the subtitles contained in the SRT file as Subtitle
-        objects.
+    :param srt: A string containing SRT formatted data
+    :returns: A generator of the subtitles contained in the SRT file as
+              Subtitle objects
     '''
     for match in SUBTITLE_REGEX.finditer(srt):
         raw_index, raw_start, raw_end, content = match.groups()
@@ -106,12 +95,9 @@ def parse_file(srt):
     '''
     Parse an SRT formatted stream into Subtitle objects.
 
-    Args:
-        srt: A stream containing SRT formatted data.
-
-    Returns:
-        A generator of the subtitles contained in the SRT file as Subtitle
-        objects.
+    :param srt: A stream containing SRT formatted data
+    :returns: A generator of the subtitles contained in the SRT file as
+              Subtitle objects
     '''
     srt_chomped = (line.rstrip('\n') for line in srt)
     srt_blocks = [
@@ -135,13 +121,10 @@ def compose(subtitles):
     considerably more memory efficient when dealing with particularly large SRT
     data.
 
-    Args:
-        subtitles: An iterator of Subtitle objects, in the order they should be
-            in the output.
-
-    Returns:
-        A single SRT formatted string, with each input Subtitle represented as
-        an SRT block.
+    :param subtitles: An iterator of Subtitle objects, in the order they should
+                      be in the output
+    :returns: A single SRT formatted string, with each input Subtitle
+              represented as an SRT block.
     '''
     return ''.join(subtitle.to_srt() for subtitle in subtitles)
 
