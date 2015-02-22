@@ -102,21 +102,21 @@ def parse(srt):
         )
 
 
-def parse_file(srt_stream):
+def parse_file(srt):
     '''
     Parse an SRT formatted stream into Subtitle objects.
 
     Args:
-        srt_stream: A stream containing SRT formatted data.
+        srt: A stream containing SRT formatted data.
 
     Returns:
         A generator of the subtitles contained in the SRT file as Subtitle
         objects.
     '''
-    srt_stream_chomped = (line.rstrip('\n') for line in srt_stream)
+    srt_chomped = (line.rstrip('\n') for line in srt)
     srt_blocks = [
         '\n'.join(srt_lines) + '\n\n'
-        for line_has_content, srt_lines in groupby(srt_stream_chomped, bool)
+        for line_has_content, srt_lines in groupby(srt_chomped, bool)
         if line_has_content
     ]
 
@@ -146,18 +146,18 @@ def compose(subtitles):
     return ''.join(subtitle.to_srt() for subtitle in subtitles)
 
 
-def compose_file(subtitles, output_stream):
+def compose_file(subtitles, output):
     '''
     Stream a sequence of Subtitle objects into an SRT formatted stream.
 
     Args:
         subtitles: An iterator of Subtitle objects, in the order they should be
             written to the file.
-        output_stream: A stream to write the resulting SRT blocks to.
+        output: A stream to write the resulting SRT blocks to.
 
     Returns:
         The number of subtitles that were written to the stream.
     '''
     for num_written, subtitle in enumerate(subtitles, start=1):
-        output_stream.write(subtitle.to_srt())
+        output.write(subtitle.to_srt())
     return num_written
