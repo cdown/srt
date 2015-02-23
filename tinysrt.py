@@ -141,6 +141,7 @@ def compose_file(subtitles, output):
     Returns:
         The number of subtitles that were written to the stream.
     '''
+    num_written = 0
     for num_written, subtitle in enumerate(subtitles, start=1):
         output.write(subtitle.to_srt())
     return num_written

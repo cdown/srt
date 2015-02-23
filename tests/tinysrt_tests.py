@@ -289,6 +289,7 @@ def test_compose_file():
 
     eq(srt_in_f.read(), srt_out_f.read())
 
+
 def test_compose_file_num():
     srt_in_f = StringIO(textwrap.dedent(
         u'''\
@@ -309,3 +310,12 @@ def test_compose_file_num():
     num_written = tinysrt.compose_file(subs, srt_out_f)
 
     eq(2, num_written)
+
+
+def test_compose_file_num_none():
+    srt_out_f = StringIO()
+
+    subs = list(tinysrt.parse(''))
+    num_written = tinysrt.compose_file(subs, srt_out_f)
+
+    eq(0, num_written)
