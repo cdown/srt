@@ -16,7 +16,9 @@ class TestTinysrt(object):
     @classmethod
     def setup_class(cls):
         cls.srt_filename = cls._fixture('srt_samples/monsters.srt')
-        cls.srt_filename_bad_order = cls._fixture('srt_samples/monsters-bad-order.srt')
+        cls.srt_filename_bad_order = cls._fixture(
+            'srt_samples/monsters-bad-order.srt'
+        )
 
         with open(cls.srt_filename) as srt_f:
             cls.srt_sample = srt_f.read()
@@ -36,9 +38,10 @@ class TestTinysrt(object):
         return os.path.join(os.path.dirname(__file__), path)
 
     def test_timedelta_to_srt_timestamp(self):
-        timedelta_ts = timedelta(hours=1, minutes=2, seconds=3, milliseconds=400)
+        timedelta_ts = timedelta(
+                hours=1, minutes=2, seconds=3, milliseconds=400,
+        )
         eq(tinysrt.timedelta_to_srt_timestamp(timedelta_ts), '01:02:03,400')
-
 
     def test_srt_timestamp_to_timedelta(self):
         eq(
@@ -86,7 +89,7 @@ class TestTinysrt(object):
         eq(
             timedelta(
                 hours=0,
-                minutes=31,
+                mclsinutes=31,
                 seconds=41,
                 milliseconds=931,
             ),
@@ -100,7 +103,6 @@ class TestTinysrt(object):
     def test_parse_general(self):
         subs = list(tinysrt.parse(self.srt_sample))
         self._test_monsters_subs(subs)
-
 
     def test_parse_file(self):
         srt_f = open(self.srt_filename)
@@ -121,11 +123,9 @@ class TestTinysrt(object):
 
         srt_f.close()
 
-
     def test_compose(self):
         subs = tinysrt.parse(self.srt_sample)
         eq(self.srt_sample, tinysrt.compose(subs))
-
 
     def test_default_subtitle_sorting_is_by_start_time(self):
         subs = tinysrt.parse(self.srt_sample_bad_order)
@@ -136,7 +136,6 @@ class TestTinysrt(object):
             [422, 421, 423],
         )
 
-
     def test_subtitle_equality_false(self):
         subs_1 = list(tinysrt.parse(self.srt_sample))
         subs_2 = list(tinysrt.parse(self.srt_sample))
@@ -144,12 +143,10 @@ class TestTinysrt(object):
 
         neq(subs_1, subs_2)
 
-
     def test_subtitle_equality_true(self):
         subs_1 = list(tinysrt.parse(self.srt_sample))
         subs_2 = list(tinysrt.parse(self.srt_sample))
         eq(subs_1, subs_2)
-
 
     def test_compose_file(self):
         srt_in_f = open(self.srt_filename)
@@ -165,7 +162,6 @@ class TestTinysrt(object):
 
         srt_in_f.close()
 
-
     def test_compose_file_num(self):
         srt_in_f = open(self.srt_filename)
         srt_out_f = StringIO()
@@ -176,7 +172,6 @@ class TestTinysrt(object):
         eq(3, num_written)
 
         srt_in_f.close()
-
 
     def test_compose_file_num_none(self):
         srt_out_f = StringIO()
