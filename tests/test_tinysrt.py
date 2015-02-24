@@ -3,6 +3,7 @@
 
 import textwrap
 import tinysrt
+import os
 from datetime import timedelta
 from nose.tools import eq_ as eq, assert_not_equal as neq, ok_ as ok
 
@@ -10,6 +11,20 @@ try:
     from io import StringIO
 except ImportError:  # Python 2 fallback
     from cStringIO import StringIO
+
+
+def fixture(path):
+    return os.path.join(os.path.dirname(__file__), path)
+
+
+SRT_FILENAME = fixture('srt_samples/monsters.srt')
+SRT_FILENAME_BAD_ORDER = fixture('srt_samples/monsters-bad-order.srt')
+
+with open(SRT_FILENAME) as srt_f:
+    SRT_SAMPLE = srt_f.read()
+
+with open(SRT_FILENAME_BAD_ORDER) as srt_f:
+    SRT_SAMPLE_BAD_ORDER = srt_f.read()
 
 
 def test_timedelta_to_srt_timestamp():
@@ -23,155 +38,70 @@ def test_srt_timestamp_to_timedelta():
         tinysrt.srt_timestamp_to_timedelta('01:02:03,400'),
     )
 
+def _test_monsters_subs(subs):
+    eq(3, len(subs))
+
+    eq(421, subs[0].index)
+    eq(
+        timedelta(
+            hours=0,
+            minutes=31,
+            seconds=37,
+            milliseconds=894,
+        ),
+        subs[0].start,
+    )
+    eq(
+        timedelta(
+            hours=0,
+            minutes=31,
+            seconds=39,
+            milliseconds=928,
+        ),
+        subs[0].end,
+    )
+    eq(
+        '我有个点子\nOK, look, I think I have a plan here.',
+        subs[0].content,
+    )
+
+    eq(422, subs[1].index)
+    eq(
+        timedelta(
+            hours=0,
+            minutes=31,
+            seconds=39,
+            milliseconds=931,
+        ),
+        subs[1].start,
+    )
+    eq(
+        timedelta(
+            hours=0,
+            minutes=31,
+            seconds=41,
+            milliseconds=931,
+        ),
+        subs[1].end,
+    )
+    eq(
+        '我们要拿一堆汤匙\nUsing mainly spoons,',
+        subs[1].content,
+    )
 
 def test_parse_general():
-    srt_data = textwrap.dedent(
-        '''\
-        7
-        00:01:51,980 --> 00:01:55,910
-        我快要渴死了
-        快点倒酒!
+    subs = list(tinysrt.parse(SRT_SAMPLE))
+    _test_monsters_subs(subs)
 
-        8
-        00:01:56,480 --> 00:01:58,460
-        - 给你  - 谢了
-
-        '''
-    )
-    subs = list(tinysrt.parse(srt_data))
-
-    eq(2, len(subs))
-
-    eq(7, subs[0].index)
-    eq(
-        timedelta(
-            hours=0,
-            minutes=1,
-            seconds=51,
-            milliseconds=980,
-        ),
-        subs[0].start,
-    )
-    eq(
-        timedelta(
-            hours=0,
-            minutes=1,
-            seconds=55,
-            milliseconds=910,
-        ),
-        subs[0].end,
-    )
-    eq(
-        '我快要渴死了\n快点倒酒!',
-        subs[0].content,
-    )
-
-    eq(8, subs[1].index)
-    eq(
-        timedelta(
-            hours=0,
-            minutes=1,
-            seconds=56,
-            milliseconds=480,
-        ),
-        subs[1].start,
-    )
-    eq(
-        timedelta(
-            hours=0,
-            minutes=1,
-            seconds=58,
-            milliseconds=460,
-        ),
-        subs[1].end,
-    )
-    eq(
-        '- 给你  - 谢了',
-        subs[1].content,
-    )
 
 def test_parse_file():
-    srt_f = StringIO(textwrap.dedent(
-        u'''\
-        7
-        00:01:51,980 --> 00:01:55,910
-        我快要渴死了
-        快点倒酒!
-
-        8
-        00:01:56,480 --> 00:01:58,460
-        - 给你  - 谢了
-
-        '''
-    ))
-
+    srt_f = open(SRT_FILENAME)
     subs = list(tinysrt.parse_file(srt_f))
-
-    eq(2, len(subs))
-
-    eq(7, subs[0].index)
-    eq(
-        timedelta(
-            hours=0,
-            minutes=1,
-            seconds=51,
-            milliseconds=980,
-        ),
-        subs[0].start,
-    )
-    eq(
-        timedelta(
-            hours=0,
-            minutes=1,
-            seconds=55,
-            milliseconds=910,
-        ),
-        subs[0].end,
-    )
-    eq(
-        u'我快要渴死了\n快点倒酒!',
-        subs[0].content,
-    )
-
-    eq(8, subs[1].index)
-    eq(
-        timedelta(
-            hours=0,
-            minutes=1,
-            seconds=56,
-            milliseconds=480,
-        ),
-        subs[1].start,
-    )
-    eq(
-        timedelta(
-            hours=0,
-            minutes=1,
-            seconds=58,
-            milliseconds=460,
-        ),
-        subs[1].end,
-    )
-    eq(
-        u'- 给你  - 谢了',
-        subs[1].content,
-    )
-
+    _test_monsters_subs(subs)
+    srt_f.close()
 
 def test_parse_file_buffer_size_irrelevant():
-    srt_f = StringIO(textwrap.dedent(
-        u'''\
-        7
-        00:01:51,980 --> 00:01:55,910
-        我快要渴死了
-        快点倒酒!
-
-        8
-        00:01:56,480 --> 00:01:58,460
-        - 给你  - 谢了
-
-        '''
-    ))
+    srt_f = open(SRT_FILENAME)
 
     subs = []
 
@@ -181,43 +111,16 @@ def test_parse_file_buffer_size_irrelevant():
 
     ok(all(sub == subs[0] for sub in subs))
 
+    srt_f.close()
+
 
 def test_compose():
-    srt_data = textwrap.dedent(
-        '''\
-        203
-        00:32:47,312 --> 00:32:53,239
-        蛋表面有一层薄膜，一碰就有反应
-
-        204
-        00:32:57,088 --> 00:33:00,012
-        肯恩，你没事吧？
-
-        '''
-    )
-    subs = tinysrt.parse(srt_data)
-    eq(srt_data, ''.join(tinysrt.compose(subs)))
+    subs = tinysrt.parse(SRT_SAMPLE)
+    eq(SRT_SAMPLE, tinysrt.compose(subs))
 
 
 def test_default_subtitle_sorting_is_by_start_time():
-    srt_data = textwrap.dedent(
-        '''\
-        421
-        00:31:39,931 --> 00:31:41,931
-        我们要拿一堆汤匙
-
-        422
-        00:31:37,894 --> 00:31:39,928
-        我有个点子
-
-        423
-        00:31:41,933 --> 00:31:43,435
-        挖一条隧道 然后把她丢到野外去
-
-        '''
-    )
-
-    subs = tinysrt.parse(srt_data)
+    subs = tinysrt.parse(SRT_SAMPLE_BAD_ORDER)
     sorted_subs = sorted(subs)
 
     eq(
@@ -227,61 +130,24 @@ def test_default_subtitle_sorting_is_by_start_time():
 
 
 def test_subtitle_equality_false():
-    srt_data = textwrap.dedent(
-        '''\
-        203
-        00:32:47,312 --> 00:32:53,239
-        蛋表面有一层薄膜，一碰就有反应
-
-        204
-        00:32:57,088 --> 00:33:00,012
-        肯恩，你没事吧？
-
-        '''
-    )
-
-    subs_1 = list(tinysrt.parse(srt_data))
-    subs_2 = list(tinysrt.parse(srt_data))
+    subs_1 = list(tinysrt.parse(SRT_SAMPLE))
+    subs_2 = list(tinysrt.parse(SRT_SAMPLE))
     subs_2[0].content += 'blah'
 
     neq(subs_1, subs_2)
 
 
 def test_subtitle_equality_true():
-    srt_data = textwrap.dedent(
-        '''\
-        203
-        00:32:47,312 --> 00:32:53,239
-        蛋表面有一层薄膜，一碰就有反应
-
-        204
-        00:32:57,088 --> 00:33:00,012
-        肯恩，你没事吧？
-
-        '''
-    )
-    subs_1 = list(tinysrt.parse(srt_data))
-    subs_2 = list(tinysrt.parse(srt_data))
+    subs_1 = list(tinysrt.parse(SRT_SAMPLE))
+    subs_2 = list(tinysrt.parse(SRT_SAMPLE))
     eq(subs_1, subs_2)
 
 
 def test_compose_file():
-    srt_in_f = StringIO(textwrap.dedent(
-        u'''\
-        7
-        00:01:51,980 --> 00:01:55,910
-        我快要渴死了
-        快点倒酒!
-
-        8
-        00:01:56,480 --> 00:01:58,460
-        - 给你  - 谢了
-
-        '''
-    ))
+    srt_in_f = open(SRT_FILENAME)
     srt_out_f = StringIO()
 
-    subs = list(tinysrt.parse_file(srt_in_f))
+    subs = tinysrt.parse_file(srt_in_f)
     tinysrt.compose_file(subs, srt_out_f)
 
     srt_in_f.seek(0)
@@ -289,27 +155,19 @@ def test_compose_file():
 
     eq(srt_in_f.read(), srt_out_f.read())
 
+    srt_in_f.close()
+
 
 def test_compose_file_num():
-    srt_in_f = StringIO(textwrap.dedent(
-        u'''\
-        7
-        00:01:51,980 --> 00:01:55,910
-        我快要渴死了
-        快点倒酒!
-
-        8
-        00:01:56,480 --> 00:01:58,460
-        - 给你  - 谢了
-
-        '''
-    ))
+    srt_in_f = open(SRT_FILENAME)
     srt_out_f = StringIO()
 
-    subs = list(tinysrt.parse_file(srt_in_f))
+    subs = tinysrt.parse_file(srt_in_f)
     num_written = tinysrt.compose_file(subs, srt_out_f)
 
-    eq(2, num_written)
+    eq(3, num_written)
+
+    srt_in_f.close()
 
 
 def test_compose_file_num_none():
