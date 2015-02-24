@@ -9,9 +9,6 @@ except ImportError:
 with open('README.rst') as readme_f:
     readme = readme_f.read()
 
-with open('requirements.txt') as requirements_f:
-    requirements = requirements_f.readlines()
-
 with open('tests/requirements.txt') as test_requirements_f:
     test_requirements = test_requirements_f.readlines()
 
@@ -24,7 +21,6 @@ setup(
     author_email='chris@chrisdown.name',
     url='https://github.com/cdown/tinysrt',
     py_modules=['tinysrt'],
-    install_requires=requirements,
     license='ISC',
     zip_safe=False,
     keywords='tinysrt',
