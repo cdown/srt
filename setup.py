@@ -7,16 +7,17 @@ except ImportError:
 
 
 with open('README.rst') as readme_f:
-    readme = readme_f.read()
+    README = readme_f.read()
 
 with open('tests/requirements.txt') as test_requirements_f:
-    test_requirements = test_requirements_f.readlines()
+    TEST_REQUIREMENTS = test_requirements_f.readlines()
 
 setup(
     name='tinysrt',
     version='0.0.1',
-    description='A tiny library for parsing, modifying, and composing SRT files.',
-    long_description=readme,
+    description='A tiny library for parsing, modifying, and composing SRT '
+                'files.',
+    long_description=README,
     author='Chris Down',
     author_email='chris@chrisdown.name',
     url='https://github.com/cdown/tinysrt',
@@ -35,5 +36,5 @@ setup(
         'Programming Language :: Python :: 3.4',
     ],
     test_suite='nose.collector',
-    tests_require=test_requirements
+    tests_require=TEST_REQUIREMENTS
 )
