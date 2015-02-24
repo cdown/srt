@@ -38,19 +38,22 @@ class TestTinysrt(object):
         self.temp_f.close()
         os.remove(self.temp_path)
 
-    def test_timedelta_to_srt_timestamp(self):
+    @staticmethod
+    def test_timedelta_to_srt_timestamp():
         timedelta_ts = timedelta(
                 hours=1, minutes=2, seconds=3, milliseconds=400,
         )
         eq(tinysrt.timedelta_to_srt_timestamp(timedelta_ts), '01:02:03,400')
 
-    def test_srt_timestamp_to_timedelta(self):
+    @staticmethod
+    def test_srt_timestamp_to_timedelta():
         eq(
             timedelta(hours=1, minutes=2, seconds=3, milliseconds=400),
             tinysrt.srt_timestamp_to_timedelta('01:02:03,400'),
         )
 
-    def _test_monsters_subs(self, subs):
+    @staticmethod
+    def _test_monsters_subs(subs):
         eq(3, len(subs))
 
         eq(421, subs[0].index)
