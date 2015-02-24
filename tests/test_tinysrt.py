@@ -9,6 +9,10 @@ from nose.tools import eq_ as eq, assert_not_equal as neq, ok_ as ok
 
 
 class TestTinysrt(object):
+    @staticmethod
+    def _fixture(path):
+        return os.path.join(os.path.dirname(__file__), path)
+
     @classmethod
     def setup_class(cls):
         cls.srt_filename = cls._fixture('srt_samples/monsters.srt')
@@ -33,9 +37,6 @@ class TestTinysrt(object):
         self.srt_bad_order_f.close()
         self.temp_f.close()
         os.remove(self.temp_path)
-
-    def _fixture(self, path):
-        return os.path.join(os.path.dirname(__file__), path)
 
     def test_timedelta_to_srt_timestamp(self):
         timedelta_ts = timedelta(
