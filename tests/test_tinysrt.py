@@ -111,24 +111,11 @@ class TestTinysrt(object):
         self._test_monsters_subs(subs)
         srt_f.close()
 
-    def test_parse_file_buffer_size_irrelevant(self):
-        srt_f = open(self.srt_filename)
-
-        subs = []
-
-        for buf_size in range(4):
-            srt_f.seek(0)
-            subs.append(list(tinysrt.parse_file(srt_f)))
-
-        ok(all(sub == subs[0] for sub in subs))
-
-        srt_f.close()
-
     def test_compose(self):
         subs = tinysrt.parse(self.srt_sample)
         eq(self.srt_sample, tinysrt.compose(subs))
 
-    def test_default_subtitle_sorting_is_by_start_time(self):
+    def test_default_subtitle_sort_by_start(self):
         subs = tinysrt.parse(self.srt_sample_bad_order)
         sorted_subs = sorted(subs)
 
