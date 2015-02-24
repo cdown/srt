@@ -1,15 +1,11 @@
 #!/usr/bin/env python
 # vim: set fileencoding=utf8
 
+import tempfile
 import tinysrt
 import os
 from datetime import timedelta
 from nose.tools import eq_ as eq, assert_not_equal as neq, ok_ as ok
-
-try:
-    from io import StringIO
-except ImportError:  # Python 2 fallback
-    from cStringIO import StringIO
 
 
 class TestTinysrt(object):
@@ -29,12 +25,16 @@ class TestTinysrt(object):
     def setup(self):
         self.srt_f = open(self.srt_filename)
         self.srt_bad_order_f = open(self.srt_filename_bad_order)
+        self.temp_fd, self.temp_path = tempfile.mkstemp()
+        self.temp_f = os.fdopen(self.temp_fd, 'w')
 
     def teardown(self):
         self.srt_f.close()
         self.srt_bad_order_f.close()
+        self.temp_f.close()
+        os.remove(self.temp_path)
 
-    def _fixture(path):
+    def _fixture(self, path):
         return os.path.join(os.path.dirname(__file__), path)
 
     def test_timedelta_to_srt_timestamp(self):
@@ -89,7 +89,7 @@ class TestTinysrt(object):
         eq(
             timedelta(
                 hours=0,
-                mclsinutes=31,
+                minutes=31,
                 seconds=41,
                 milliseconds=931,
             ),
@@ -150,21 +150,24 @@ class TestTinysrt(object):
 
     def test_compose_file(self):
         srt_in_f = open(self.srt_filename)
-        srt_out_f = StringIO()
+        srt_out_f = self.temp_f
 
         subs = tinysrt.parse_file(srt_in_f)
         tinysrt.compose_file(subs, srt_out_f)
 
         srt_in_f.seek(0)
-        srt_out_f.seek(0)
 
-        eq(srt_in_f.read(), srt_out_f.read())
+        srt_out_f.close()
+        srt_out_f_2 = open(self.temp_path)
+
+        eq(srt_in_f.read(), srt_out_f_2.read())
 
         srt_in_f.close()
+        srt_out_f_2.close()
 
     def test_compose_file_num(self):
         srt_in_f = open(self.srt_filename)
-        srt_out_f = StringIO()
+        srt_out_f = self.temp_f
 
         subs = tinysrt.parse_file(srt_in_f)
         num_written = tinysrt.compose_file(subs, srt_out_f)
@@ -174,7 +177,7 @@ class TestTinysrt(object):
         srt_in_f.close()
 
     def test_compose_file_num_none(self):
-        srt_out_f = StringIO()
+        srt_out_f = self.temp_f
 
         subs = list(tinysrt.parse(''))
         num_written = tinysrt.compose_file(subs, srt_out_f)
