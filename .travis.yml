@@ -9,10 +9,3 @@ script:
   - nosetests --with-coverage
 after_success:
   - coveralls
-
-notifications:
-  email:
-    recipients:
-      - chris+travis@chrisdown.name
-    on_success: never
-    on_failure: always

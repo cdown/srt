@@ -13,14 +13,3 @@ install:
   - '%PYTHON%/Scripts/pip.exe install -r tests/requirements.txt'
 test_script:
   - '%PYTHON%/python.exe -c "import nose; nose.main();"'
-
-branches:
-  only:
-    - master
-skip_tags: true
-notifications:
-  - provider: Email
-    to:
-      - chris+appveyor@chrisdown.name
-    on_build_success: false
-    on_build_failure: true

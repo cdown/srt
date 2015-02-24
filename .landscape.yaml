@@ -1,0 +1,4 @@
+strictness: veryhigh
+
+ignore-patterns:
+  - '# pragma: no lint'
