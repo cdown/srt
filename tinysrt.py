@@ -12,7 +12,7 @@ SUBTITLE_PATTERN = r'(\d+)\n(\d+:\d+:\d+,\d+) --> (\d+:\d+:\d+,\d+)\n(.+?)\n\n'
 SUBTITLE_REGEX = re.compile(SUBTITLE_PATTERN, re.MULTILINE | re.DOTALL)
 
 
-@functools.total_ordering
+@functools.total_ordering  # pylint: disable=too-few-public-methods
 class Subtitle(object):
     '''
     The metadata relating to a single subtitle.
@@ -71,7 +71,7 @@ def srt_timestamp_to_timedelta(srt_timestamp):
     :param srt_timestamp: A timestamp in SRT format (HH:MM:SS,mmm)
     :returns: A timedelta object representing the same timestamp passed in
     '''
-    hrs, mins, secs, msecs = map(int, re.split('[,:]', srt_timestamp))
+    hrs, mins, secs, msecs = (int(x) for x in re.split('[,:]', srt_timestamp))
     return timedelta(hours=hrs, minutes=mins, seconds=secs, milliseconds=msecs)
 
 
