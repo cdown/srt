@@ -124,7 +124,7 @@ def compose(subtitles):
     :param subtitles: An iterator of Subtitle objects, in the order they should
                       be in the output
     :returns: A single SRT formatted string, with each input Subtitle
-              represented as an SRT block.
+              represented as an SRT block
     '''
     return ''.join(subtitle.to_srt() for subtitle in subtitles)
 
@@ -133,10 +133,9 @@ def compose_file(subtitles, output):
     '''
     Stream a sequence of Subtitle objects into an SRT formatted stream.
 
-    Args:
-        subtitles: An iterator of Subtitle objects, in the order they should be
-            written to the file.
-        output: A stream to write the resulting SRT blocks to.
+    :param subtitles: An iterator of Subtitle objects, in the order they should
+                      be written to the file
+    :param output: A stream to write the resulting SRT blocks to
 
     Returns:
         The number of subtitles that were written to the stream.
