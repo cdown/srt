@@ -1,16 +1,16 @@
-.. image:: https://img.shields.io/travis/cdown/tinysrt.svg?label=linux&style=plastic
+.. image:: https://img.shields.io/travis/cdown/tinysrt.svg?label=linux
         :target: https://travis-ci.org/cdown/tinysrt
 
-.. image:: https://img.shields.io/appveyor/ci/cdown/tinysrt/master.svg?label=windows&style=plastic
+.. image:: https://img.shields.io/appveyor/ci/cdown/tinysrt/master.svg?label=windows
         :target: https://ci.appveyor.com/project/cdown/tinysrt
 
-.. image:: https://img.shields.io/coveralls/cdown/tinysrt/master.svg&style=plastic
+.. image:: https://img.shields.io/coveralls/cdown/tinysrt/master.svg
         :target: https://coveralls.io/r/cdown/tinysrt
 
 .. image:: https://landscape.io/github/cdown/tinysrt/master/landscape.svg
         :target: https://landscape.io/github/cdown/tinysrt/master
 
-.. image:: https://img.shields.io/requires/github/cdown/tinysrt.svg?label=deps&style=plastic
+.. image:: https://img.shields.io/requires/github/cdown/tinysrt.svg?label=deps
         :target: https://requires.io/github/cdown/tinysrt/requirements/?branch=master
 
 
