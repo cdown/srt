@@ -1,17 +1,17 @@
-.. image:: https://img.shields.io/travis/cdown`/tinysrt.svg?label=linux&style=plastic
-        :target: https://travis-ci.org/cdown`/tinysrt
+.. image:: https://img.shields.io/travis/cdown/tinysrt.svg?label=linux&style=plastic
+        :target: https://travis-ci.org/cdown/tinysrt
 
-.. image:: https://img.shields.io/appveyor/ci/cdown`/tinysrt/master.svg?label=windows&style=plastic
-        :target: https://ci.appveyor.com/project/cdown`/tinysrt
+.. image:: https://img.shields.io/appveyor/ci/cdown/tinysrt/master.svg?label=windows&style=plastic
+        :target: https://ci.appveyor.com/project/cdown/tinysrt
 
-.. image:: https://img.shields.io/coveralls/cdown`/tinysrt/master.svg&style=plastic
-        :target: https://coveralls.io/r/cdown`/tinysrt
+.. image:: https://img.shields.io/coveralls/cdown/tinysrt/master.svg&style=plastic
+        :target: https://coveralls.io/r/cdown/tinysrt
 
-.. image:: https://landscape.io/github/cdown`/tinysrt/master/landscape.svg
-        :target: https://landscape.io/github/cdown`/tinysrt/master
+.. image:: https://landscape.io/github/cdown/tinysrt/master/landscape.svg
+        :target: https://landscape.io/github/cdown/tinysrt/master
 
-.. image:: https://img.shields.io/requires/github/cdown`/tinysrt.svg?label=deps&style=plastic
-        :target: https://requires.io/github/cdown`/tinysrt/requirements/?branch=master
+.. image:: https://img.shields.io/requires/github/cdown/tinysrt.svg?label=deps&style=plastic
+        :target: https://requires.io/github/cdown/tinysrt/requirements/?branch=master
 
 
 tinysrt is a tiny library for parsing, modifying, and composing SRT files.

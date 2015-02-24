@@ -22,7 +22,7 @@ setup(
     long_description=readme,
     author='Chris Down',
     author_email='chris@chrisdown.name',
-    url='https://github.com/cdown`/tinysrt',
+    url='https://github.com/cdown/tinysrt',
     py_modules=['tinysrt'],
     install_requires=requirements,
     license='ISC',
