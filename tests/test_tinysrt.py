@@ -118,7 +118,7 @@ class TestTinysrt(object):
         subs = tinysrt.parse(self.srt_sample)
         eq(self.srt_sample, tinysrt.compose(subs))
 
-    def test_default_subtitle_sort_by_start(self):
+    def test_subtitle_sort_by_start(self):
         subs = tinysrt.parse(self.srt_sample_bad_order)
         sorted_subs = sorted(subs)
 
