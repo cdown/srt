@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # vim: set fileencoding=utf8
 
+import codecs
 import tempfile
 import tinysrt
 import os
@@ -20,17 +21,20 @@ class TestTinysrt(object):
             'srt_samples/monsters-bad-order.srt'
         )
 
-        with open(cls.srt_filename) as srt_f:
+        with codecs.open(cls.srt_filename, 'r', 'utf8') as srt_f:
             cls.srt_sample = srt_f.read()
 
-        with open(cls.srt_filename_bad_order) as srt_bad_f:
+        with codecs.open(cls.srt_filename_bad_order, 'r', 'utf8') as srt_bad_f:
             cls.srt_sample_bad_order = srt_bad_f.read()
 
     def setup(self):
-        self.srt_f = open(self.srt_filename)
-        self.srt_bad_order_f = open(self.srt_filename_bad_order)
-        self.temp_fd, self.temp_path = tempfile.mkstemp()
-        self.temp_f = os.fdopen(self.temp_fd, 'w')
+        self.srt_f = codecs.open(self.srt_filename, 'r', 'utf8')
+        self.srt_bad_order_f = codecs.open(
+            self.srt_filename_bad_order, 'r', 'utf8'
+        )
+        self._temp_fd_bad_enc, self.temp_path = tempfile.mkstemp()
+        os.close(self._temp_fd_bad_enc)
+        self.temp_f = codecs.open(self.temp_path, 'w', 'utf8')
 
     def teardown(self):
         self.srt_f.close()
@@ -76,7 +80,7 @@ class TestTinysrt(object):
             subs[0].end,
         )
         eq(
-            '我有个点子\nOK, look, I think I have a plan here.',
+            u'我有个点子\nOK, look, I think I have a plan here.',
             subs[0].content,
         )
 
@@ -100,7 +104,7 @@ class TestTinysrt(object):
             subs[1].end,
         )
         eq(
-            '我们要拿一堆汤匙\nUsing mainly spoons,',
+            u'我们要拿一堆汤匙\nUsing mainly spoons,',
             subs[1].content,
         )
 
@@ -109,7 +113,7 @@ class TestTinysrt(object):
         self._test_monsters_subs(subs)
 
     def test_parse_file(self):
-        srt_f = open(self.srt_filename)
+        srt_f = codecs.open(self.srt_filename, 'r', 'utf8')
         subs = list(tinysrt.parse_file(srt_f))
         self._test_monsters_subs(subs)
         srt_f.close()
@@ -140,7 +144,7 @@ class TestTinysrt(object):
         eq(subs_1, subs_2)
 
     def test_compose_file(self):
-        srt_in_f = open(self.srt_filename)
+        srt_in_f = codecs.open(self.srt_filename, 'r', 'utf8')
         srt_out_f = self.temp_f
 
         subs = tinysrt.parse_file(srt_in_f)
@@ -149,7 +153,7 @@ class TestTinysrt(object):
         srt_in_f.seek(0)
 
         srt_out_f.close()
-        srt_out_f_2 = open(self.temp_path)
+        srt_out_f_2 = codecs.open(self.temp_path, 'r', 'utf8')
 
         eq(srt_in_f.read(), srt_out_f_2.read())
 
@@ -157,7 +161,7 @@ class TestTinysrt(object):
         srt_out_f_2.close()
 
     def test_compose_file_num(self):
-        srt_in_f = open(self.srt_filename)
+        srt_in_f = codecs.open(self.srt_filename, 'r', 'utf8')
         srt_out_f = self.temp_f
 
         subs = tinysrt.parse_file(srt_in_f)
