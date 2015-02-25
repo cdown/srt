@@ -1,0 +1,5 @@
+tinysrt
+=======
+
+.. automodule:: tinysrt
+   :members:
