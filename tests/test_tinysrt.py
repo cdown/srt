@@ -5,7 +5,7 @@ import tempfile
 import tinysrt
 import os
 from datetime import timedelta
-from nose.tools import eq_ as eq, assert_not_equal as neq, ok_ as ok
+from nose.tools import eq_ as eq, assert_not_equal as neq
 
 
 class TestTinysrt(object):
