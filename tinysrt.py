@@ -38,6 +38,9 @@ class Subtitle(object):
     def __lt__(self, other):
         return self.start < other.start
 
+    def __repr__(self):
+        return '<%s:%d>' % (self.__class__.__name__, self.index)
+
     def to_srt(self):
         '''
         Convert the current subtitle to an SRT block.
