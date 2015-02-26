@@ -15,7 +15,8 @@ SUBTITLE_REGEX = re.compile(SUBTITLE_PATTERN, re.MULTILINE | re.DOTALL)
 @functools.total_ordering  # pylint: disable=too-few-public-methods
 class Subtitle(object):
     '''
-    The metadata relating to a single subtitle.
+    The metadata relating to a single subtitle. Subtitles are sorted by start
+    time by default.
 
     :param index: The SRT index for this subtitle
     :param start: A timedelta object representing the time that the subtitle
