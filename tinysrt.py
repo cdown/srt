@@ -54,6 +54,10 @@ def timedelta_to_srt_timestamp(timedelta_timestamp):
     '''
     Convert a timedelta to an SRT timestamp.
 
+    >>> delta = datetime.timedelta(hours=1, minutes=23, seconds=4)
+    >>> timedelta_to_srt_timestamp(delta)
+    '01:23:04,000
+
     :param timedelta_timestamp: A timestamp represented as a datetime timedelta
     :returns: An SRT formatted (HH:MM:SS,mmm) string representing the same
               timestamp passed in
