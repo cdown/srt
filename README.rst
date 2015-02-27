@@ -13,6 +13,7 @@
 .. image:: https://img.shields.io/requires/github/cdown/tinysrt.svg?label=deps
         :target: https://requires.io/github/cdown/tinysrt/requirements/?branch=master
 
+----
 
 srt is a tiny Python library for parsing, modifying, and composing SRT files.
 
