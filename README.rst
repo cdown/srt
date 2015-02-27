@@ -1,17 +1,17 @@
-.. image:: https://img.shields.io/travis/cdown/tinysrt.svg?label=linux
-        :target: https://travis-ci.org/cdown/tinysrt
+.. image:: https://img.shields.io/travis/cdown/srt.svg?label=linux
+        :target: https://travis-ci.org/cdown/srt
 
-.. image:: https://img.shields.io/appveyor/ci/cdown/tinysrt/master.svg?label=windows
-        :target: https://ci.appveyor.com/project/cdown/tinysrt
+.. image:: https://img.shields.io/appveyor/ci/cdown/srt/master.svg?label=windows
+        :target: https://ci.appveyor.com/project/cdown/srt
 
-.. image:: https://img.shields.io/coveralls/cdown/tinysrt/master.svg
-        :target: https://coveralls.io/r/cdown/tinysrt
+.. image:: https://img.shields.io/coveralls/cdown/srt/master.svg
+        :target: https://coveralls.io/r/cdown/srt
 
-.. image:: https://landscape.io/github/cdown/tinysrt/master/landscape.svg
-        :target: https://landscape.io/github/cdown/tinysrt/master
+.. image:: https://landscape.io/github/cdown/srt/master/landscape.svg
+        :target: https://landscape.io/github/cdown/srt/master
 
-.. image:: https://img.shields.io/requires/github/cdown/tinysrt.svg?label=deps
-        :target: https://requires.io/github/cdown/tinysrt/requirements/?branch=master
+.. image:: https://img.shields.io/requires/github/cdown/srt.svg?label=deps
+        :target: https://requires.io/github/cdown/srt/requirements/?branch=master
 
 ----
 
@@ -29,7 +29,7 @@ Installation
 
 .. code::
 
-    pip install tinysrt
+    pip install srt
 
 Testing
 -------

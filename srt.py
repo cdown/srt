@@ -101,7 +101,7 @@ def parse(srt):
     If you are reading from a file, consider using :py:func:`parse_file`
     instead.
 
-    >>> subs = tinysrt.parse("""\
+    >>> subs = parse("""\
     ... 422
     ... 00:31:39,931 --> 00:31:41,931
     ... Using mainly spoons,

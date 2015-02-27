@@ -1,5 +1,5 @@
-tinysrt
+srt
 =======
 
-.. automodule:: tinysrt
+.. automodule:: srt
    :members:

@@ -13,18 +13,18 @@ with open('tests/requirements.txt') as test_requirements_f:
     TEST_REQUIREMENTS = test_requirements_f.readlines()
 
 setup(
-    name='tinysrt',
+    name='srt',
     version='0.0.1',
     description='A tiny library for parsing, modifying, and composing SRT '
                 'files.',
     long_description=README,
     author='Chris Down',
     author_email='chris@chrisdown.name',
-    url='https://github.com/cdown/tinysrt',
-    py_modules=['tinysrt'],
+    url='https://github.com/cdown/srt',
+    py_modules=['srt'],
     license='ISC',
     zip_safe=False,
-    keywords='tinysrt',
+    keywords='srt',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'License :: OSI Approved :: ISC License (ISCL)',
