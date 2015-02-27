@@ -2,7 +2,7 @@
 srt
 ===
 
-.. image:: https://img.shields.io/travis/cdown/srt.svg?label=linux
+.. image:: https://img.shields.io/travis/cdown/srt/master.svg?label=linux
         :target: https://travis-ci.org/cdown/srt
 
 .. image:: https://img.shields.io/appveyor/ci/cdown/srt/master.svg?label=windows
