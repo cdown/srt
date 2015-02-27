@@ -113,7 +113,7 @@ class TestTinysrt(object):
         self._test_monsters_subs(subs)
 
     def test_parse_file(self):
-        srt_f = open(self.srt_filename, 'r', 'utf8')
+        srt_f = codecs.open(self.srt_filename, 'r', 'utf8')
         subs = list(srt.parse_file(srt_f))
         self._test_monsters_subs(subs)
         srt_f.close()
