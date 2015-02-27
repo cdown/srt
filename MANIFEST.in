@@ -1,0 +1,8 @@
+include LICENSE
+include MANIFEST.in
+include README.rst
+recursive-include docs *
+recursive-include tests *
+
+recursive-exclude * *.py[co]
+recursive-exclude * __pycache__
