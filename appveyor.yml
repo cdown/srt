@@ -17,6 +17,7 @@ test_script:
 branches:
   only:
     - master
+    - rc
 skip_tags: true
 notifications:
   - provider: Email
