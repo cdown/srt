@@ -1,5 +1,4 @@
 srt
-=======
+===
 
-.. automodule:: srt
-   :members:
+.. include:: ../README.rst
