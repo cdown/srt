@@ -1,4 +1,1 @@
-srt
-===
-
 .. include:: ../README.rst
