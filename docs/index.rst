@@ -1,0 +1,4 @@
+srt
+===
+
+.. include:: ../README.rst

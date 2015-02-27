@@ -3,7 +3,7 @@
 
 import codecs
 import tempfile
-import tinysrt
+import srt
 import os
 from datetime import timedelta
 from nose.tools import eq_ as eq, assert_not_equal as neq
@@ -47,13 +47,13 @@ class TestTinysrt(object):
         timedelta_ts = timedelta(
                 hours=1, minutes=2, seconds=3, milliseconds=400,
         )
-        eq(tinysrt.timedelta_to_srt_timestamp(timedelta_ts), '01:02:03,400')
+        eq(srt.timedelta_to_srt_timestamp(timedelta_ts), '01:02:03,400')
 
     @staticmethod
     def test_srt_timestamp_to_timedelta():
         eq(
             timedelta(hours=1, minutes=2, seconds=3, milliseconds=400),
-            tinysrt.srt_timestamp_to_timedelta('01:02:03,400'),
+            srt.srt_timestamp_to_timedelta('01:02:03,400'),
         )
 
     @staticmethod
@@ -109,21 +109,21 @@ class TestTinysrt(object):
         )
 
     def test_parse_general(self):
-        subs = list(tinysrt.parse(self.srt_sample))
+        subs = list(srt.parse(self.srt_sample))
         self._test_monsters_subs(subs)
 
     def test_parse_file(self):
-        srt_f = codecs.open(self.srt_filename, 'r', 'utf8')
-        subs = list(tinysrt.parse_file(srt_f))
+        srt_f = open(self.srt_filename, 'r', 'utf8')
+        subs = list(srt.parse_file(srt_f))
         self._test_monsters_subs(subs)
         srt_f.close()
 
     def test_compose(self):
-        subs = tinysrt.parse(self.srt_sample)
-        eq(self.srt_sample, tinysrt.compose(subs))
+        subs = srt.parse(self.srt_sample)
+        eq(self.srt_sample, srt.compose(subs))
 
     def test_subtitle_sort_by_start(self):
-        subs = tinysrt.parse(self.srt_sample_bad_order)
+        subs = srt.parse(self.srt_sample_bad_order)
         sorted_subs = sorted(subs)
 
         eq(
@@ -132,23 +132,23 @@ class TestTinysrt(object):
         )
 
     def test_subtitle_equality_false(self):
-        subs_1 = list(tinysrt.parse(self.srt_sample))
-        subs_2 = list(tinysrt.parse(self.srt_sample))
+        subs_1 = list(srt.parse(self.srt_sample))
+        subs_2 = list(srt.parse(self.srt_sample))
         subs_2[0].content += 'blah'
 
         neq(subs_1, subs_2)
 
     def test_subtitle_equality_true(self):
-        subs_1 = list(tinysrt.parse(self.srt_sample))
-        subs_2 = list(tinysrt.parse(self.srt_sample))
+        subs_1 = list(srt.parse(self.srt_sample))
+        subs_2 = list(srt.parse(self.srt_sample))
         eq(subs_1, subs_2)
 
     def test_compose_file(self):
         srt_in_f = codecs.open(self.srt_filename, 'r', 'utf8')
         srt_out_f = self.temp_f
 
-        subs = tinysrt.parse_file(srt_in_f)
-        tinysrt.compose_file(subs, srt_out_f)
+        subs = srt.parse_file(srt_in_f)
+        srt.compose_file(subs, srt_out_f)
 
         srt_in_f.seek(0)
 
@@ -164,8 +164,8 @@ class TestTinysrt(object):
         srt_in_f = codecs.open(self.srt_filename, 'r', 'utf8')
         srt_out_f = self.temp_f
 
-        subs = tinysrt.parse_file(srt_in_f)
-        num_written = tinysrt.compose_file(subs, srt_out_f)
+        subs = srt.parse_file(srt_in_f)
+        num_written = srt.compose_file(subs, srt_out_f)
 
         eq(3, num_written)
 
@@ -174,7 +174,7 @@ class TestTinysrt(object):
     def test_compose_file_num_none(self):
         srt_out_f = self.temp_f
 
-        subs = list(tinysrt.parse(''))
-        num_written = tinysrt.compose_file(subs, srt_out_f)
+        subs = list(srt.parse(''))
+        num_written = srt.compose_file(subs, srt_out_f)
 
         eq(0, num_written)
