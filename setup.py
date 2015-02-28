@@ -14,7 +14,7 @@ with open('tests/requirements.txt') as test_requirements_f:
 
 setup(
     name='srt',
-    version='0.0.2',
+    version='0.0.3',
     description='A tiny library for parsing, modifying, and composing SRT '
                 'files.',
     long_description=README,
@@ -29,7 +29,6 @@ setup(
         'Development Status :: 2 - Pre-Alpha',
         'License :: OSI Approved :: ISC License (ISCL)',
         'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
