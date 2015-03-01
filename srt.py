@@ -45,8 +45,8 @@ class Subtitle(object):
         r'''
         Convert the current subtitle to an SRT block.
 
-        >>> import srt
-        >>> sub = srt.Subtitle(
+        >>> from srt import Subtitle, srt_timestamp_to_timedelta
+        >>> sub = Subtitle(
         ...     index=1, start=srt_timestamp_to_timedelta('00:01:02,003'),
         ...     end=srt_timestamp_to_timedelta('00:02:03,004'), content='foo',
         ... )
