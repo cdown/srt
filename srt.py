@@ -194,7 +194,7 @@ def compose_file(subtitles, output):
     r'''
     Stream a sequence of Subtitle objects into an SRT formatted stream.
 
-    >>> from srt import Subtitle, srt_timestamp_to_timedelta
+    >>> from srt import Subtitle, srt_timestamp_to_timedelta, compose_file
     >>> subs = [
     ...     Subtitle(
     ...         index=1, start=srt_timestamp_to_timedelta('00:01:02,003'),
