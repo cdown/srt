@@ -175,9 +175,3 @@ pseudoxml:
 	$(SPHINXBUILD) -b pseudoxml $(ALLSPHINXOPTS) $(BUILDDIR)/pseudoxml
 	@echo
 	@echo "Build finished. The pseudo-XML files are in $(BUILDDIR)/pseudoxml."
-
-doctest:
-	mkdir -p ${BUILDDIR}/doctests
-	$(SPHINXBUILD) -b doctest ${ALLSPHINXOPTS} ${BUILDDIR}/doctests
-	@echo
-	@echo "Doctests passed"
