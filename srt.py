@@ -168,7 +168,7 @@ def compose(subtitles):
     considerably more memory efficient when dealing with particularly large SRT
     data.
 
-    >>> from srt import Subtitle, srt_timestamp_to_timedelta
+    >>> from srt import Subtitle, srt_timestamp_to_timedelta, compose
     >>> subs = [
     ...     Subtitle(
     ...         index=1, start=srt_timestamp_to_timedelta('00:01:02,003'),
