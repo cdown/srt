@@ -1,5 +1,6 @@
 language: python
 install:
+  - pip install -r docs/requirements.txt
   - pip install -r tests/requirements.txt
 python:
   - 2.7
@@ -7,5 +8,6 @@ python:
   - 3.4
 script:
   - nosetests --with-coverage
+  - '(cd docs && make doctest)'
 after_success:
   - coveralls
