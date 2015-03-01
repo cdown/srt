@@ -4,7 +4,7 @@ Documentation for srt
 Contents:
 
 .. toctree::
-   :maxdepth 2:
+   :maxdepth: 2
 
    quickstart
    api
