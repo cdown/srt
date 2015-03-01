@@ -56,6 +56,13 @@ class TestTinysrt(object):
             srt.srt_timestamp_to_timedelta('01:02:03,400'),
         )
 
+    def test_subtitle_to_srt(self):
+        sub = srt.Subtitle(
+            index=1, start=srt.srt_timestamp_to_timedelta('00:01:02,003'),
+            end=srt.srt_timestamp_to_timedelta('00:02:03,004'), content='foo',
+        )
+        eq(sub.to_srt(), '1\n00:01:02,003 --> 00:02:03,004\nfoo\n\n')
+
     @staticmethod
     def _test_monsters_subs(subs):
         '''
