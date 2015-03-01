@@ -1,8 +1,6 @@
 Quickstart
 ==========
 
-srt is a tiny Python library for parsing, modifying, and composing SRT files.
-
 Parse an SRT to Python objects
 ------------------------------
 
