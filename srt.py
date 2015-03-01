@@ -179,8 +179,8 @@ def compose(subtitles):
     ...         end=srt_timestamp_to_timedelta('00:06:07,008'), content='bar',
     ...     ),
     ... ]
-    >>> compose(subs)
-    '1\n00:01:02,003 --> 00:02:03,004\nfoo\n\n2\n00:03:04,005 --> 00:06:07,008\nbar\n\n'
+    >>> compose(subs)  # doctest: +ELLIPSIS
+    '1\n00:01:02,003 --> 00:02:03,004\nfoo\n\n2\n...'
 
     :param subtitles: An iterator of Subtitle objects, in the order they should
                       be in the output
