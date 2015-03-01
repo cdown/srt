@@ -8,6 +8,6 @@ python:
   - 3.4
 script:
   - nosetests --with-coverage
-  - '(cd docs && make doctest)'
+  - '[[ $(python --version 2>&1) == "Python 2"* ]] || (cd docs && make doctest)'
 after_success:
   - coveralls
