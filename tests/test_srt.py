@@ -58,6 +58,12 @@ class TestTinysrt(object):
 
     @staticmethod
     def _test_monsters_subs(subs):
+        '''
+        Test that monsters.srt was parsed correctly.
+
+        This is in its own function since these tests are used both when
+        testing srt.parse and srt.parse_file.
+        '''
         eq(3, len(subs))
 
         eq(421, subs[0].index)
