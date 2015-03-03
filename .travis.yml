@@ -1,5 +1,6 @@
 language: python
 install:
+  - pip install -r docs/requirements.txt
   - pip install -r tests/requirements.txt
 python:
   - 2.7
@@ -7,5 +8,9 @@ python:
   - 3.4
 script:
   - nosetests --with-coverage
+
+  # doctest is not tested on Python 2 because Python 2/3 have differing
+  # invocations in some doctests, and we are mainly targeting Python 3.
+  - '[[ $(python --version 2>&1) == "Python 2"* ]] || (cd docs && make doctest)'
 after_success:
   - coveralls

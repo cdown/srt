@@ -43,21 +43,13 @@ class TestTinysrt(object):
         os.remove(self.temp_path)
 
     @staticmethod
-    def test_timedelta_to_srt_timestamp():
-        timedelta_ts = timedelta(
-                hours=1, minutes=2, seconds=3, milliseconds=400,
-        )
-        eq(srt.timedelta_to_srt_timestamp(timedelta_ts), '01:02:03,400')
-
-    @staticmethod
-    def test_srt_timestamp_to_timedelta():
-        eq(
-            timedelta(hours=1, minutes=2, seconds=3, milliseconds=400),
-            srt.srt_timestamp_to_timedelta('01:02:03,400'),
-        )
-
-    @staticmethod
     def _test_monsters_subs(subs):
+        '''
+        Test that monsters.srt was parsed correctly.
+
+        This is in its own function since these tests are used both when
+        testing srt.parse and srt.parse_file.
+        '''
         eq(3, len(subs))
 
         eq(421, subs[0].index)
@@ -108,20 +100,6 @@ class TestTinysrt(object):
             subs[1].content,
         )
 
-    def test_parse_general(self):
-        subs = list(srt.parse(self.srt_sample))
-        self._test_monsters_subs(subs)
-
-    def test_parse_file(self):
-        srt_f = codecs.open(self.srt_filename, 'r', 'utf8')
-        subs = list(srt.parse_file(srt_f))
-        self._test_monsters_subs(subs)
-        srt_f.close()
-
-    def test_compose(self):
-        subs = srt.parse(self.srt_sample)
-        eq(self.srt_sample, srt.compose(subs))
-
     def test_subtitle_sort_by_start(self):
         subs = srt.parse(self.srt_sample_bad_order)
         sorted_subs = sorted(subs)
@@ -142,6 +120,42 @@ class TestTinysrt(object):
         subs_1 = list(srt.parse(self.srt_sample))
         subs_2 = list(srt.parse(self.srt_sample))
         eq(subs_1, subs_2)
+
+    @staticmethod
+    def test_subtitle_to_srt():
+        sub = srt.Subtitle(
+            index=1, start=srt.srt_timestamp_to_timedelta('00:01:02,003'),
+            end=srt.srt_timestamp_to_timedelta('00:02:03,004'), content='foo',
+        )
+        eq(sub.to_srt(), '1\n00:01:02,003 --> 00:02:03,004\nfoo\n\n')
+
+    @staticmethod
+    def test_timedelta_to_srt_timestamp():
+        timedelta_ts = timedelta(
+                hours=1, minutes=2, seconds=3, milliseconds=400,
+        )
+        eq(srt.timedelta_to_srt_timestamp(timedelta_ts), '01:02:03,400')
+
+    @staticmethod
+    def test_srt_timestamp_to_timedelta():
+        eq(
+            timedelta(hours=1, minutes=2, seconds=3, milliseconds=400),
+            srt.srt_timestamp_to_timedelta('01:02:03,400'),
+        )
+
+    def test_parse(self):
+        subs = list(srt.parse(self.srt_sample))
+        self._test_monsters_subs(subs)
+
+    def test_parse_file(self):
+        srt_f = codecs.open(self.srt_filename, 'r', 'utf8')
+        subs = list(srt.parse_file(srt_f))
+        self._test_monsters_subs(subs)
+        srt_f.close()
+
+    def test_compose(self):
+        subs = srt.parse(self.srt_sample)
+        eq(self.srt_sample, srt.compose(subs))
 
     def test_compose_file(self):
         srt_in_f = codecs.open(self.srt_filename, 'r', 'utf8')
