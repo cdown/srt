@@ -58,4 +58,3 @@ You can also write to a file:
 
     >>> with open('mwazowski.srt') as srt_f:
     ...     tinysrt.compose_file(subtitles, srt_f)
-
