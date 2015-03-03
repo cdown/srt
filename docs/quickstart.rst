@@ -1,8 +1,6 @@
 Quickstart
 ==========
 
-srt is a tiny Python library for parsing, modifying, and composing SRT files.
-
 Parse an SRT to Python objects
 ------------------------------
 
@@ -60,4 +58,3 @@ You can also write to a file:
 
     >>> with open('mwazowski.srt') as srt_f:
     ...     tinysrt.compose_file(subtitles, srt_f)
-

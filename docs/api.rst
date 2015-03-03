@@ -1,5 +1,5 @@
-srt
-=======
+API documentation
+=================
 
 .. automodule:: srt
    :members:
