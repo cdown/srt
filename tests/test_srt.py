@@ -121,7 +121,8 @@ class TestTinysrt(object):
         subs_2 = list(srt.parse(self.srt_sample))
         eq(subs_1, subs_2)
 
-    def test_subtitle_to_srt(self):
+    @staticmethod
+    def test_subtitle_to_srt():
         sub = srt.Subtitle(
             index=1, start=srt.srt_timestamp_to_timedelta('00:01:02,003'),
             end=srt.srt_timestamp_to_timedelta('00:02:03,004'), content='foo',
