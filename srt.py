@@ -87,7 +87,7 @@ def timedelta_to_srt_timestamp(timedelta_timestamp):
 
 def srt_timestamp_to_timedelta(srt_timestamp):
     r'''
-    Convert an SRT timestamp to a timedelta.
+    Convert an SRT timestamp to a :py:class:`datetime.timedelta`.
 
     >>> import srt
     >>> srt_timestamp = '01:23:04,000'
