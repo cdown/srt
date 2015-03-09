@@ -159,11 +159,11 @@ def parse_file(srt):
     :rtype: :term:`generator` of :py:class:`Subtitle` objects
     '''
     srt_chomped = (line.rstrip('\n') for line in srt)
-    srt_blocks = [
+    srt_blocks = (
         '\n'.join(srt_lines) + '\n\n'
         for line_has_content, srt_lines in groupby(srt_chomped, bool)
         if line_has_content
-    ]
+    )
 
     for srt_block in srt_blocks:
         subtitle, = parse(srt_block)
