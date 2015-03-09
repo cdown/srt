@@ -76,8 +76,11 @@ def timedelta_to_srt_timestamp(timedelta_timestamp):
     :returns: An SRT formatted (HH:MM:SS,mmm) string representing the same
               timestamp passed in
     '''
-    hrs, remainder = divmod(timedelta_timestamp.seconds, 3600)
-    mins, secs = divmod(remainder, 60)
+    seconds_in_hour = 3600
+    seconds_in_minute = 60
+
+    hrs, remainder = divmod(timedelta_timestamp.seconds, seconds_in_hour)
+    mins, secs = divmod(remainder, seconds_in_minute)
     msecs = timedelta_timestamp.microseconds // 1000
     return '%02d:%02d:%02d,%03d' % (hrs, mins, secs, msecs)
 
