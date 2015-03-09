@@ -79,8 +79,8 @@ def timedelta_to_srt_timestamp(timedelta_timestamp):
     seconds_in_hour = 3600
     seconds_in_minute = 60
 
-    hrs, remainder = divmod(timedelta_timestamp.seconds, seconds_in_hour)
-    mins, secs = divmod(remainder, seconds_in_minute)
+    hrs, secs_remainder = divmod(timedelta_timestamp.seconds, seconds_in_hour)
+    mins, secs = divmod(secs_remainder, seconds_in_minute)
     msecs = timedelta_timestamp.microseconds // 1000
     return '%02d:%02d:%02d,%03d' % (hrs, mins, secs, msecs)
 
