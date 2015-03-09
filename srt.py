@@ -19,11 +19,13 @@ class Subtitle(object):
     time by default.
 
     :param index: The SRT index for this subtitle
-    :param start: A timedelta object representing the time that the subtitle
-                  should start being shown
-    :param end: A timedelta object representing the time that the subtitle
-                should stop being shown
+    :type index: int
+    :param start: The time that the subtitle should start being shown
+    :type start: :py:class:`datetime.timedelta`
+    :param end: The time that the subtitle should stop being shown
+    :type end: :py:class:`datetime.timedelta`
     :param content: The subtitle content
+    :type content: str
     '''
 
     def __init__(self, index, start, end, content):
@@ -43,7 +45,7 @@ class Subtitle(object):
 
     def to_srt(self):
         r'''
-        Convert the current subtitle to an SRT block.
+        Convert the current :py:class:`Subtitle` to an SRT block.
 
         >>> from srt import Subtitle, srt_timestamp_to_timedelta
         >>> sub = Subtitle(
@@ -53,8 +55,9 @@ class Subtitle(object):
         >>> sub.to_srt()
         '1\n00:01:02,003 --> 00:02:03,004\nfoo\n\n'
 
-        :returns: A string with the metadata of the current Subtitle object as
-                  an SRT formatted subtitle block
+        :returns: The metadata of the current :py:class:`Subtitle` object as an
+                  SRT formatted subtitle block
+        :rtype: str
         '''
         return '%d\n%s --> %s\n%s\n\n' % (
             self.index, timedelta_to_srt_timestamp(self.start),
@@ -64,7 +67,7 @@ class Subtitle(object):
 
 def timedelta_to_srt_timestamp(timedelta_timestamp):
     r'''
-    Convert a timedelta to an SRT timestamp.
+    Convert a :py:class:`~datetime.timedelta` to an SRT timestamp.
 
     >>> import srt
     >>> import datetime
@@ -72,19 +75,23 @@ def timedelta_to_srt_timestamp(timedelta_timestamp):
     >>> srt.timedelta_to_srt_timestamp(delta)
     '01:23:04,000'
 
-    :param timedelta_timestamp: A timestamp represented as a datetime timedelta
-    :returns: An SRT formatted (HH:MM:SS,mmm) string representing the same
-              timestamp passed in
+    :param timedelta_timestamp: The timestamp to convert
+    :type timedelta_timestamp: :py:class:`datetime.timedelta`
+    :returns: An SRT formatted (HH:MM:SS,mmm) representation of the timestamp
+    :rtype: str
     '''
-    hrs, remainder = divmod(timedelta_timestamp.seconds, 3600)
-    mins, secs = divmod(remainder, 60)
+    seconds_in_hour = 3600
+    seconds_in_minute = 60
+
+    hrs, secs_remainder = divmod(timedelta_timestamp.seconds, seconds_in_hour)
+    mins, secs = divmod(secs_remainder, seconds_in_minute)
     msecs = timedelta_timestamp.microseconds // 1000
     return '%02d:%02d:%02d,%03d' % (hrs, mins, secs, msecs)
 
 
 def srt_timestamp_to_timedelta(srt_timestamp):
     r'''
-    Convert an SRT timestamp to a timedelta.
+    Convert an SRT timestamp to a :py:class:`~datetime.timedelta`.
 
     >>> import srt
     >>> srt_timestamp = '01:23:04,000'
@@ -92,7 +99,9 @@ def srt_timestamp_to_timedelta(srt_timestamp):
     datetime.timedelta(0, 4984)
 
     :param srt_timestamp: A timestamp in SRT format (HH:MM:SS,mmm)
+    :type srt_timestamp: str
     :returns: A timedelta object representing the same timestamp passed in
+    :rtype: :py:class:`datetime.timedelta`
     '''
     hrs, mins, secs, msecs = (int(x) for x in re.split('[,:]', srt_timestamp))
     return timedelta(hours=hrs, minutes=mins, seconds=secs, milliseconds=msecs)
@@ -100,7 +109,7 @@ def srt_timestamp_to_timedelta(srt_timestamp):
 
 def parse(srt):
     r'''
-    Convert an SRT formatted string to a generator of Subtitle objects.
+    Convert an SRT formatted string to a :term:`generator` of Subtitle objects.
 
     If you are reading from a file, consider using :py:func:`parse_file`
     instead.
@@ -119,9 +128,11 @@ def parse(srt):
     >>> list(subs)
     [<Subtitle:422>, <Subtitle:423>]
 
-    :param srt: A string containing SRT formatted data
-    :returns: A generator of the subtitles contained in the SRT file as
-              Subtitle objects
+    :param srt: Subtitles in SRT format
+    :type srt: str
+    :returns: The subtitles contained in the SRT file as py:class:`Subtitle`
+              objects
+    :rtype: :term:`generator` of :py:class:`Subtitle` objects
     '''
     for match in SUBTITLE_REGEX.finditer(srt):
         raw_index, raw_start, raw_end, content = match.groups()
@@ -133,7 +144,7 @@ def parse(srt):
 
 def parse_file(srt):
     r'''
-    Parse an SRT formatted stream into Subtitle objects.
+    Parse an SRT formatted stream into py:func:`Subtitle` objects.
 
     >>> import srt
     >>> with open('tests/srt_samples/monsters.srt') as srt_f:
@@ -143,8 +154,9 @@ def parse_file(srt):
     [<Subtitle:421>, <Subtitle:422>, <Subtitle:423>]
 
     :param srt: A stream containing SRT formatted data
-    :returns: A generator of the subtitles contained in the SRT file as
-              Subtitle objects
+    :type srt: :py:class:`io.TextIOWrapper`, or something that quacks like one
+    :returns: The subtitles contained in the SRT file as Subtitle objects
+    :rtype: :term:`generator` of :py:class:`Subtitle` objects
     '''
     srt_chomped = (line.rstrip('\n') for line in srt)
     srt_blocks = [
@@ -160,7 +172,8 @@ def parse_file(srt):
 
 def compose(subtitles):
     r'''
-    Convert an iterator of Subtitle objects to a string of joined SRT blocks.
+    Convert an iterator of :py:class:`Subtitle` objects to a string of joined
+    SRT blocks.
 
     This may be a convienient interface when converting back and forth between
     Python objects and SRT formatted blocks, but you may wish to consider using
@@ -182,17 +195,19 @@ def compose(subtitles):
     >>> compose(subs)  # doctest: +ELLIPSIS
     '1\n00:01:02,003 --> 00:02:03,004\nfoo\n\n2\n...'
 
-    :param subtitles: An iterator of Subtitle objects, in the order they should
-                      be in the output
-    :returns: A single SRT formatted string, with each input Subtitle
-              represented as an SRT block
+    :param subtitles: The subtitles to convert to SRT blocks
+    :type subtitles: :term:`iterator` of :py:class:`Subtitle` objects
+    :returns: A single SRT formatted string, with each input
+              :py:class:`Subtitle` represented as an SRT block
+    :rtype: str
     '''
     return ''.join(subtitle.to_srt() for subtitle in subtitles)
 
 
 def compose_file(subtitles, output):
     r'''
-    Stream a sequence of Subtitle objects into an SRT formatted stream.
+    Stream a sequence of py:class:`Subtitle` objects into an SRT formatted
+    stream.
 
     >>> import tempfile
     >>> from srt import Subtitle, srt_timestamp_to_timedelta, compose_file
@@ -211,10 +226,14 @@ def compose_file(subtitles, output):
     ...
     2
 
-    :param subtitles: An iterator of Subtitle objects, in the order they should
-                      be written to the file
+    :param subtitles: :py:class:`Subtitle` objects in the order they should be
+                      written to the stream
+    :type subtitles: :term:`iterator` of :py:class:`Subtitle` objects
     :param output: A stream to write the resulting SRT blocks to
+    :type output: :py:class:`io.TextIOWrapper`, or something that quacks like
+                  one
     :returns: The number of subtitles that were written to the stream
+    :rtype: int
     '''
     num_written = 0
     for num_written, subtitle in enumerate(subtitles, start=1):
