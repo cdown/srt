@@ -4,9 +4,10 @@ Quickstart
 Parse an SRT to Python objects
 ------------------------------
 
-.. code:: python
+.. doctest::
 
-    >>> subtitle_generator = tinysrt.parse('''\
+    >>> import srt
+    >>> subtitle_generator = srt.parse('''\
     ... 421
     ... 00:31:37,894 --> 00:31:39,928
     ... OK, look, I think I have a plan here.
@@ -32,29 +33,31 @@ You can also read from a file:
 .. code:: python
 
     >>> with open('mwazowski.srt') as srt_f:
-    ...     subtitle_generator = tinysrt.parse_file(srt_f)
+    ...     subtitle_generator = srt.parse_file(srt_f)
 
 Compose an SRT from Python objects
 ----------------------------------
 
-.. code:: python
+.. doctest::
 
-    >>> print(tinysrt.compose(subtitles))
+    >>> print(srt.compose(subtitles))
     421
     00:31:37,894 --> 00:31:39,928
     OK, look, I think I have a plan here.
-
+    <BLANKLINE>
     422
     00:31:39,931 --> 00:31:41,931
     Using mainly spoons,
-
+    <BLANKLINE>
     423
     00:31:41,933 --> 00:31:43,435
     we dig a tunnel under the city and release it into the wild.
+    <BLANKLINE>
+    <BLANKLINE>
 
 You can also write to a file:
 
 .. code:: python
 
-    >>> with open('mwazowski.srt') as srt_f:
-    ...     tinysrt.compose_file(subtitles, srt_f)
+    >>> with open('mwazowski.srt', 'w') as srt_f:
+    ...     srt.compose_file(subtitles, srt_f)
