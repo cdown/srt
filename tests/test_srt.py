@@ -192,3 +192,9 @@ class TestTinysrt(object):
         num_written = srt.compose_file(subs, srt_out_f)
 
         eq(0, num_written)
+
+    def test_subtitle_objects_hashable(self):
+        hash(srt.Subtitle(
+            index=1, start=srt.srt_timestamp_to_timedelta('00:01:02,003'),
+            end=srt.srt_timestamp_to_timedelta('00:02:03,004'), content='foo',
+        ))
