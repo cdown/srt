@@ -17,6 +17,7 @@ test_script:
 branches:
   only:
     - master
+    - develop
     - /release\/.*/
 skip_tags: true
 notifications:
