@@ -28,6 +28,8 @@ class Subtitle(object):
     :type content: str
     '''
 
+    __hash__ = object.__hash__
+
     def __init__(self, index, start, end, content):
         self.index = index
         self.start = start
