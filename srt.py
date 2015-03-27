@@ -35,7 +35,7 @@ class Subtitle(object):
         self.content = content
 
     def __hash__(self):
-        return hash(frozenset(self.__dict__))
+        return hash(frozenset(self.__dict__.items()))
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
