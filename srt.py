@@ -28,13 +28,14 @@ class Subtitle(object):
     :type content: str
     '''
 
-    __hash__ = object.__hash__
-
     def __init__(self, index, start, end, content):
         self.index = index
         self.start = start
         self.end = end
         self.content = content
+
+    def __hash__(self):
+        return hash(frozenset(self.__dict__))
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
