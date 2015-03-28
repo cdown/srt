@@ -4,7 +4,7 @@ import argparse
 import sys
 
 
-def parse_basic_args(args=sys.argv[1:]):
+def parse_basic_args():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         '--input', '-i', metavar='FILE',
