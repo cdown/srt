@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
-import srt
-import utils
+from utils import run
 
 
 def reindex(subtitles):
@@ -10,12 +9,5 @@ def reindex(subtitles):
         yield subtitle
 
 
-def main():
-    args = utils.parse_basic_args()
-    subtitles_with_bad_indexes = srt.parse_file(args.input)
-    subtitles_with_good_indexes = reindex(subtitles_with_bad_indexes)
-    srt.compose_file(subtitles_with_good_indexes, args.output)
-
-
 if __name__ == '__main__':
-    main()
+    run(reindex)
