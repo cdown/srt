@@ -1,1 +1,2 @@
 srt==0.0.6
+hanzidentifier==1.0.1
