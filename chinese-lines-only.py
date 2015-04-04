@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
 from hanzidentifier import has_chinese
-from utils import run
+import srt
+import utils
 
 
 def strip_to_chinese_lines_only(subtitles):
@@ -15,5 +16,12 @@ def strip_to_chinese_lines_only(subtitles):
         yield subtitle
 
 
+def main():
+    args = utils.parse_args()
+    subtitles_in = srt.parse_file(args.input)
+    chinese_subtitles_only = strip_to_chinese_lines_only(subtitles_in)
+    srt.compose_file(chinese_subtitles_only, args.output)
+
+
 if __name__ == '__main__':
-    run(strip_to_chinese_lines_only)
+    main()
