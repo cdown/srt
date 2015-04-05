@@ -161,7 +161,7 @@ def parse_file(srt):
     :returns: The subtitles contained in the SRT file as Subtitle objects
     :rtype: :term:`generator` of :py:class:`Subtitle` objects
     '''
-    srt_chomped = (line.rstrip('\n') for line in srt)
+    srt_chomped = (line.rstrip('\r\n') for line in srt)
     srt_blocks = (
         '\n'.join(srt_lines) + '\n\n'
         for line_has_content, srt_lines in groupby(srt_chomped, bool)

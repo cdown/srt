@@ -17,6 +17,7 @@ class TestTinysrt(object):
     @classmethod
     def setup_class(cls):
         cls.srt_filename = cls._fixture('srt_samples/monsters.srt')
+        cls.srt_filename_windows = cls._fixture('srt_samples/monsters-win.srt')
         cls.srt_filename_bad_order = cls._fixture(
             'srt_samples/monsters-bad-order.srt'
         )
@@ -149,6 +150,12 @@ class TestTinysrt(object):
 
     def test_parse_file(self):
         srt_f = codecs.open(self.srt_filename, 'r', 'utf8')
+        subs = list(srt.parse_file(srt_f))
+        self._test_monsters_subs(subs)
+        srt_f.close()
+
+    def test_parse_file_windows(self):
+        srt_f = codecs.open(self.srt_filename_windows, 'r', 'utf8')
         subs = list(srt.parse_file(srt_f))
         self._test_monsters_subs(subs)
         srt_f.close()
