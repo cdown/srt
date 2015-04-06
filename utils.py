@@ -4,7 +4,7 @@ import argparse
 import sys
 
 
-def parse_args():
+def basic_parser():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         '--input', '-i', metavar='FILE',
@@ -17,4 +17,4 @@ def parse_args():
         type=argparse.FileType('w'),
         help='the file to write to (default: stdout)',
     )
-    return parser.parse_args()
+    return parser
