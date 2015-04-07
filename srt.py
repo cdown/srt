@@ -110,6 +110,30 @@ def srt_timestamp_to_timedelta(srt_timestamp):
     return timedelta(hours=hrs, minutes=mins, seconds=secs, milliseconds=msecs)
 
 
+def sort_and_reindex(subtitles, start_index=1):
+    '''
+    Reorder subtitles to be sorted by start time order, and rewrite the indexes
+    to be in that same order. This ensures that the SRT file will play in an
+    expected fashion after, for example, times were changed in some subtitles
+    and they may need to be resorted.
+
+    :param subtitles: :py:class:`Subtitle` objects in any order
+    :type subtitles: :term:`iterator` of :py:class:`Subtitle` objects
+    :param start_index: the lowest index to use
+    :type start_index: int
+    '''
+    skipped_subs = 0
+    for new_index, subtitle in enumerate(sorted(subtitles), start=start_index):
+        if not subtitle.content.strip():
+            # Drop contentless subtitles, as they don't serve any purpose and
+            # might confuse the media player's parser
+            skipped_subs += 1
+            continue
+
+        subtitle.index = new_index - skipped_subs
+        yield subtitle
+
+
 def parse(srt):
     r'''
     Convert an SRT formatted string to a :term:`generator` of Subtitle objects.
