@@ -206,7 +206,8 @@ class TestTinysrt(object):
 
         eq(0, num_written)
 
-    def test_subtitle_objects_hashable(self):
+    @staticmethod
+    def test_subtitle_objects_hashable():
         hash(srt.Subtitle(
             index=1, start=srt.srt_timestamp_to_timedelta('00:01:02,003'),
             end=srt.srt_timestamp_to_timedelta('00:02:03,004'), content='foo',
@@ -217,7 +218,7 @@ class TestTinysrt(object):
         sorted_and_reindexed_subs = srt.sort_and_reindex(subs, start_index=20)
         self._test_monsters_subs(sorted_and_reindexed_subs, start_index=20)
 
-    def test_sort_and_reindex_missing_content_sub_skipped(self):
+    def test_sar_skips_missing_content(self):
         subs = list(srt.parse(self.srt_sample))
         subs[1].content = '\n'
         sorted_and_reindexed_subs = srt.sort_and_reindex(subs, start_index=20)
