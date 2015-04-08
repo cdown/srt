@@ -32,6 +32,7 @@ class Subtitle(object):
     :type content: str
     '''
 
+    # pylint: disable=too-many-arguments
     def __init__(self, index, start, end, content, proprietary=''):
         self.index = index
         self.start = start
