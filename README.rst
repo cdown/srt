@@ -2,20 +2,20 @@
 srt
 ===
 
-.. image:: https://img.shields.io/travis/cdown/srt/master.svg?label=linux
+.. image:: https://img.shields.io/travis/cdown/srt/develop.svg?label=linux
         :target: https://travis-ci.org/cdown/srt
 
-.. image:: https://img.shields.io/appveyor/ci/cdown/srt/master.svg?label=windows
+.. image:: https://img.shields.io/appveyor/ci/cdown/srt/develop.svg?label=windows
         :target: https://ci.appveyor.com/project/cdown/srt
 
-.. image:: https://img.shields.io/coveralls/cdown/srt/master.svg
+.. image:: https://img.shields.io/coveralls/cdown/srt/develop.svg
         :target: https://coveralls.io/r/cdown/srt
 
-.. image:: https://landscape.io/github/cdown/srt/master/landscape.svg
-        :target: https://landscape.io/github/cdown/srt/master
+.. image:: https://landscape.io/github/cdown/srt/develop/landscape.svg
+        :target: https://landscape.io/github/cdown/srt/develop
 
 .. image:: https://img.shields.io/requires/github/cdown/srt.svg?label=deps
-        :target: https://requires.io/github/cdown/srt/requirements/?branch=master
+        :target: https://requires.io/github/cdown/srt/requirements/?branch=develop
 
 srt is a tiny Python library for parsing, modifying, and composing SRT files.
 
