@@ -8,8 +8,10 @@ from datetime import timedelta
 from itertools import groupby
 
 
-SUBTITLE_PATTERN = r'(\d+)\n(\d+:\d+:\d+,\d+) --> (\d+:\d+:\d+,\d+)\n(.+?)\n\n'
-SUBTITLE_REGEX = re.compile(SUBTITLE_PATTERN, re.MULTILINE | re.DOTALL)
+SRT_REGEX = re.compile(
+    r'(\d+)\n(\d+:\d+:\d+,\d+) --> (\d+:\d+:\d+,\d+)([^\n]*)\n(.+?)\n\n',
+    re.MULTILINE | re.DOTALL,
+)
 
 
 @functools.total_ordering  # pylint: disable=too-few-public-methods
@@ -24,15 +26,18 @@ class Subtitle(object):
     :type start: :py:class:`datetime.timedelta`
     :param end: The time that the subtitle should stop being shown
     :type end: :py:class:`datetime.timedelta`
+    :param proprietary: Proprietary metadata for this subtitle
+    :type proprietary: str
     :param content: The subtitle content
     :type content: str
     '''
 
-    def __init__(self, index, start, end, content):
+    def __init__(self, index, start, end, content, proprietary=''):
         self.index = index
         self.start = start
         self.end = end
         self.content = content
+        self.proprietary = proprietary
 
     def __hash__(self):
         return hash(frozenset(self.__dict__.items()))
@@ -62,9 +67,10 @@ class Subtitle(object):
                   SRT formatted subtitle block
         :rtype: str
         '''
-        return '%d\n%s --> %s\n%s\n\n' % (
+        return '%d\n%s --> %s%s\n%s\n\n' % (
             self.index, timedelta_to_srt_timestamp(self.start),
-            timedelta_to_srt_timestamp(self.end), self.content,
+            timedelta_to_srt_timestamp(self.end), self.proprietary,
+            self.content,
         )
 
 
@@ -161,11 +167,12 @@ def parse(srt):
               objects
     :rtype: :term:`generator` of :py:class:`Subtitle` objects
     '''
-    for match in SUBTITLE_REGEX.finditer(srt):
-        raw_index, raw_start, raw_end, content = match.groups()
+    for match in SRT_REGEX.finditer(srt):
+        raw_index, raw_start, raw_end, proprietary, content = match.groups()
         yield Subtitle(
             index=int(raw_index), start=srt_timestamp_to_timedelta(raw_start),
             end=srt_timestamp_to_timedelta(raw_end), content=content,
+            proprietary=proprietary,
         )
 
 

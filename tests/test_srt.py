@@ -78,6 +78,10 @@ class TestTinysrt(object):
             u'我有个点子\nOK, look, I think I have a plan here.',
             subs[0].content,
         )
+        eq(
+            u' hack the gibson',
+            subs[0].proprietary,
+        )
 
         eq(start_index + 1, subs[1].index)
         eq(
