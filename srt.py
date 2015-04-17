@@ -232,6 +232,10 @@ def compose(subtitles, reindex=True, start_index=1):
 
     :param subtitles: The subtitles to convert to SRT blocks
     :type subtitles: :term:`iterator` of :py:class:`Subtitle` objects
+    :param reindex: Whether to reindex subtitles based on start time
+    :type reindex: bool
+    :param start_index: If reindexing, the index to start reindexing from
+    :type start_index: int
     :returns: A single SRT formatted string, with each input
               :py:class:`Subtitle` represented as an SRT block
     :rtype: str
@@ -269,6 +273,10 @@ def compose_file(subtitles, output, reindex=True, start_index=1):
     :param output: A stream to write the resulting SRT blocks to
     :type output: :py:class:`io.TextIOWrapper`, or something that quacks like
                   one
+    :param reindex: Whether to reindex subtitles based on start time
+    :type reindex: bool
+    :param start_index: If reindexing, the index to start reindexing from
+    :type start_index: int
     :returns: The number of subtitles that were written to the stream
     :rtype: int
     '''
