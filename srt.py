@@ -205,7 +205,7 @@ def parse_file(srt):
         yield subtitle
 
 
-def compose(subtitles):
+def compose(subtitles, reindex=True, start_index=1):
     r'''
     Convert an iterator of :py:class:`Subtitle` objects to a string of joined
     SRT blocks.
@@ -236,10 +236,12 @@ def compose(subtitles):
               :py:class:`Subtitle` represented as an SRT block
     :rtype: str
     '''
+    if reindex:
+        subtitles = sort_and_reindex(subtitles, start_index=start_index)
     return ''.join(subtitle.to_srt() for subtitle in subtitles)
 
 
-def compose_file(subtitles, output):
+def compose_file(subtitles, output, reindex=True, start_index=1):
     r'''
     Stream a sequence of py:class:`Subtitle` objects into an SRT formatted
     stream.
@@ -271,6 +273,11 @@ def compose_file(subtitles, output):
     :rtype: int
     '''
     num_written = 0
+
+    if reindex:
+        subtitles = sort_and_reindex(subtitles, start_index=start_index)
+
     for num_written, subtitle in enumerate(subtitles, start=1):
         output.write(subtitle.to_srt())
+
     return num_written

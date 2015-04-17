@@ -168,14 +168,14 @@ class TestTinysrt(object):
 
     def test_compose(self):
         subs = srt.parse(self.srt_sample)
-        eq(self.srt_sample, srt.compose(subs))
+        eq(self.srt_sample, srt.compose(subs, reindex=False))
 
     def test_compose_file(self):
         srt_in_f = codecs.open(self.srt_filename, 'r', 'utf8')
         srt_out_f = self.temp_f
 
         subs = srt.parse_file(srt_in_f)
-        srt.compose_file(subs, srt_out_f)
+        srt.compose_file(subs, srt_out_f, reindex=False)
 
         srt_in_f.seek(0)
 
