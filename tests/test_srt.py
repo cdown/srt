@@ -17,6 +17,7 @@ class TestTinysrt(object):
     @classmethod
     def setup_class(cls):
         cls.srt_filename = cls._fixture('srt_samples/monsters.srt')
+        cls.srt_filename_windows = cls._fixture('srt_samples/monsters-win.srt')
         cls.srt_filename_bad_order = cls._fixture(
             'srt_samples/monsters-bad-order.srt'
         )
@@ -43,16 +44,18 @@ class TestTinysrt(object):
         os.remove(self.temp_path)
 
     @staticmethod
-    def _test_monsters_subs(subs):
+    def _test_monsters_subs(subs, start_index=421):
         '''
         Test that monsters.srt was parsed correctly.
 
         This is in its own function since these tests are used both when
         testing srt.parse and srt.parse_file.
         '''
+        subs = list(subs)
+
         eq(3, len(subs))
 
-        eq(421, subs[0].index)
+        eq(start_index, subs[0].index)
         eq(
             timedelta(
                 hours=0,
@@ -75,8 +78,12 @@ class TestTinysrt(object):
             u'我有个点子\nOK, look, I think I have a plan here.',
             subs[0].content,
         )
+        eq(
+            u' hack the gibson',
+            subs[0].proprietary,
+        )
 
-        eq(422, subs[1].index)
+        eq(start_index + 1, subs[1].index)
         eq(
             timedelta(
                 hours=0,
@@ -153,16 +160,22 @@ class TestTinysrt(object):
         self._test_monsters_subs(subs)
         srt_f.close()
 
+    def test_parse_file_windows(self):
+        srt_f = codecs.open(self.srt_filename_windows, 'r', 'utf8')
+        subs = list(srt.parse_file(srt_f))
+        self._test_monsters_subs(subs)
+        srt_f.close()
+
     def test_compose(self):
         subs = srt.parse(self.srt_sample)
-        eq(self.srt_sample, srt.compose(subs))
+        eq(self.srt_sample, srt.compose(subs, reindex=True, start_index=421))
 
     def test_compose_file(self):
         srt_in_f = codecs.open(self.srt_filename, 'r', 'utf8')
         srt_out_f = self.temp_f
 
         subs = srt.parse_file(srt_in_f)
-        srt.compose_file(subs, srt_out_f)
+        srt.compose_file(subs, srt_out_f, reindex=False)
 
         srt_in_f.seek(0)
 
@@ -192,3 +205,34 @@ class TestTinysrt(object):
         num_written = srt.compose_file(subs, srt_out_f)
 
         eq(0, num_written)
+
+    @staticmethod
+    def test_subtitle_objects_hashable():
+        hash(srt.Subtitle(
+            index=1, start=srt.srt_timestamp_to_timedelta('00:01:02,003'),
+            end=srt.srt_timestamp_to_timedelta('00:02:03,004'), content='foo',
+        ))
+
+    def test_sort_and_reindex_basic(self):
+        subs = srt.parse(self.srt_sample_bad_order)
+        sorted_and_reindexed_subs = srt.sort_and_reindex(subs, start_index=20)
+        self._test_monsters_subs(sorted_and_reindexed_subs, start_index=20)
+
+    def test_sar_skips_missing_content(self):
+        subs = list(srt.parse(self.srt_sample))
+        subs[1].content = '\n'
+        sorted_and_reindexed_subs = srt.sort_and_reindex(subs, start_index=20)
+        sorted_and_reindexed_subs = list(sorted_and_reindexed_subs)
+
+        eq(2, len(sorted_and_reindexed_subs))
+        eq(20, sorted_and_reindexed_subs[0].index)
+        eq(21, sorted_and_reindexed_subs[1].index)
+        eq(
+            u'我有个点子\nOK, look, I think I have a plan here.',
+            sorted_and_reindexed_subs[0].content,
+        )
+        eq(
+            u'挖一条隧道 然后把她丢到野外去\n'
+             'we dig a tunnel under the city and release it into the wild.',
+            sorted_and_reindexed_subs[1].content,
+        )

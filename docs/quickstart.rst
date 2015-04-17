@@ -8,15 +8,15 @@ Parse an SRT to Python objects
 
     >>> import srt
     >>> subtitle_generator = srt.parse('''\
-    ... 421
+    ... 1
     ... 00:31:37,894 --> 00:31:39,928
     ... OK, look, I think I have a plan here.
     ...
-    ... 422
+    ... 2
     ... 00:31:39,931 --> 00:31:41,931
     ... Using mainly spoons,
     ...
-    ... 423
+    ... 3
     ... 00:31:41,933 --> 00:31:43,435
     ... we dig a tunnel under the city and release it into the wild.
     ...
@@ -41,15 +41,15 @@ Compose an SRT from Python objects
 .. doctest::
 
     >>> print(srt.compose(subtitles))
-    421
+    1
     00:31:37,894 --> 00:31:39,928
     OK, look, I think I have a plan here.
     <BLANKLINE>
-    422
+    2
     00:31:39,931 --> 00:31:41,931
     Using mainly spoons,
     <BLANKLINE>
-    423
+    3
     00:31:41,933 --> 00:31:43,435
     we dig a tunnel under the city and release it into the wild.
     <BLANKLINE>

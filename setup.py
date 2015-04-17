@@ -14,7 +14,7 @@ with open('tests/requirements.txt') as test_requirements_f:
 
 setup(
     name='srt',
-    version='0.0.6',
+    version='0.0.7',
     description='A tiny library for parsing, modifying, and composing SRT '
                 'files.',
     long_description=README,
