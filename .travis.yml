@@ -7,6 +7,4 @@ python:
   - 3.3
   - 3.4
 script:
-  - nosetests --with-coverage
-after_success:
-  - coveralls
+  - nosetests
