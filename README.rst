@@ -33,8 +33,9 @@ Manually:
 Testing
 -------
 
-.. image:: https://img.shields.io/travis/cdown/srt/develop.svg?label=linux
-        :target: https://travis-ci.org/cdown/srt
+.. image:: https://travis-ci.org/cdown/srt.svg?branch=develop
+  :target: https://travis-ci.org/cdown/srt
+  :alt: Test status
 
 .. code::
 
