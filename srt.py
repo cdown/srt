@@ -56,13 +56,6 @@ class Subtitle(object):
         r'''
         Convert the current :py:class:`Subtitle` to an SRT block.
 
-        >>> sub = Subtitle(
-        ...     index=1, start=srt_timestamp_to_timedelta('00:01:02,003'),
-        ...     end=srt_timestamp_to_timedelta('00:02:03,004'), content='foo',
-        ... )
-        >>> sub.to_srt()
-        '1\n00:01:02,003 --> 00:02:03,004\nfoo\n\n'
-
         :returns: The metadata of the current :py:class:`Subtitle` object as an
                   SRT formatted subtitle block
         :rtype: str
@@ -81,11 +74,6 @@ def timedelta_to_srt_timestamp(timedelta_timestamp):
     >>> delta = datetime.timedelta(hours=1, minutes=23, seconds=4)
     >>> srt.timedelta_to_srt_timestamp(delta)
     '01:23:04,000'
-
-    :param timedelta_timestamp: The timestamp to convert
-    :type timedelta_timestamp: :py:class:`datetime.timedelta`
-    :returns: An SRT formatted (HH:MM:SS,mmm) representation of the timestamp
-    :rtype: str
     '''
     seconds_in_hour = 3600
     seconds_in_minute = 60
@@ -100,14 +88,8 @@ def srt_timestamp_to_timedelta(srt_timestamp):
     r'''
     Convert an SRT timestamp to a :py:class:`~datetime.timedelta`.
 
-    >>> srt_timestamp = '01:23:04,000'
-    >>> srt.srt_timestamp_to_timedelta(srt_timestamp)
+    >>> srt.srt_timestamp_to_timedelta('01:23:04,000')
     datetime.timedelta(0, 4984)
-
-    :param srt_timestamp: A timestamp in SRT format (HH:MM:SS,mmm)
-    :type srt_timestamp: str
-    :returns: A timedelta object representing the same timestamp passed in
-    :rtype: :py:class:`datetime.timedelta`
     '''
     hrs, mins, secs, msecs = (int(x) for x in re.split('[,:]', srt_timestamp))
     return timedelta(hours=hrs, minutes=mins, seconds=secs, milliseconds=msecs)
@@ -121,9 +103,7 @@ def sort_and_reindex(subtitles, start_index=1):
     and they may need to be resorted.
 
     :param subtitles: :py:class:`Subtitle` objects in any order
-    :type subtitles: :term:`iterator` of :py:class:`Subtitle` objects
-    :param start_index: the lowest index to use
-    :type start_index: int
+    :param int start_index: the index to start from
     '''
     skipped_subs = 0
     for new_index, subtitle in enumerate(sorted(subtitles), start=start_index):
@@ -157,8 +137,7 @@ def parse(srt):
     >>> list(subs)
     [<Subtitle:422>, <Subtitle:423>]
 
-    :param srt: Subtitles in SRT format
-    :type srt: str
+    :param str srt: Subtitles in SRT format
     :returns: The subtitles contained in the SRT file as py:class:`Subtitle`
               objects
     :rtype: :term:`generator` of :py:class:`Subtitle` objects
@@ -176,7 +155,7 @@ def parse_file(srt):
     r'''
     Parse an SRT formatted stream into py:func:`Subtitle` objects.
 
-    >>> with open('tests/srt_samples/monsters.srt') as srt_f:
+    >>> with open('monsters.srt') as srt_f:
     ...     subs = list(srt.parse_file(srt_f))
     ...
     >>> subs
@@ -210,24 +189,14 @@ def compose(subtitles, reindex=True, start_index=1):
     considerably more memory efficient when dealing with particularly large SRT
     data.
 
-    >>> subs = [
-    ...     Subtitle(
-    ...         index=1, start=srt_timestamp_to_timedelta('00:01:02,003'),
-    ...         end=srt_timestamp_to_timedelta('00:02:03,004'), content='foo',
-    ...     ),
-    ...     Subtitle(
-    ...         index=2, start=srt_timestamp_to_timedelta('00:03:04,005'),
-    ...         end=srt_timestamp_to_timedelta('00:06:07,008'), content='bar',
-    ...     ),
-    ... ]
-    >>> compose(subs)  # doctest: +ELLIPSIS
+    >>> subs = [Subtitle(...), Subtitle(...)]
+    >>> compose(subs)
     '1\n00:01:02,003 --> 00:02:03,004\nfoo\n\n2\n...'
 
     :param subtitles: The subtitles to convert to SRT blocks
     :type subtitles: :term:`iterator` of :py:class:`Subtitle` objects
-    :param reindex: Whether to reindex subtitles based on start time
-    :type reindex: bool
-    :param start_index: If reindexing, the index to start reindexing from
+    :param bool reindex: Whether to reindex subtitles based on start time
+    :param int start_index: If reindexing, the index to start reindexing from
     :type start_index: int
     :returns: A single SRT formatted string, with each input
               :py:class:`Subtitle` represented as an SRT block
@@ -243,19 +212,9 @@ def compose_file(subtitles, output, reindex=True, start_index=1):
     Stream a sequence of py:class:`Subtitle` objects into an SRT formatted
     stream.
 
-    >>> subs = [
-    ...     Subtitle(
-    ...         index=1, start=srt_timestamp_to_timedelta('00:01:02,003'),
-    ...         end=srt_timestamp_to_timedelta('00:02:03,004'), content='foo',
-    ...     ),
-    ...     Subtitle(
-    ...         index=2, start=srt_timestamp_to_timedelta('00:03:04,005'),
-    ...         end=srt_timestamp_to_timedelta('00:06:07,008'), content='bar',
-    ...     ),
-    ... ]
+    >>> subs = [Subtitle(...), Subtitle(...)]
     >>> with tempfile.NamedTemporaryFile(mode='w', encoding='utf8') as srt_f:
     ...    compose_file(subs, srt_f)
-    ...
     2
 
     :param subtitles: :py:class:`Subtitle` objects in the order they should be
@@ -264,12 +223,9 @@ def compose_file(subtitles, output, reindex=True, start_index=1):
     :param output: A stream to write the resulting SRT blocks to
     :type output: :py:class:`io.TextIOWrapper`, or something that quacks like
                   one
-    :param reindex: Whether to reindex subtitles based on start time
-    :type reindex: bool
-    :param start_index: If reindexing, the index to start reindexing from
-    :type start_index: int
+    :param bool reindex: Whether to reindex subtitles based on start time
+    :param int start_index: If reindexing, the index to start reindexing from
     :returns: The number of subtitles that were written to the stream
-    :rtype: int
     '''
     num_written = 0
 
