@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # vim: set fileencoding=utf8
+# pylint: disable=attribute-defined-outside-init
 
 from __future__ import unicode_literals
 import codecs
@@ -146,7 +147,7 @@ class TestTinysrt(object):
     @staticmethod
     def test_timedelta_to_srt_timestamp():
         timedelta_ts = timedelta(
-                hours=1, minutes=2, seconds=3, milliseconds=400,
+            hours=1, minutes=2, seconds=3, milliseconds=400,
         )
         eq(srt.timedelta_to_srt_timestamp(timedelta_ts), '01:02:03,400')
 
