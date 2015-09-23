@@ -56,7 +56,6 @@ class Subtitle(object):
         r'''
         Convert the current :py:class:`Subtitle` to an SRT block.
 
-        >>> from srt import Subtitle, srt_timestamp_to_timedelta
         >>> sub = Subtitle(
         ...     index=1, start=srt_timestamp_to_timedelta('00:01:02,003'),
         ...     end=srt_timestamp_to_timedelta('00:02:03,004'), content='foo',
@@ -79,8 +78,6 @@ def timedelta_to_srt_timestamp(timedelta_timestamp):
     r'''
     Convert a :py:class:`~datetime.timedelta` to an SRT timestamp.
 
-    >>> import srt
-    >>> import datetime
     >>> delta = datetime.timedelta(hours=1, minutes=23, seconds=4)
     >>> srt.timedelta_to_srt_timestamp(delta)
     '01:23:04,000'
@@ -103,7 +100,6 @@ def srt_timestamp_to_timedelta(srt_timestamp):
     r'''
     Convert an SRT timestamp to a :py:class:`~datetime.timedelta`.
 
-    >>> import srt
     >>> srt_timestamp = '01:23:04,000'
     >>> srt.srt_timestamp_to_timedelta(srt_timestamp)
     datetime.timedelta(0, 4984)
@@ -148,7 +144,6 @@ def parse(srt):
     If you are reading from a file, consider using :py:func:`parse_file`
     instead.
 
-    >>> import srt
     >>> subs = srt.parse("""\
     ... 422
     ... 00:31:39,931 --> 00:31:41,931
@@ -181,7 +176,6 @@ def parse_file(srt):
     r'''
     Parse an SRT formatted stream into py:func:`Subtitle` objects.
 
-    >>> import srt
     >>> with open('tests/srt_samples/monsters.srt') as srt_f:
     ...     subs = list(srt.parse_file(srt_f))
     ...
@@ -216,7 +210,6 @@ def compose(subtitles, reindex=True, start_index=1):
     considerably more memory efficient when dealing with particularly large SRT
     data.
 
-    >>> from srt import Subtitle, srt_timestamp_to_timedelta, compose
     >>> subs = [
     ...     Subtitle(
     ...         index=1, start=srt_timestamp_to_timedelta('00:01:02,003'),
@@ -250,8 +243,6 @@ def compose_file(subtitles, output, reindex=True, start_index=1):
     Stream a sequence of py:class:`Subtitle` objects into an SRT formatted
     stream.
 
-    >>> import tempfile
-    >>> from srt import Subtitle, srt_timestamp_to_timedelta, compose_file
     >>> subs = [
     ...     Subtitle(
     ...         index=1, start=srt_timestamp_to_timedelta('00:01:02,003'),
