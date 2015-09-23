@@ -4,7 +4,7 @@ Quickstart
 Parse an SRT to Python objects
 ------------------------------
 
-.. doctest::
+.. code:: python
 
     >>> import srt
     >>> subtitle_generator = srt.parse('''\
@@ -38,7 +38,7 @@ You can also read from a file:
 Compose an SRT from Python objects
 ----------------------------------
 
-.. doctest::
+.. code:: python
 
     >>> print(srt.compose(subtitles))
     1
