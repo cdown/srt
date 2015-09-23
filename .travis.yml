@@ -1,11 +1,19 @@
 language: python
-install:
-  - pip install -r docs/requirements.txt
-  - pip install -r tests/requirements.txt
 python:
   - 2.7
   - 3.3
   - 3.4
   - 3.5
+
+install:
+  - 'pip install -r tests/requirements.txt'
+
 script:
   - python setup.py test
+
+matrix:
+  fast_finish: true
+
+# This is required to enable container based Travis CI infrastructure.
+# See http://docs.travis-ci.com/user/migrating-from-legacy/
+sudo: false
