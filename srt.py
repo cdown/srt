@@ -6,7 +6,9 @@ import functools
 import re
 from datetime import timedelta
 from itertools import groupby
+import logging
 
+log = logging.getLogger(__name__)
 
 SRT_REGEX = re.compile(
     r'(\d+)\n(\d+:\d+:\d+,\d+) --> (\d+:\d+:\d+,\d+)([^\n]*)\n(.+?)\n\n',
@@ -174,7 +176,9 @@ def parse_file(srt):
     )
 
     for srt_block in srt_blocks:
+        log.debug('Parsing SRT block: %r', srt_block)
         subtitle, = parse(srt_block)
+        log.debug('Parsed subtitle has index %d', subtitle.index)
         yield subtitle
 
 
