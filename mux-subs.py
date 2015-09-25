@@ -58,7 +58,9 @@ def main():
                 sub.end = last_sub.end
         last_sub = sub
 
-    output = srt.compose(sorted_subs)
+    reindexed_subs = srt.sort_and_reindex(sorted_subs)
+
+    output = srt.compose(reindexed_subs)
     args.output.write(output)
 
 
