@@ -161,57 +161,9 @@ class TestTinysrt(object):
         subs = list(srt.parse(self.srt_sample))
         self._test_monsters_subs(subs)
 
-    def test_parse_file(self):
-        srt_f = codecs.open(self.srt_filename, 'r', 'utf8')
-        subs = list(srt.parse_file(srt_f))
-        self._test_monsters_subs(subs)
-        srt_f.close()
-
-    def test_parse_file_windows(self):
-        srt_f = codecs.open(self.srt_filename_windows, 'r', 'utf8')
-        subs = list(srt.parse_file(srt_f))
-        self._test_monsters_subs(subs)
-        srt_f.close()
-
     def test_compose(self):
         subs = srt.parse(self.srt_sample)
         eq(self.srt_sample, srt.compose(subs, reindex=True, start_index=421))
-
-    def test_compose_file(self):
-        srt_in_f = codecs.open(self.srt_filename, 'r', 'utf8')
-        srt_out_f = self.temp_f
-
-        subs = srt.parse_file(srt_in_f)
-        srt.compose_file(subs, srt_out_f, reindex=False)
-
-        srt_in_f.seek(0)
-
-        srt_out_f.close()
-        srt_out_f_2 = codecs.open(self.temp_path, 'r', 'utf8')
-
-        eq(srt_in_f.read(), srt_out_f_2.read())
-
-        srt_in_f.close()
-        srt_out_f_2.close()
-
-    def test_compose_file_num(self):
-        srt_in_f = codecs.open(self.srt_filename, 'r', 'utf8')
-        srt_out_f = self.temp_f
-
-        subs = srt.parse_file(srt_in_f)
-        num_written = srt.compose_file(subs, srt_out_f)
-
-        eq(3, num_written)
-
-        srt_in_f.close()
-
-    def test_compose_file_num_none(self):
-        srt_out_f = self.temp_f
-
-        subs = list(srt.parse(''))
-        num_written = srt.compose_file(subs, srt_out_f)
-
-        eq(0, num_written)
 
     @staticmethod
     def test_subtitle_objects_hashable():

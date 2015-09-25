@@ -7,7 +7,6 @@ import functools
 import re
 import os
 from datetime import timedelta
-from itertools import groupby
 import logging
 
 
@@ -144,9 +143,6 @@ def parse(srt):
     that it is designed to not bork when presented with a blank line as part of
     a subtitle's content.
 
-    If you are reading from a file, consider using :py:func:`parse_file`
-    instead.
-
     >>> subs = srt.parse("""\
     ... 422
     ... 00:31:39,931 --> 00:31:41,931
@@ -197,45 +193,10 @@ def parse(srt):
         )
 
 
-def parse_file(srt):
-    r'''
-    Parse an SRT formatted stream into py:func:`Subtitle` objects.
-
-    >>> with open('monsters.srt') as srt_f:
-    ...     subs = list(srt.parse_file(srt_f))
-    ...
-    >>> subs
-    [<Subtitle:421>, <Subtitle:422>, <Subtitle:423>]
-
-    :param srt: A stream containing SRT formatted data
-    :type srt: :py:class:`io.TextIOWrapper`, or something that quacks like one
-    :returns: The subtitles contained in the SRT file as Subtitle objects
-    :rtype: :term:`generator` of :py:class:`Subtitle` objects
-    '''
-    srt_chomped = (line.rstrip('\r\n') for line in srt)
-    srt_blocks = (
-        '\n'.join(srt_lines) + '\n\n'
-        for line_has_content, srt_lines in groupby(srt_chomped, bool)
-        if line_has_content
-    )
-
-    for srt_block in srt_blocks:
-        log.debug('Parsing SRT block: %r', srt_block)
-        subtitle, = parse(srt_block)
-        log.debug('Parsed subtitle has index %d', subtitle.index)
-        yield subtitle
-
-
 def compose(subtitles, reindex=True, start_index=1, strict=True):
     r'''
     Convert an iterator of :py:class:`Subtitle` objects to a string of joined
     SRT blocks.
-
-    This may be a convienient interface when converting back and forth between
-    Python objects and SRT formatted blocks, but you may wish to consider using
-    the provided stream interface, :py:func:`compose_file`, instead, which is
-    considerably more memory efficient when dealing with particularly large SRT
-    data.
 
     >>> subs = [Subtitle(...), Subtitle(...)]
     >>> compose(subs)
@@ -255,36 +216,3 @@ def compose(subtitles, reindex=True, start_index=1, strict=True):
     if reindex:
         subtitles = sort_and_reindex(subtitles, start_index=start_index)
     return ''.join(subtitle.to_srt(strict=strict) for subtitle in subtitles)
-
-
-def compose_file(subtitles, output, reindex=True, start_index=1, strict=True):
-    r'''
-    Stream a sequence of py:class:`Subtitle` objects into an SRT formatted
-    stream.
-
-    >>> subs = [Subtitle(...), Subtitle(...)]
-    >>> with tempfile.NamedTemporaryFile(mode='w', encoding='utf8') as srt_f:
-    ...    compose_file(subs, srt_f)
-    2
-
-    :param subtitles: :py:class:`Subtitle` objects in the order they should be
-                      written to the stream
-    :type subtitles: :term:`iterator` of :py:class:`Subtitle` objects
-    :param output: A stream to write the resulting SRT blocks to
-    :type output: :py:class:`io.TextIOWrapper`, or something that quacks like
-                  one
-    :param bool reindex: Whether to reindex subtitles based on start time
-    :param int start_index: If reindexing, the index to start reindexing from
-    :param bool strict: Whether to enable strict mode, see
-                        :py:func:`Subtitle.to_srt` for more information
-    :returns: The number of subtitles that were written to the stream
-    '''
-    num_written = 0
-
-    if reindex:
-        subtitles = sort_and_reindex(subtitles, start_index=start_index)
-
-    for num_written, subtitle in enumerate(subtitles, start=1):
-        output.write(subtitle.to_srt(strict=strict))
-
-    return num_written
