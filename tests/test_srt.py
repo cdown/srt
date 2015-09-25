@@ -264,3 +264,14 @@ class TestTinysrt(object):
             '挖一条隧道 然后把她丢到野外去\n\n'
             'we dig a tunnel under the city and release it into the wild.',
         )
+
+    def test_to_srt_strict(self):
+        srt_blocks = srt.compose(srt.parse(self.srt_sample_bad_newline))
+        eq(srt_blocks.count('\n\n'), 3)
+
+    def test_to_srt_unstrict(self):
+        srt_blocks = srt.compose(
+            srt.parse(self.srt_sample_bad_newline),
+            strict=False,
+        )
+        eq(srt_blocks.count('\n\n'), 6)
