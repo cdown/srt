@@ -23,7 +23,7 @@ def parse_args():
     )
     parser.add_argument(
         '--ms', metavar='MILLISECONDS',
-        default=datetime.timedelta(milliseconds=250),
+        default=datetime.timedelta(milliseconds=500),
         type=lambda ms: datetime.timedelta(milliseconds=int(ms)),
         help='if two subs being muxed are within this number of milliseconds '
              'of each other, they will get merged (default: 250)',
