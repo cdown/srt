@@ -261,10 +261,3 @@ def compose_file(subtitles, output, reindex=True, start_index=1, strict=True):
         output.write(subtitle.to_srt(strict=strict))
 
     return num_written
-
-
-def _peek_line(file_obj):
-    pos = file_obj.tell()
-    line = file_obj.readline()
-    file_obj.seek(pos)
-    return line[:-1]  # chomp
