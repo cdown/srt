@@ -22,12 +22,18 @@ class TestTinysrt(object):
         cls.srt_filename_bad_order = cls._fixture(
             'srt_samples/monsters-bad-order.srt'
         )
+        cls.srt_filename_bad_newline = cls._fixture(
+            'srt_samples/monsters-bad-newline.srt'
+        )
 
         with codecs.open(cls.srt_filename, 'r', 'utf8') as srt_f:
             cls.srt_sample = srt_f.read()
 
         with codecs.open(cls.srt_filename_bad_order, 'r', 'utf8') as srt_bad_f:
             cls.srt_sample_bad_order = srt_bad_f.read()
+
+        with codecs.open(cls.srt_filename_bad_newline, 'r', 'utf8') as srt_bad_f:
+            cls.srt_sample_bad_newline = srt_bad_f.read()
 
     def setup(self):
         self.srt_f = codecs.open(self.srt_filename, 'r', 'utf8')
@@ -242,3 +248,19 @@ class TestTinysrt(object):
         unfinished_srt = '\n'.join(self.srt_sample.split('\n')[:-5]) + '\n'
         with assert_raises(srt.UnexpectedEOFError):
             list(srt.parse(unfinished_srt))
+
+    def test_blank_line_without_index_continues_content(self):
+        subs = list(srt.parse(self.srt_sample_bad_newline))
+        eq(
+            subs[0].content,
+            '我有个点子\n\nOK, look, I think I have a plan here.',
+        )
+        eq(
+            subs[1].content,
+            '我们要拿一堆汤匙\n\nUsing mainly spoons,',
+        )
+        eq(
+            subs[2].content,
+            '挖一条隧道 然后把她丢到野外去\n\n'
+            'we dig a tunnel under the city and release it into the wild.',
+        )

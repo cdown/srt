@@ -191,15 +191,25 @@ def parse(srt):
                 log.debug('Appending line to subtitle content')
                 content.append(line)
             else:
-                current['content'] = '\n'.join(content)
-                state = 'index'
+                next_line = _peek_line(srt_handle)
+                if next_line and not next_line.isdigit():
+                    # This SRT file is messed up and contains a blank line in
+                    # the subtitle content, but we can roll with it.
+                    log.warning(
+                        'Blank line with no following index, '
+                        'appending line to subtitle content'
+                    )
+                    content.append(line)
+                else:
+                    current['content'] = '\n'.join(content)
+                    state = 'index'
 
-                yield Subtitle(**current)
+                    yield Subtitle(**current)
 
-                log.debug('Subtitle ended with this line')
+                    log.debug('Subtitle ended with this line')
 
-                current = {}
-                content = []
+                    current = {}
+                    content = []
 
     log.debug('Final state is %s', state)
 
@@ -298,3 +308,10 @@ def compose_file(subtitles, output, reindex=True, start_index=1):
         output.write(subtitle.to_srt())
 
     return num_written
+
+
+def _peek_line(file_obj):
+    pos = file_obj.tell()
+    line = file_obj.readline()
+    file_obj.seek(pos)
+    return line[:-1]  # chomp
