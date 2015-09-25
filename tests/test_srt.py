@@ -86,7 +86,7 @@ class TestTinysrt(object):
             subs[0].content,
         )
         eq(
-            u'hack the gibson',
+            u' hack the gibson',
             subs[0].proprietary,
         )
 
@@ -240,14 +240,9 @@ class TestTinysrt(object):
         )
         eq(
             u'挖一条隧道 然后把她丢到野外去\n'
-             'we dig a tunnel under the city and release it into the wild.',
+            'we dig a tunnel under the city and release it into the wild.',
             sorted_and_reindexed_subs[1].content,
         )
-
-    def test_parser_unexpected_eof(self):
-        unfinished_srt = '\n'.join(self.srt_sample.split('\n')[:-5]) + '\n'
-        with assert_raises(srt.UnexpectedEOFError):
-            list(srt.parse(unfinished_srt))
 
     def test_blank_line_without_index_continues_content(self):
         subs = list(srt.parse(self.srt_sample_bad_newline))
