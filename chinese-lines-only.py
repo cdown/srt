@@ -18,9 +18,10 @@ def strip_to_chinese_lines_only(subtitles):
 
 def main():
     args = utils.basic_parser().parse_args()
-    subtitles_in = srt.parse_file(args.input)
+    subtitles_in = srt.parse(args.input.read())
     chinese_subtitles_only = strip_to_chinese_lines_only(subtitles_in)
-    srt.compose_file(chinese_subtitles_only, args.output)
+    output = srt.compose(chinese_subtitles_only)
+    args.output.write(output)
 
 
 if __name__ == '__main__':

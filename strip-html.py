@@ -3,6 +3,7 @@
 import re
 import srt
 import utils
+import logging
 
 
 def strip_html_from_subs(subtitles):
@@ -17,9 +18,11 @@ def strip_html_from_subs(subtitles):
 
 def main():
     args = utils.basic_parser().parse_args()
-    subtitles_in = srt.parse_file(args.input)
+    logging.basicConfig(level=args.log_level)
+    subtitles_in = srt.parse(args.input.read())
     stripped_subs = strip_html_from_subs(subtitles_in)
-    srt.compose_file(stripped_subs, args.output)
+    output = srt.compose(stripped_subs)
+    args.output.write(output)
 
 
 if __name__ == '__main__':

@@ -77,9 +77,10 @@ def main():
         args.synced_start, args.synced_end,
         args.desynced_start, args.desynced_end,
     )
-    subtitles_in = srt.parse_file(args.input)
+    subtitles_in = srt.parse(args.input.read())
     corrected_subs = linear_correct_subs(subtitles_in, angular, linear)
-    srt.compose_file(corrected_subs, args.output)
+    output = srt.compose(corrected_subs)
+    args.output.write(output)
 
 
 if __name__ == '__main__':

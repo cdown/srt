@@ -2,6 +2,7 @@
 
 import argparse
 import sys
+import logging
 
 
 def basic_parser():
@@ -16,5 +17,11 @@ def basic_parser():
         default=sys.stdout,
         type=argparse.FileType('w'),
         help='the file to write to (default: stdout)',
+    )
+    parser.add_argument(
+        '--debug',
+        action="store_const", dest='log_level',
+        const=logging.DEBUG, default=logging.WARNING,
+        help='enable debug logging',
     )
     return parser

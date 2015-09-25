@@ -12,9 +12,10 @@ def reindex(subtitles):
 
 def main():
     args = utils.basic_parser().parse_args()
-    subtitles_in = srt.parse_file(args.input)
+    subtitles_in = srt.parse(args.input.read())
     reindexed_subtitles = reindex(subtitles_in)
-    srt.compose_file(reindexed_subtitles, args.output)
+    output = srt.compose(reindexed_subtitles)
+    args.output.write(output)
 
 
 if __name__ == '__main__':
