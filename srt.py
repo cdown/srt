@@ -20,6 +20,9 @@ SRT_REGEX = re.compile(
 )
 
 
+class SRTParseError(Exception): pass
+
+
 @functools.total_ordering  # pylint: disable=too-few-public-methods
 class Subtitle(object):
     r'''
@@ -162,13 +165,37 @@ def parse(srt):
               objects
     :rtype: :term:`generator` of :py:class:`Subtitle` objects
     '''
+    # We use match_ranges to check that the regexes were contiguous and
+    # consumed all of the string, without silently ignoring anything.
+    match_ranges = []
+
     for match in SRT_REGEX.finditer(srt):
+        match_ranges.append((match.start(), match.end()))
         raw_index, raw_start, raw_end, proprietary, content, _ = match.groups()
         yield Subtitle(
             index=int(raw_index), start=srt_timestamp_to_timedelta(raw_start),
             end=srt_timestamp_to_timedelta(raw_end), content=content,
             proprietary=proprietary,
         )
+
+    next_expected_start = 0
+    for start, end in match_ranges:
+        if start != next_expected_start:
+            raise SRTParseError(
+                'Expected to start at %d, but started at %d' % (
+                    next_expected_start, start,
+                )
+            )
+
+        next_expected_start = end
+
+    if next_expected_start != len(srt):
+        raise SRTParseError(
+            'Expected to end at %d, but ended at %d' % (
+                next_expected_start, len(srt),
+            )
+        )
+
 
 def parse_file(srt):
     r'''

@@ -270,3 +270,8 @@ class TestTinysrt(object):
             strict=False,
         )
         eq(srt_blocks.count('\n\n'), 6)
+
+    def test_parser_noncontiguous(self):
+        unfinished_srt = '\n'.join(self.srt_sample.split('\n')[:-5]) + '\n'
+        with assert_raises(srt.SRTParseError):
+            list(srt.parse(unfinished_srt))
