@@ -18,6 +18,9 @@ except ImportError:  # Python 2 fallback
 log = logging.getLogger(__name__)
 
 
+class UnexpectedEOFError(Exception): pass
+
+
 @functools.total_ordering  # pylint: disable=too-few-public-methods
 class Subtitle(object):
     r'''
@@ -154,26 +157,38 @@ def parse(srt):
     '''
     srt_handle = StringIO(srt)
 
+    expected_end_state = 'index'
     state = 'index'
     current = {}
     content = []
 
     for line in srt_handle:
+        log.debug('Parsing line %r', line)
         line = line.strip()
 
         if state == 'index':
             current['index'] = int(line)
             state = 'timestamp'
+            log.debug(
+                'Parsed index %d, moving to state %s', current['index'], state,
+            )
         elif state == 'timestamp':
             # We don't care about index 2 because it's the arrow.
             timestamp_line_parts = line.split(' ', 3)
             if len(timestamp_line_parts) == 4:  # There is proprietary text
                 current['proprietary'] = timestamp_line_parts[3]
-            current['start'] = srt_timestamp_to_timedelta(timestamp_line_parts[0])
-            current['end'] = srt_timestamp_to_timedelta(timestamp_line_parts[2])
+            current['start'] = \
+                srt_timestamp_to_timedelta(timestamp_line_parts[0])
+            current['end'] = \
+                srt_timestamp_to_timedelta(timestamp_line_parts[2])
             state = 'text'
+            log.debug(
+                'Parsed timestamp. Start %s, end %s, moving to state %s',
+                current['start'], current['end'], state,
+            )
         elif state == 'text':
             if line:
+                log.debug('Appending line to subtitle content')
                 content.append(line)
             else:
                 current['content'] = '\n'.join(content)
@@ -181,8 +196,19 @@ def parse(srt):
 
                 yield Subtitle(**current)
 
+                log.debug('Subtitle ended with this line')
+
                 current = {}
                 content = []
+
+    log.debug('Final state is %s', state)
+
+    if state != expected_end_state:
+        raise UnexpectedEOFError(
+            'EOF when not in final state: (in %s, not %s)' % (
+                state, expected_end_state,
+            )
+        )
 
 
 def parse_file(srt):

@@ -7,7 +7,7 @@ import tempfile
 import srt
 import os
 from datetime import timedelta
-from nose.tools import eq_ as eq, assert_not_equal as neq
+from nose.tools import eq_ as eq, assert_not_equal as neq, assert_raises
 
 
 class TestTinysrt(object):
@@ -237,3 +237,8 @@ class TestTinysrt(object):
              'we dig a tunnel under the city and release it into the wild.',
             sorted_and_reindexed_subs[1].content,
         )
+
+    def test_parser_unexpected_eof(self):
+        unfinished_srt = '\n'.join(self.srt_sample.split('\n')[:-5]) + '\n'
+        with assert_raises(srt.UnexpectedEOFError):
+            list(srt.parse(unfinished_srt))
