@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # vim: set fileencoding=utf8
 
+from __future__ import unicode_literals
 import codecs
 import tempfile
 import srt
@@ -79,7 +80,7 @@ class TestTinysrt(object):
             subs[0].content,
         )
         eq(
-            u' hack the gibson',
+            u'hack the gibson',
             subs[0].proprietary,
         )
 

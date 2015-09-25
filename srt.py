@@ -2,18 +2,20 @@
 
 '''A tiny library for parsing, modifying, and composing SRT files.'''
 
+from __future__ import unicode_literals
 import functools
 import re
 from datetime import timedelta
 from itertools import groupby
 import logging
 
-log = logging.getLogger(__name__)
+try:
+    from io import StringIO
+except ImportError:  # Python 2 fallback
+    from StringIO import StringIO
 
-SRT_REGEX = re.compile(
-    r'(\d+)\n(\d+:\d+:\d+,\d+) --> (\d+:\d+:\d+,\d+)([^\n]*)\n(.+?)\n\n',
-    re.MULTILINE | re.DOTALL,
-)
+
+log = logging.getLogger(__name__)
 
 
 @functools.total_ordering  # pylint: disable=too-few-public-methods
@@ -62,9 +64,10 @@ class Subtitle(object):
                   SRT formatted subtitle block
         :rtype: str
         '''
+        proprietary_text = ' %s' % self.proprietary if self.proprietary else ''
         return '%d\n%s --> %s%s\n%s\n\n' % (
             self.index, timedelta_to_srt_timestamp(self.start),
-            timedelta_to_srt_timestamp(self.end), self.proprietary,
+            timedelta_to_srt_timestamp(self.end), proprietary_text,
             self.content,
         )
 
@@ -121,7 +124,12 @@ def sort_and_reindex(subtitles, start_index=1):
 
 def parse(srt):
     r'''
-    Convert an SRT formatted string to a :term:`generator` of Subtitle objects.
+    Convert an SRT formatted string (in Python 2, a :class:`unicode` object) to
+    a :term:`generator` of Subtitle objects.
+
+    This function works around bugs present in many SRT files, most notably
+    that it is designed to not bork when presented with a blank line as part of
+    a subtitle's content.
 
     If you are reading from a file, consider using :py:func:`parse_file`
     instead.
@@ -144,13 +152,37 @@ def parse(srt):
               objects
     :rtype: :term:`generator` of :py:class:`Subtitle` objects
     '''
-    for match in SRT_REGEX.finditer(srt):
-        raw_index, raw_start, raw_end, proprietary, content = match.groups()
-        yield Subtitle(
-            index=int(raw_index), start=srt_timestamp_to_timedelta(raw_start),
-            end=srt_timestamp_to_timedelta(raw_end), content=content,
-            proprietary=proprietary,
-        )
+    srt_handle = StringIO(srt)
+
+    state = 'index'
+    current = {}
+    content = []
+
+    for line in srt_handle:
+        line = line.strip()
+
+        if state == 'index':
+            current['index'] = int(line)
+            state = 'timestamp'
+        elif state == 'timestamp':
+            # We don't care about index 2 because it's the arrow.
+            timestamp_line_parts = line.split(' ', 3)
+            if len(timestamp_line_parts) == 4:  # There is proprietary text
+                current['proprietary'] = timestamp_line_parts[3]
+            current['start'] = srt_timestamp_to_timedelta(timestamp_line_parts[0])
+            current['end'] = srt_timestamp_to_timedelta(timestamp_line_parts[2])
+            state = 'text'
+        elif state == 'text':
+            if line:
+                content.append(line)
+            else:
+                current['content'] = '\n'.join(content)
+                state = 'index'
+
+                yield Subtitle(**current)
+
+                current = {}
+                content = []
 
 
 def parse_file(srt):
