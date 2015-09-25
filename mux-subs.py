@@ -2,6 +2,7 @@
 
 import argparse
 import sys
+import datetime
 import srt
 import logging
 
@@ -21,12 +22,20 @@ def parse_args():
         help='the file to write to (default: stdout)',
     )
     parser.add_argument(
+        '--ms', metavar='MILLISECONDS',
+        default=datetime.timedelta(milliseconds=250),
+        type=lambda ms: datetime.timedelta(milliseconds=int(ms)),
+        help='if two subs being muxed are within this number of milliseconds '
+             'of each other, they will get merged (default: 250)',
+    )
+    parser.add_argument(
         '--debug',
         action="store_const", dest='log_level',
         const=logging.DEBUG, default=logging.WARNING,
         help='enable debug logging',
     )
     return parser.parse_args()
+
 
 
 def main():
@@ -36,8 +45,20 @@ def main():
     for file_input in args.input:
         unordered_muxed_subs.extend(srt.parse(file_input.read()))
 
-    muxed_subs = srt.sort_and_reindex(unordered_muxed_subs)
-    output = srt.compose(muxed_subs)
+    sorted_subs = sorted(unordered_muxed_subs)
+
+    # Merge subs with similar start/end times together. This prevents the
+    # subtitles jumping around the screen.
+    last_sub = None
+    for sub in sorted_subs:
+        if last_sub is not None:
+            if last_sub.start + args.ms > sub.start:
+                sub.start = last_sub.start
+            if last_sub.end + args.ms > sub.end:
+                sub.end = last_sub.end
+        last_sub = sub
+
+    output = srt.compose(sorted_subs)
     args.output.write(output)
 
 
