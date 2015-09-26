@@ -24,14 +24,13 @@ From pip:
 
 .. code::
 
-
-    pip install srt
+    $ pip install srt
 
 Manually:
 
 .. code::
 
-    python setup.py install
+    $ python setup.py install
 
 
 Testing
@@ -41,6 +40,14 @@ Testing
   :target: https://travis-ci.org/cdown/srt
   :alt: Test status
 
+To test using your current Python interpreter:
+
 .. code::
 
-    python setup.py test
+    $ nosetests
+
+Otherwise, to test on all supported Python versions:
+
+.. code::
+
+    $ tox
