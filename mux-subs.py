@@ -24,10 +24,15 @@ def parse_args():
     )
     parser.add_argument(
         '--ms', metavar='MILLISECONDS',
-        default=datetime.timedelta(milliseconds=500),
+        default=datetime.timedelta(milliseconds=350),
         type=lambda ms: datetime.timedelta(milliseconds=int(ms)),
-        help='if two subs being muxed are within this number of milliseconds '
-             'of each other, they will get merged (default: 250)',
+        help='if subs being muxed are within this number of milliseconds '
+             'of each other, they will get merged (default: 350)',
+    )
+    parser.add_argument(
+        '--width',
+        default=5, type=int,
+        help='the number of subs to consider merging (default: %(default)s)',
     )
     parser.add_argument(
         '--debug',
@@ -50,11 +55,15 @@ def main():
 
     # Merge subs with similar start/end times together. This prevents the
     # subtitles jumping around the screen.
-    for last_sub, sub in utils.sliding_window(sorted_subs, width=2):
-        if last_sub.start + args.ms > sub.start:
-            sub.start = last_sub.start
-        if last_sub.end + args.ms > sub.end:
-            sub.end = last_sub.end
+    for subs in utils.sliding_window(sorted_subs, width=args.width):
+        current_sub = subs[0]
+        future_subs = subs[1:]
+
+        for future_sub in future_subs:
+            if current_sub.start + args.ms > future_sub.start:
+                future_sub.start = current_sub.start
+            if current_sub.end + args.ms > future_sub.end:
+                future_sub.end = current_sub.end
 
     output = srt.compose(sorted_subs)
     args.output.write(output)
