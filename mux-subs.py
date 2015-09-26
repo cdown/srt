@@ -26,10 +26,10 @@ def parse_args():
     )
     parser.add_argument(
         '--ms', metavar='MILLISECONDS',
-        default=datetime.timedelta(milliseconds=350),
+        default=datetime.timedelta(milliseconds=600),
         type=lambda ms: datetime.timedelta(milliseconds=int(ms)),
         help='if subs being muxed are within this number of milliseconds '
-             'of each other, they will get merged (default: 350)',
+             'of each other, they will get merged (default: 600)',
     )
     parser.add_argument(
         '--width',
