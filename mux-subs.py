@@ -4,9 +4,11 @@ import argparse
 import sys
 import datetime
 import srt
-import logging
 import utils
+import logging
+import operator
 
+log = logging.getLogger(__name__)
 
 def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -43,29 +45,42 @@ def parse_args():
     return parser.parse_args()
 
 
+def merge_subs(subs, acceptable_diff, attr, width):
+    '''
+    Merge subs with similar start/end times together. This prevents the
+    subtitles jumping around the screen.
+
+    The merge is done in-place.
+    '''
+    sorted_subs = sorted(subs, key=operator.attrgetter(attr))
+
+    for subs in utils.sliding_window(sorted_subs, width=width):
+        current_sub = subs[0]
+        future_subs = subs[1:]
+        current_comp = getattr(current_sub, attr)
+
+        for future_sub in future_subs:
+            future_comp = getattr(future_sub, attr)
+            if current_comp + acceptable_diff > future_comp:
+                log.debug(
+                    "Merging %d's %s time into %d",
+                    future_sub.index, attr, current_sub.index,
+                )
+                setattr(future_sub, attr, current_comp)
+
 
 def main():
     args = parse_args()
+    logging.basicConfig(level=args.log_level)
 
-    unordered_muxed_subs = []
+    muxed_subs = []
     for file_input in args.input:
-        unordered_muxed_subs.extend(srt.parse(file_input.read()))
+        muxed_subs.extend(srt.parse(file_input.read()))
 
-    sorted_subs = sorted(unordered_muxed_subs)
+    merge_subs(muxed_subs, args.ms, 'start', args.width)
+    merge_subs(muxed_subs, args.ms, 'end', args.width)
 
-    # Merge subs with similar start/end times together. This prevents the
-    # subtitles jumping around the screen.
-    for subs in utils.sliding_window(sorted_subs, width=args.width):
-        current_sub = subs[0]
-        future_subs = subs[1:]
-
-        for future_sub in future_subs:
-            if current_sub.start + args.ms > future_sub.start:
-                future_sub.start = current_sub.start
-            if current_sub.end + args.ms > future_sub.end:
-                future_sub.end = current_sub.end
-
-    output = srt.compose(sorted_subs)
+    output = srt.compose(muxed_subs)
     args.output.write(output)
 
 
