@@ -178,8 +178,8 @@ def parse(srt):
     for start, end in match_ranges:
         if start != next_expected_start:
             raise SRTParseError(
-                'Expected to start at %d, but started at %d' % (
-                    next_expected_start, start,
+                'Expected to start at %d, but started at %d (content: %r)' % (
+                    next_expected_start, start, srt[next_expected_start:start],
                 )
             )
 
@@ -187,8 +187,8 @@ def parse(srt):
 
     if next_expected_start != len(srt):
         raise SRTParseError(
-            'Expected to end at %d, but ended at %d' % (
-                next_expected_start, len(srt),
+            'Expected to end at %d, but ended at %d (content: %r)' % (
+                next_expected_start, len(srt), srt[next_expected_start:],
             )
         )
 
