@@ -5,6 +5,7 @@ import sys
 import datetime
 import srt
 import logging
+import utils
 
 
 def parse_args():
@@ -49,14 +50,11 @@ def main():
 
     # Merge subs with similar start/end times together. This prevents the
     # subtitles jumping around the screen.
-    last_sub = None
-    for sub in sorted_subs:
-        if last_sub is not None:
-            if last_sub.start + args.ms > sub.start:
-                sub.start = last_sub.start
-            if last_sub.end + args.ms > sub.end:
-                sub.end = last_sub.end
-        last_sub = sub
+    for last_sub, sub in utils.sliding_window(sorted_subs, width=2):
+        if last_sub.start + args.ms > sub.start:
+            sub.start = last_sub.start
+        if last_sub.end + args.ms > sub.end:
+            sub.end = last_sub.end
 
     output = srt.compose(sorted_subs)
     args.output.write(output)
