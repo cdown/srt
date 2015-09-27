@@ -40,7 +40,13 @@ Testing
   :target: https://travis-ci.org/cdown/srt
   :alt: Test status
 
-To test using your current Python interpreter:
+First, install the test requirements:
+
+.. code::
+
+    $ pip install -r tests/requirements.txt
+
+Then, to test using your current Python interpreter:
 
 .. code::
 
