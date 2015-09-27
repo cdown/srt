@@ -8,6 +8,8 @@ env:
   - TOXENV=py33
   - TOXENV=py34
   - TOXENV=py35
+  # Github deployment key
+  - secure: "qk7S3Juyc8zt+WJdxE2bDOwzSLmBQW1eepQVc7vBiZXXqcMazVt+Gs0yTFt0PBlZiMcDFmmVpY8ZfTFkB1n0INLIz+clFmtO6eOJHuO3F7SxdvOekXtMjGxE+IBCroLB41+7MSBV00/ZE1hV+wbVs9MpMwx6HxdbMgrAwdTrZwo="
 
 matrix:
   fast_finish: true
@@ -17,3 +19,8 @@ matrix:
 sudo: false
 
 cache: pip
+
+after_success:
+  - "curl -o /tmp/travis-automerge https://raw.githubusercontent.com/cdown/travis-automerge/master/travis-automerge"
+  - "chmod a+x /tmp/travis-automerge"
+  - "BRANCHES_TO_MERGE_REGEX='^f/' BRANCH_TO_MERGE_INTO=develop GITHUB_REPO=cdown/srt /tmp/travis-automerge"
