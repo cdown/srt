@@ -4,12 +4,8 @@ install: pip install tox
 script: tox
 
 env:
-  - TOXENV=py27
-  - TOXENV=py33
-  - TOXENV=py34
-  - TOXENV=py35
   # Github deployment key
-  - secure: "qk7S3Juyc8zt+WJdxE2bDOwzSLmBQW1eepQVc7vBiZXXqcMazVt+Gs0yTFt0PBlZiMcDFmmVpY8ZfTFkB1n0INLIz+clFmtO6eOJHuO3F7SxdvOekXtMjGxE+IBCroLB41+7MSBV00/ZE1hV+wbVs9MpMwx6HxdbMgrAwdTrZwo="
+  - secure: "d6xg3/CKxF2SDhkBNb94s7KbQPlCKwrO0jIJhS59djtyHApY/0tE594LXzrdQR9/yz998Zm/aCy+mQ4JbGToUZd4jKImelJguHCTOVXzjVEZqIH2dakpiYtLzWkyphQkqqWvIIBL8DuxX3BbVbrwqUEAFnlwZ1SHWwjwx3Xv3QU="
 
 matrix:
   fast_finish: true
