@@ -22,7 +22,7 @@ SRT_REGEX = re.compile(
 class SRTParseError(Exception): pass
 
 
-@functools.total_ordering  # pylint: disable=too-few-public-methods
+@functools.total_ordering
 class Subtitle(object):
     r'''
     The metadata relating to a single subtitle. Subtitles are sorted by start
@@ -40,7 +40,6 @@ class Subtitle(object):
     :type content: str
     '''
 
-    # pylint: disable=too-many-arguments
     def __init__(self, index, start, end, content, proprietary=''):
         self.index = index
         self.start = start
