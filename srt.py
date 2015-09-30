@@ -14,7 +14,7 @@ log = logging.getLogger(__name__)
 
 SRT_REGEX = re.compile(
     r'(\d+)\n(\d+:\d+:\d+,\d+) --> (\d+:\d+:\d+,\d+)([^\n]*)\n'
-    r'(.+?)\n\n(?=(\d+\n|\Z))',
+    r'(.+?)\n\n(?=(\d+\n\d+:|\Z))',
     re.MULTILINE | re.DOTALL,
 )
 
