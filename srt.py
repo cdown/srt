@@ -12,12 +12,6 @@ import logging
 
 log = logging.getLogger(__name__)
 
-SRT_REGEX = re.compile(
-    r'(\d+)\n(\d+:\d+:\d+,\d+) --> (\d+:\d+:\d+,\d+)([^\n]*)\n(.+?)\n\n'
-    # Check next lines resemble index + timestamp for invalid (but common) subs
-    r'(?=(\d+\n\d+:|\Z))',
-    re.MULTILINE | re.DOTALL,
-)
 
 
 class SRTParseError(Exception): pass
@@ -165,7 +159,26 @@ def parse(srt):
     # consumed all of the string, without silently ignoring anything.
     match_ranges = []
 
-    for match in SRT_REGEX.finditer(srt):
+    srt_regex_flags = re.MULTILINE | re.DOTALL
+
+    # Python 3 searches for Unicode by default. The SRT spec doesn't allow for
+    # this in indices or timestamps, so we limit \d to search for [0-9] only.
+    try:
+        srt_regex_flags |= re.ASCII
+    except AttributeError:  # This is Python 2, we already use ASCII by default
+        pass
+
+    srt_regex = re.compile(
+        r'(\d+)\n(\d+:\d+:\d+,\d+) --> (\d+:\d+:\d+,\d+)([^\n]*)\n(.+?)\n\n'
+        # Some SRT blocks, while this is technically invalid, have blank lines
+        # inside the subtitle content. We look ahead a little to check that the
+        # next lines look like an index and a timestamp as a best-effort
+        # solution to work around these.
+        r'(?=(\d+\n\d+:|\Z))',
+        srt_regex_flags,
+    )
+
+    for match in srt_regex.finditer(srt):
         match_ranges.append((match.start(), match.end()))
         raw_index, raw_start, raw_end, proprietary, content, _ = match.groups()
         yield Subtitle(
