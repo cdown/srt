@@ -21,7 +21,7 @@ def main():
     logging.basicConfig(level=args.log_level)
     subtitles_in = srt.parse(args.input.read())
     stripped_subs = strip_html_from_subs(subtitles_in)
-    output = srt.compose(stripped_subs)
+    output = srt.compose(stripped_subs, args.strict)
     args.output.write(output)
 
 

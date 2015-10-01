@@ -20,8 +20,13 @@ def basic_parser():
         help='the file to write to (default: stdout)',
     )
     parser.add_argument(
+        '--no-strict',
+        action='store_false', dest='strict',
+        help='allow blank lines in output, your media player may explode',
+    )
+    parser.add_argument(
         '--debug',
-        action="store_const", dest='log_level',
+        action='store_const', dest='log_level',
         const=logging.DEBUG, default=logging.WARNING,
         help='enable debug logging',
     )

@@ -42,6 +42,11 @@ def parse_args():
         const=logging.DEBUG, default=logging.WARNING,
         help='enable debug logging',
     )
+    parser.add_argument(
+        '--no-strict',
+        action='store_false', dest='strict',
+        help='allow blank lines in output, your media player may explode',
+    )
     return parser.parse_args()
 
 
@@ -80,7 +85,7 @@ def main():
     merge_subs(muxed_subs, args.ms, 'start', args.width)
     merge_subs(muxed_subs, args.ms, 'end', args.width)
 
-    output = srt.compose(muxed_subs)
+    output = srt.compose(muxed_subs, strict=args.strict)
     args.output.write(output)
 
 
