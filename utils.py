@@ -6,13 +6,23 @@ import logging
 import itertools
 
 
-def basic_parser():
+def basic_parser(multi_input=False):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        '--input', '-i', metavar='FILE',
-        default=sys.stdin, type=argparse.FileType('r'),
-        help='the file to process (default: stdin)',
-    )
+
+    if multi_input:
+        parser.add_argument(
+            '--input', '-i', metavar='FILE',
+            action='append', type=argparse.FileType('r'),
+            help='the files to process',
+            required=True,
+        )
+    else:
+        parser.add_argument(
+            '--input', '-i', metavar='FILE',
+            default=sys.stdin, type=argparse.FileType('r'),
+            help='the file to process (default: stdin)',
+        )
+
     parser.add_argument(
         '--output', '-o', metavar='FILE',
         default=sys.stdout,

@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-import argparse
-import sys
 import datetime
 import srt
 import utils
@@ -11,19 +9,7 @@ import operator
 log = logging.getLogger(__name__)
 
 def parse_args():
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        '--input', '-i', metavar='FILE',
-        action='append', type=argparse.FileType('r'),
-        help='the files to process (default: stdin)',
-        required=True,
-    )
-    parser.add_argument(
-        '--output', '-o', metavar='FILE',
-        default=sys.stdout,
-        type=argparse.FileType('w'),
-        help='the file to write to (default: stdout)',
-    )
+    parser = utils.basic_parser(multi_input=True)
     parser.add_argument(
         '--ms', metavar='MILLISECONDS',
         default=datetime.timedelta(milliseconds=600),
@@ -35,17 +21,6 @@ def parse_args():
         '--width',
         default=5, type=int,
         help='the number of subs to consider merging (default: %(default)s)',
-    )
-    parser.add_argument(
-        '--debug',
-        action="store_const", dest='log_level',
-        const=logging.DEBUG, default=logging.WARNING,
-        help='enable debug logging',
-    )
-    parser.add_argument(
-        '--no-strict',
-        action='store_false', dest='strict',
-        help='allow blank lines in output, your media player may explode',
     )
     return parser.parse_args()
 
