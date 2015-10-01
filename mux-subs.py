@@ -47,6 +47,10 @@ def merge_subs(subs, acceptable_diff, attr, width):
                     future_sub.index, attr, current_sub.index,
                 )
                 setattr(future_sub, attr, current_comp)
+            else:
+                # Since these are sorted, and this one didn't match, we can be
+                # sure future ones won't match either.
+                break
 
 
 def main():
