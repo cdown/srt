@@ -87,7 +87,7 @@ class TestTinysrt(object):
             subs[0].content,
         )
         eq(
-            u' hack the gibson',
+            u'hack the gibson',
             subs[0].proprietary,
         )
 

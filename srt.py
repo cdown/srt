@@ -72,9 +72,14 @@ class Subtitle(object):
         else:
             content = self.content
 
+        if self.proprietary:
+            proprietary_output = ' ' + self.proprietary
+        else:
+            proprietary_output = ''
+
         return '%d\n%s --> %s%s\n%s\n\n' % (
             self.index, timedelta_to_srt_timestamp(self.start),
-            timedelta_to_srt_timestamp(self.end), self.proprietary, content,
+            timedelta_to_srt_timestamp(self.end), proprietary_output, content,
         )
 
 
@@ -169,7 +174,7 @@ def parse(srt):
         pass
 
     srt_regex = re.compile(
-        r'(\d+)\n(\d+:\d+:\d+,\d+) --> (\d+:\d+:\d+,\d+)([^\n]*)\n(.+?)\n\n'
+        r'(\d+)\n(\d+:\d+:\d+,\d+) --> (\d+:\d+:\d+,\d+) ?([^\n]*)\n(.+?)\n\n'
         # Some SRT blocks, while this is technically invalid, have blank lines
         # inside the subtitle content. We look ahead a little to check that the
         # next lines look like an index and a timestamp as a best-effort
