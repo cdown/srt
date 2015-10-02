@@ -68,7 +68,7 @@ class Subtitle(object):
         if strict:
             content = os.linesep.join(
                 line for line in self.content.splitlines() if line
-            )
+            ).strip('\r\n')
         else:
             content = self.content
 

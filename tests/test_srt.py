@@ -41,13 +41,6 @@ def test_compose_and_parse(raw_subs):
 
         assume(content.strip())
 
-        # TODO: Strict mode should remove trailing/leading newlines from
-        # content
-        #
-        # https://github.com/cdown/srt/issues/7
-        assume(content[-1] not in ('\n', '\r'))
-        assume(content[0] not in ('\n', '\r'))
-
         assume('\n' not in proprietary)
         assume('\n\n' not in content)
 
