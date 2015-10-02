@@ -9,6 +9,62 @@ import srt
 import os
 from datetime import timedelta
 from nose.tools import eq_ as eq, assert_not_equal as neq, assert_raises
+from hypothesis import given, assume
+import hypothesis.strategies as st
+import zhon.cedict
+import string
+
+MIX_CHARS = ''.join([
+    zhon.cedict.all,
+    string.ascii_letters,
+    string.digits,
+    ' ',  # string.whitespace contains some funky shit that we don't care about
+])
+SECONDS_IN_DAY = 86399
+
+@given(
+    st.tuples(
+        st.tuples(
+            st.integers(min_value=0),
+            st.integers(min_value=0, max_value=SECONDS_IN_DAY),
+            st.integers(min_value=0, max_value=SECONDS_IN_DAY),
+            st.text(alphabet=MIX_CHARS),
+            st.text(min_size=1, alphabet=MIX_CHARS),
+        )
+    )
+)
+def test_compose_and_parse(raw_subs):
+    input_subs = []
+
+    for raw_sub in raw_subs:
+        index, start_secs, end_secs, proprietary, content = raw_sub
+
+        assume(content.strip())
+
+        # TODO: Strict mode should remove trailing/leading newlines from
+        # content
+        #
+        # https://github.com/cdown/srt/issues/7
+        assume(content[-1] not in ('\n', '\r'))
+        assume(content[0] not in ('\n', '\r'))
+
+        assume('\n' not in proprietary)
+        assume('\n\n' not in content)
+
+        input_subs.append(
+            srt.Subtitle(
+                index=index, start=timedelta(seconds=start_secs),
+                end=timedelta(seconds=end_secs), proprietary=proprietary,
+                content=content,
+            )
+        )
+    composed = srt.compose(input_subs)
+    reparsed_subs = srt.parse(composed)
+
+    eq(
+        [vars(sub) for sub in reparsed_subs],
+        [vars(sub) for sub in input_subs],
+    )
 
 
 class TestTinysrt(object):
