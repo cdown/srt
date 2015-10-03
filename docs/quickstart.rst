@@ -28,13 +28,6 @@ Parse an SRT to Python objects
     >>> subtitles[1].content
     'Using mainly spoons,'
 
-You can also read from a file:
-
-.. code:: python
-
-    >>> with open('mwazowski.srt') as srt_f:
-    ...     subtitle_generator = srt.parse_file(srt_f)
-
 Compose an SRT from Python objects
 ----------------------------------
 
@@ -54,10 +47,3 @@ Compose an SRT from Python objects
     we dig a tunnel under the city and release it into the wild.
     <BLANKLINE>
     <BLANKLINE>
-
-You can also write to a file:
-
-.. code:: python
-
-    >>> with open('mwazowski.srt', 'w') as srt_f:
-    ...     srt.compose_file(subtitles, srt_f)

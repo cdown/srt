@@ -114,9 +114,6 @@ class TestTinysrt(object):
     def _test_monsters_subs(subs, start_index=421):
         '''
         Test that monsters.srt was parsed correctly.
-
-        This is in its own function since these tests are used both when
-        testing srt.parse and srt.parse_file.
         '''
         subs = list(subs)
 
