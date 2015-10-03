@@ -14,20 +14,22 @@ import hypothesis.strategies as st
 import zhon.cedict
 import string
 
+
 MIX_CHARS = ''.join([
     zhon.cedict.all,
     string.ascii_letters,
     string.digits,
     ' ',  # string.whitespace contains some funky shit that we don't care about
 ])
-SECONDS_IN_DAY = 86399
+HOURS_IN_DAY = 24
+
 
 @given(
     st.tuples(
         st.tuples(
             st.integers(min_value=0),
-            st.integers(min_value=0, max_value=SECONDS_IN_DAY),
-            st.integers(min_value=0, max_value=SECONDS_IN_DAY),
+            st.integers(min_value=0),
+            st.integers(min_value=0),
             st.text(alphabet=MIX_CHARS),
             st.text(min_size=1, alphabet=MIX_CHARS),
         )
@@ -58,6 +60,13 @@ def test_compose_and_parse(raw_subs):
         [vars(sub) for sub in reparsed_subs],
         [vars(sub) for sub in input_subs],
     )
+
+
+@given(st.integers(min_value=1))
+def test_timedelta_to_srt_timestamp_can_go_over_24_hours(days):
+    srt_timestamp = srt.timedelta_to_srt_timestamp(timedelta(days=days))
+    srt_timestamp_hours = int(srt_timestamp.split(':')[0])
+    eq(srt_timestamp_hours, days * HOURS_IN_DAY)
 
 
 class TestTinysrt(object):
