@@ -22,6 +22,7 @@ MIX_CHARS = ''.join([
     ' ',  # string.whitespace contains some funky shit that we don't care about
 ])
 HOURS_IN_DAY = 24
+TIMEDELTA_MAX_DAYS = 999999999
 
 
 @given(
@@ -62,7 +63,7 @@ def test_compose_and_parse(raw_subs):
     )
 
 
-@given(st.integers(min_value=1))
+@given(st.integers(min_value=1, max_value=TIMEDELTA_MAX_DAYS))
 def test_timedelta_to_srt_timestamp_can_go_over_24_hours(days):
     srt_timestamp = srt.timedelta_to_srt_timestamp(timedelta(days=days))
     srt_timestamp_hours = int(srt_timestamp.split(':')[0])
