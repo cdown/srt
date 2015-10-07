@@ -8,11 +8,13 @@ import tempfile
 import srt
 import os
 from datetime import timedelta
-from nose.tools import eq_ as eq, assert_not_equal as neq, assert_raises
+from nose.tools import eq_ as eq, assert_not_equal as neq, assert_raises, \
+                       assert_false, assert_true
 from hypothesis import given, assume
 import hypothesis.strategies as st
 import zhon.cedict
 import string
+import functools
 
 
 MIX_CHARS = ''.join([
@@ -23,6 +25,10 @@ MIX_CHARS = ''.join([
 ])
 HOURS_IN_DAY = 24
 TIMEDELTA_MAX_DAYS = 999999999
+CONTENTLESS_SUB = functools.partial(
+    srt.Subtitle, index=1,
+    start=timedelta(seconds=1), end=timedelta(seconds=2),
+)
 
 
 @given(
@@ -61,6 +67,27 @@ def test_compose_and_parse_strict(raw_subs):
         [vars(sub) for sub in reparsed_subs],
         [vars(sub) for sub in input_subs],
     )
+
+
+@given(st.text(min_size=1, alphabet=MIX_CHARS))
+def test_compose_and_parse_strict_mode(content):
+    content = '\n' + content + '\n\n' + content + '\n'
+    sub = CONTENTLESS_SUB(content=content)
+
+    parsed_strict = list(srt.parse(sub.to_srt()))[0]
+    parsed_unstrict = list(srt.parse(sub.to_srt(strict=False)))[0]
+
+    # Strict mode should remove blank lines in content, leading, and trailing
+    # newlines.
+    assert_false(parsed_strict.content.startswith('\n'))
+    assert_false(parsed_strict.content.endswith('\n'))
+    assert_false('\n\n' in parsed_strict.content)
+
+    # When strict mode is false, no processing should be applied to the
+    # content.
+    assert_true(parsed_unstrict.content.startswith('\n'))
+    assert_true(parsed_unstrict.content.endswith('\n'))
+    assert_true('\n\n' in parsed_unstrict.content)
 
 
 @given(st.integers(min_value=1, max_value=TIMEDELTA_MAX_DAYS))
