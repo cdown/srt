@@ -32,11 +32,11 @@ TIMEDELTA_MAX_DAYS = 999999999
             st.integers(min_value=0),
             st.integers(min_value=0),
             st.text(alphabet=MIX_CHARS),
-            st.text(min_size=1, alphabet=MIX_CHARS),
+            st.text(min_size=1, alphabet=MIX_CHARS + '\n'),
         )
     )
 )
-def test_compose_and_parse(raw_subs):
+def test_compose_and_parse_strict(raw_subs):
     input_subs = []
 
     for raw_sub in raw_subs:
