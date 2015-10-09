@@ -181,13 +181,13 @@ def parse(srt):
         # inside the subtitle content. We look ahead a little to check that the
         # next lines look like an index and a timestamp as a best-effort
         # solution to work around these.
-        r'(?=(\d+\n\d+:|\Z))',
+        r'(?=(?:\d+\n\d+:|\Z))',
         srt_regex_flags,
     )
 
     for match in srt_regex.finditer(srt):
         match_ranges.append((match.start(), match.end()))
-        raw_index, raw_start, raw_end, proprietary, content, _ = match.groups()
+        raw_index, raw_start, raw_end, proprietary, content = match.groups()
         yield Subtitle(
             index=int(raw_index), start=srt_timestamp_to_timedelta(raw_start),
             end=srt_timestamp_to_timedelta(raw_end), content=content,
