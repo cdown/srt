@@ -171,6 +171,22 @@ def test_parsing_content_with_blank_lines(subs):
     subs_eq(reparsed_subtitles, subs)
 
 
+@given(
+    st.lists(subtitles()), st.lists(subtitles()), st.text(alphabet='\n\r\t '),
+)
+def test_subs_missing_content_removed(content_subs, contentless_subs,
+                                      contentless_text):
+    for sub in contentless_subs:
+        sub.content = contentless_text
+
+    subs = content_subs + contentless_subs
+    num_composed = len(list(srt.sort_and_reindex(subs)))
+
+    # We should have composed the same number of subs as there are in
+    # content_subs, as all contentless_subs should have been stripped.
+    eq(num_composed, len(content_subs))
+
+
 class TestTinysrt(object):
     @staticmethod
     def _fixture(path):
@@ -323,22 +339,6 @@ class TestTinysrt(object):
             u'挖一条隧道 然后把她丢到野外去\n'
             'we dig a tunnel under the city and release it into the wild.',
             sorted_and_reindexed_subs[1].content,
-        )
-
-    def test_blank_line_without_index_continues_content(self):
-        subs = list(srt.parse(self.srt_sample_bad_newline))
-        eq(
-            subs[0].content,
-            '我有个点子\n\nOK, look, I think I have a plan here.',
-        )
-        eq(
-            subs[1].content,
-            '我们要拿一堆汤匙\n\nUsing mainly spoons,',
-        )
-        eq(
-            subs[2].content,
-            '挖一条隧道 然后把她丢到野外去\n\n'
-            'we dig a tunnel under the city and release it into the wild.',
         )
 
     def test_parser_noncontiguous(self):
