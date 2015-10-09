@@ -135,10 +135,40 @@ def test_subtitle_to_srt(index, timestamp, content):
     )
 
 
-def test_subtitle_objects_hashable():
+@given(st.integers(min_value=1), st.integers(min_value=0), CONTENT_TEXT)
+def test_subtitle_equality(index, seconds, content):
+    sub_1 = srt.Subtitle(
+        index=index, start=timedelta(seconds=seconds),
+        end=timedelta(seconds=seconds), content=content,
+    )
+    sub_2 = srt.Subtitle(
+        index=index, start=timedelta(seconds=seconds),
+        end=timedelta(seconds=seconds), content=content,
+    )
+    eq(sub_1, sub_2)
+
+
+@given(
+    st.integers(min_value=1), st.integers(min_value=0),
+    st.integers(min_value=0), CONTENT_TEXT,
+)
+def test_subtitle_inequality(index, seconds_1, seconds_2, content):
+    sub_1 = srt.Subtitle(
+        index=index, start=timedelta(seconds=seconds_1),
+        end=timedelta(seconds=seconds_1), content=content,
+    )
+    sub_2 = srt.Subtitle(
+        index=index, start=timedelta(seconds=seconds_2),
+        end=timedelta(seconds=seconds_2), content=content,
+    )
+    neq(sub_1, sub_2)
+
+
+@given(st.integers(min_value=1), st.integers(min_value=0), CONTENT_TEXT)
+def test_subtitle_objects_hashable(index, seconds, content):
     hash(srt.Subtitle(
-        index=1, start=srt.srt_timestamp_to_timedelta('00:01:02,003'),
-        end=srt.srt_timestamp_to_timedelta('00:02:03,004'), content='foo',
+        index=index, start=timedelta(seconds=seconds),
+        end=timedelta(seconds=seconds), content=content,
     ))
 
 
