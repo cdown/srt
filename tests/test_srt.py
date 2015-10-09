@@ -97,6 +97,32 @@ def test_timedelta_to_srt_timestamp_can_go_over_24_hours(days):
     eq(srt_timestamp_hours, days * HOURS_IN_DAY)
 
 
+def test_subtitle_to_srt():
+    sub = srt.Subtitle(
+        index=1, start=srt.srt_timestamp_to_timedelta('00:01:02,003'),
+        end=srt.srt_timestamp_to_timedelta('00:02:03,004'), content='foo',
+    )
+    eq(sub.to_srt(), '1\n00:01:02,003 --> 00:02:03,004\nfoo\n\n')
+
+def test_timedelta_to_srt_timestamp():
+    timedelta_ts = timedelta(
+        hours=1, minutes=2, seconds=3, milliseconds=400,
+    )
+    eq(srt.timedelta_to_srt_timestamp(timedelta_ts), '01:02:03,400')
+
+def test_srt_timestamp_to_timedelta():
+    eq(
+        timedelta(hours=1, minutes=2, seconds=3, milliseconds=400),
+        srt.srt_timestamp_to_timedelta('01:02:03,400'),
+    )
+
+def test_subtitle_objects_hashable():
+    hash(srt.Subtitle(
+        index=1, start=srt.srt_timestamp_to_timedelta('00:01:02,003'),
+        end=srt.srt_timestamp_to_timedelta('00:02:03,004'), content='foo',
+    ))
+
+
 class TestTinysrt(object):
     @staticmethod
     def _fixture(path):
@@ -219,28 +245,6 @@ class TestTinysrt(object):
         subs_2 = list(srt.parse(self.srt_sample))
         eq(subs_1, subs_2)
 
-    @staticmethod
-    def test_subtitle_to_srt():
-        sub = srt.Subtitle(
-            index=1, start=srt.srt_timestamp_to_timedelta('00:01:02,003'),
-            end=srt.srt_timestamp_to_timedelta('00:02:03,004'), content='foo',
-        )
-        eq(sub.to_srt(), '1\n00:01:02,003 --> 00:02:03,004\nfoo\n\n')
-
-    @staticmethod
-    def test_timedelta_to_srt_timestamp():
-        timedelta_ts = timedelta(
-            hours=1, minutes=2, seconds=3, milliseconds=400,
-        )
-        eq(srt.timedelta_to_srt_timestamp(timedelta_ts), '01:02:03,400')
-
-    @staticmethod
-    def test_srt_timestamp_to_timedelta():
-        eq(
-            timedelta(hours=1, minutes=2, seconds=3, milliseconds=400),
-            srt.srt_timestamp_to_timedelta('01:02:03,400'),
-        )
-
     def test_parse(self):
         subs = list(srt.parse(self.srt_sample))
         self._test_monsters_subs(subs)
@@ -248,13 +252,6 @@ class TestTinysrt(object):
     def test_compose(self):
         subs = srt.parse(self.srt_sample)
         eq(self.srt_sample, srt.compose(subs, reindex=True, start_index=421))
-
-    @staticmethod
-    def test_subtitle_objects_hashable():
-        hash(srt.Subtitle(
-            index=1, start=srt.srt_timestamp_to_timedelta('00:01:02,003'),
-            end=srt.srt_timestamp_to_timedelta('00:02:03,004'), content='foo',
-        ))
 
     def test_sort_and_reindex_basic(self):
         subs = srt.parse(self.srt_sample_bad_order)
