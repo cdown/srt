@@ -16,6 +16,12 @@ import zhon.cedict
 import string
 import functools
 
+TIMESTAMP_ARGS = st.tuples(
+    st.integers(min_value=0),  # Hour
+    st.integers(min_value=0, max_value=59),  # Minute
+    st.integers(min_value=0, max_value=59),  # Second
+    st.integers(min_value=0, max_value=999),  # Millisecond
+)
 
 MIX_CHARS = ''.join([
     zhon.cedict.all,
@@ -29,6 +35,23 @@ CONTENTLESS_SUB = functools.partial(
     srt.Subtitle, index=1,
     start=timedelta(seconds=1), end=timedelta(seconds=2),
 )
+CONTENT_TEXT = st.text(min_size=1, alphabet=MIX_CHARS + '\n')
+
+
+def assume_content_passes_strict(content):
+    # There must actually be some content to strip, or the parser will
+    # fail. In fact, this subtitle will just simply be removed by the
+    # compose function's content existence checks.
+    assume(content.strip())
+
+    # Strict mode will strip these, which will break our equality checks.
+    assume(not content.startswith('\n'))
+    assume(not content.endswith('\n'))
+
+    # Blank lines are not legal in strict mode. We can actually parse them
+    # ok in most circumstances, but strict mode will strip them out,
+    # breaking our equality checks.
+    assume('\n\n' not in content)
 
 
 @given(
@@ -38,7 +61,7 @@ CONTENTLESS_SUB = functools.partial(
             st.integers(min_value=0),
             st.integers(min_value=0),
             st.text(alphabet=MIX_CHARS),
-            st.text(min_size=1, alphabet=MIX_CHARS + '\n'),
+            CONTENT_TEXT,
         )
     )
 )
@@ -48,10 +71,7 @@ def test_compose_and_parse_strict(raw_subs):
     for raw_sub in raw_subs:
         index, start_secs, end_secs, proprietary, content = raw_sub
 
-        assume(content.strip())
-
-        assume('\n' not in proprietary)
-        assume('\n\n' not in content)
+        assume_content_passes_strict(content)
 
         input_subs.append(
             srt.Subtitle(
@@ -60,6 +80,7 @@ def test_compose_and_parse_strict(raw_subs):
                 content=content,
             )
         )
+
     composed = srt.compose(input_subs)
     reparsed_subs = srt.parse(composed)
 
@@ -97,12 +118,22 @@ def test_timedelta_to_srt_timestamp_can_go_over_24_hours(days):
     eq(srt_timestamp_hours, days * HOURS_IN_DAY)
 
 
-def test_subtitle_to_srt():
+@given(st.integers(min_value=1), TIMESTAMP_ARGS, CONTENT_TEXT)
+def test_subtitle_to_srt(index, timestamp, content):
+    assume_content_passes_strict(content)
+    hour, minute, second, msecs = timestamp
+    srt_timestamp = '%02d:%02d:%02d,%03d' % (hour, minute, second, msecs)
     sub = srt.Subtitle(
-        index=1, start=srt.srt_timestamp_to_timedelta('00:01:02,003'),
-        end=srt.srt_timestamp_to_timedelta('00:02:03,004'), content='foo',
+        index=index, start=srt.srt_timestamp_to_timedelta(srt_timestamp),
+        end=srt.srt_timestamp_to_timedelta(srt_timestamp), content=content,
     )
-    eq(sub.to_srt(), '1\n00:01:02,003 --> 00:02:03,004\nfoo\n\n')
+    eq(
+        sub.to_srt(),
+        '%d\n%s --> %s\n%s\n\n' % (
+            index, srt_timestamp, srt_timestamp, content,
+        ),
+    )
+
 
 def test_timedelta_to_srt_timestamp():
     timedelta_ts = timedelta(
@@ -110,11 +141,13 @@ def test_timedelta_to_srt_timestamp():
     )
     eq(srt.timedelta_to_srt_timestamp(timedelta_ts), '01:02:03,400')
 
+
 def test_srt_timestamp_to_timedelta():
     eq(
         timedelta(hours=1, minutes=2, seconds=3, milliseconds=400),
         srt.srt_timestamp_to_timedelta('01:02:03,400'),
     )
+
 
 def test_subtitle_objects_hashable():
     hash(srt.Subtitle(
@@ -145,8 +178,8 @@ class TestTinysrt(object):
         with codecs.open(cls.srt_filename_bad_order, 'r', 'utf8') as srt_bad_f:
             cls.srt_sample_bad_order = srt_bad_f.read()
 
-        with codecs.open(cls.srt_filename_bad_newline, 'r', 'utf8') as srt_bad_f:
-            cls.srt_sample_bad_newline = srt_bad_f.read()
+        with codecs.open(cls.srt_filename_bad_newline, 'r', 'utf8') as srt_f:
+            cls.srt_sample_bad_newline = srt_f.read()
 
     def setup(self):
         self.srt_f = codecs.open(self.srt_filename, 'r', 'utf8')
