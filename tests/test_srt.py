@@ -187,7 +187,29 @@ def test_subs_missing_content_removed(content_subs, contentless_subs,
     eq(num_composed, len(content_subs))
 
 
+@given(st.lists(subtitles(), min_size=1), st.integers(min_value=0))
+def test_sort_and_reindex(input_subs, start_index):
+    reindexed_subs = list(
+        srt.sort_and_reindex(input_subs, start_index=start_index),
+    )
+
+    # The subtitles should be reindexed starting at start_index
+    eq(
+        [sub.index for sub in reindexed_subs],
+        list(range(start_index, start_index + len(input_subs)))
+    )
+
+    # The subtitles should be sorted by start time
+    expected_sorting = sorted(input_subs, key=lambda sub: sub.start)
+    eq(reindexed_subs, expected_sorting)
+
+
 class TestTinysrt(object):
+    def test_parser_noncontiguous(self):
+        unfinished_srt = '\n'.join(self.srt_sample.split('\n')[:-5]) + '\n'
+        with assert_raises(srt.SRTParseError):
+            list(srt.parse(unfinished_srt))
+
     @staticmethod
     def _fixture(path):
         return os.path.join(os.path.dirname(__file__), path)
@@ -287,61 +309,3 @@ class TestTinysrt(object):
             u'我们要拿一堆汤匙\nUsing mainly spoons,',
             subs[1].content,
         )
-
-    def test_subtitle_sort_by_start(self):
-        subs = srt.parse(self.srt_sample_bad_order)
-        sorted_subs = sorted(subs)
-
-        eq(
-            [x.index for x in sorted_subs],
-            [422, 421, 423],
-        )
-
-    def test_subtitle_equality_false(self):
-        subs_1 = list(srt.parse(self.srt_sample))
-        subs_2 = list(srt.parse(self.srt_sample))
-        subs_2[0].content += 'blah'
-
-        neq(subs_1, subs_2)
-
-    def test_subtitle_equality_true(self):
-        subs_1 = list(srt.parse(self.srt_sample))
-        subs_2 = list(srt.parse(self.srt_sample))
-        eq(subs_1, subs_2)
-
-    def test_parse(self):
-        subs = list(srt.parse(self.srt_sample))
-        self._test_monsters_subs(subs)
-
-    def test_compose(self):
-        subs = srt.parse(self.srt_sample)
-        eq(self.srt_sample, srt.compose(subs, reindex=True, start_index=421))
-
-    def test_sort_and_reindex_basic(self):
-        subs = srt.parse(self.srt_sample_bad_order)
-        sorted_and_reindexed_subs = srt.sort_and_reindex(subs, start_index=20)
-        self._test_monsters_subs(sorted_and_reindexed_subs, start_index=20)
-
-    def test_sar_skips_missing_content(self):
-        subs = list(srt.parse(self.srt_sample))
-        subs[1].content = '\n'
-        sorted_and_reindexed_subs = srt.sort_and_reindex(subs, start_index=20)
-        sorted_and_reindexed_subs = list(sorted_and_reindexed_subs)
-
-        eq(2, len(sorted_and_reindexed_subs))
-        eq(20, sorted_and_reindexed_subs[0].index)
-        eq(21, sorted_and_reindexed_subs[1].index)
-        eq(
-            u'我有个点子\nOK, look, I think I have a plan here.',
-            sorted_and_reindexed_subs[0].content,
-        )
-        eq(
-            u'挖一条隧道 然后把她丢到野外去\n'
-            'we dig a tunnel under the city and release it into the wild.',
-            sorted_and_reindexed_subs[1].content,
-        )
-
-    def test_parser_noncontiguous(self):
-        unfinished_srt = '\n'.join(self.srt_sample.split('\n')[:-5]) + '\n'
-        with assert_raises(srt.SRTParseError):
-            list(srt.parse(unfinished_srt))
