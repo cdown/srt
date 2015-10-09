@@ -54,34 +54,53 @@ def assume_content_passes_strict(content):
     assume('\n\n' not in content)
 
 
-@given(
-    st.tuples(
-        st.tuples(
-            st.integers(min_value=0),
-            st.integers(min_value=0),
-            st.integers(min_value=0),
-            st.text(alphabet=MIX_CHARS),
-            CONTENT_TEXT,
-        )
+def is_strictly_legal_content(content):
+    '''
+    Filter out things that would violate strict mode. Illegal content
+    includes:
+
+    - A content section that is only made of whitespace
+    - A content section that starts or ends with a newline
+    - A content section that contains blank lines
+    '''
+
+    if not content.strip():
+        return False
+    elif content.startswith('\n') or content.endswith('\n'):
+        return False
+    elif '\n\n' in content:
+        return False
+    else:
+        return True
+
+
+def subtitles(only_legal_content=True):
+    '''A Hypothesis strategy to generate Subtitle objects.'''
+    timestamp_strategy = st.builds(
+        timedelta, hours=st.integers(min_value=0),
+        minutes=st.integers(min_value=0), seconds=st.integers(min_value=0),
     )
-)
-def test_compose_and_parse_strict(raw_subs):
-    input_subs = []
+    content_strategy = st.text(min_size=1, alphabet=MIX_CHARS + '\n')
+    proprietary_strategy = st.text(alphabet=MIX_CHARS)
 
-    for raw_sub in raw_subs:
-        index, start_secs, end_secs, proprietary, content = raw_sub
+    if only_legal_content:
+        content_strategy = content_strategy.filter(is_strictly_legal_content)
 
-        assume_content_passes_strict(content)
+    subtitle_strategy = st.builds(
+        srt.Subtitle,
+        index=st.integers(min_value=0),
+        start=timestamp_strategy,
+        end=timestamp_strategy,
+        proprietary=proprietary_strategy,
+        content=content_strategy,
+    )
 
-        input_subs.append(
-            srt.Subtitle(
-                index=index, start=timedelta(seconds=start_secs),
-                end=timedelta(seconds=end_secs), proprietary=proprietary,
-                content=content,
-            )
-        )
+    return subtitle_strategy
 
-    composed = srt.compose(input_subs)
+
+@given(st.lists(subtitles()))
+def test_compose_and_parse_strict(input_subs):
+    composed = srt.compose(input_subs, reindex=False)
     reparsed_subs = srt.parse(composed)
 
     eq(
@@ -148,19 +167,10 @@ def test_subtitle_equality(index, seconds, content):
     eq(sub_1, sub_2)
 
 
-@given(
-    st.integers(min_value=1), st.integers(min_value=0),
-    st.integers(min_value=0), CONTENT_TEXT,
-)
-def test_subtitle_inequality(index, seconds_1, seconds_2, content):
-    sub_1 = srt.Subtitle(
-        index=index, start=timedelta(seconds=seconds_1),
-        end=timedelta(seconds=seconds_1), content=content,
-    )
-    sub_2 = srt.Subtitle(
-        index=index, start=timedelta(seconds=seconds_2),
-        end=timedelta(seconds=seconds_2), content=content,
-    )
+@given(subtitles())
+def test_subtitle_inequality(sub_1):
+    sub_2 = srt.Subtitle(**vars(sub_1))
+    sub_2.index += 1
     neq(sub_1, sub_2)
 
 
