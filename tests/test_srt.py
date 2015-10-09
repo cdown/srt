@@ -3,10 +3,7 @@
 # pylint: disable=attribute-defined-outside-init
 
 from __future__ import unicode_literals
-import codecs
-import tempfile
 import srt
-import os
 from datetime import timedelta
 from nose.tools import eq_ as eq, assert_not_equal as neq, assert_raises, \
                        assert_false, assert_true
@@ -204,108 +201,22 @@ def test_sort_and_reindex(input_subs, start_index):
     eq(reindexed_subs, expected_sorting)
 
 
-class TestTinysrt(object):
-    def test_parser_noncontiguous(self):
-        unfinished_srt = '\n'.join(self.srt_sample.split('\n')[:-5]) + '\n'
-        with assert_raises(srt.SRTParseError):
-            list(srt.parse(unfinished_srt))
+@given(
+    st.lists(subtitles(), min_size=1), st.integers(min_value=0),
+    st.integers(min_value=0), st.text(min_size=1),
+)
+def test_parser_noncontiguous(subs, fake_idx, fake_hours, garbage):
+    composed = srt.compose(subs)
 
-    @staticmethod
-    def _fixture(path):
-        return os.path.join(os.path.dirname(__file__), path)
-
-    @classmethod
-    def setup_class(cls):
-        cls.srt_filename = cls._fixture('srt_samples/monsters.srt')
-        cls.srt_filename_windows = cls._fixture('srt_samples/monsters-win.srt')
-        cls.srt_filename_bad_order = cls._fixture(
-            'srt_samples/monsters-bad-order.srt'
+    # Put some garbage between subs that should trigger our failed parsing
+    # detection. Since we do some magic to try and detect blank lines that
+    # don't really delimit subtitles, it has to look at least a little like an
+    # SRT block.
+    composed = composed.replace(
+        '\n\n', '\n\n%d\n%d:%s' % (
+            fake_idx, fake_hours, garbage,
         )
-        cls.srt_filename_bad_newline = cls._fixture(
-            'srt_samples/monsters-bad-newline.srt'
-        )
+    )
 
-        with codecs.open(cls.srt_filename, 'r', 'utf8') as srt_f:
-            cls.srt_sample = srt_f.read()
-
-        with codecs.open(cls.srt_filename_bad_order, 'r', 'utf8') as srt_bad_f:
-            cls.srt_sample_bad_order = srt_bad_f.read()
-
-        with codecs.open(cls.srt_filename_bad_newline, 'r', 'utf8') as srt_f:
-            cls.srt_sample_bad_newline = srt_f.read()
-
-    def setup(self):
-        self.srt_f = codecs.open(self.srt_filename, 'r', 'utf8')
-        self.srt_bad_order_f = codecs.open(
-            self.srt_filename_bad_order, 'r', 'utf8'
-        )
-        self._temp_fd_bad_enc, self.temp_path = tempfile.mkstemp()
-        os.close(self._temp_fd_bad_enc)
-        self.temp_f = codecs.open(self.temp_path, 'w', 'utf8')
-
-    def teardown(self):
-        self.srt_f.close()
-        self.srt_bad_order_f.close()
-        self.temp_f.close()
-        os.remove(self.temp_path)
-
-    @staticmethod
-    def _test_monsters_subs(subs, start_index=421):
-        '''
-        Test that monsters.srt was parsed correctly.
-        '''
-        subs = list(subs)
-
-        eq(3, len(subs))
-
-        eq(start_index, subs[0].index)
-        eq(
-            timedelta(
-                hours=0,
-                minutes=31,
-                seconds=37,
-                milliseconds=894,
-            ),
-            subs[0].start,
-        )
-        eq(
-            timedelta(
-                hours=0,
-                minutes=31,
-                seconds=39,
-                milliseconds=928,
-            ),
-            subs[0].end,
-        )
-        eq(
-            u'我有个点子\nOK, look, I think I have a plan here.',
-            subs[0].content,
-        )
-        eq(
-            u'hack the gibson',
-            subs[0].proprietary,
-        )
-
-        eq(start_index + 1, subs[1].index)
-        eq(
-            timedelta(
-                hours=0,
-                minutes=31,
-                seconds=39,
-                milliseconds=931,
-            ),
-            subs[1].start,
-        )
-        eq(
-            timedelta(
-                hours=0,
-                minutes=31,
-                seconds=41,
-                milliseconds=931,
-            ),
-            subs[1].end,
-        )
-        eq(
-            u'我们要拿一堆汤匙\nUsing mainly spoons,',
-            subs[1].content,
-        )
+    with assert_raises(srt.SRTParseError):
+        list(srt.parse(composed))
