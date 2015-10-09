@@ -135,20 +135,6 @@ def test_subtitle_to_srt(index, timestamp, content):
     )
 
 
-def test_timedelta_to_srt_timestamp():
-    timedelta_ts = timedelta(
-        hours=1, minutes=2, seconds=3, milliseconds=400,
-    )
-    eq(srt.timedelta_to_srt_timestamp(timedelta_ts), '01:02:03,400')
-
-
-def test_srt_timestamp_to_timedelta():
-    eq(
-        timedelta(hours=1, minutes=2, seconds=3, milliseconds=400),
-        srt.srt_timestamp_to_timedelta('01:02:03,400'),
-    )
-
-
 def test_subtitle_objects_hashable():
     hash(srt.Subtitle(
         index=1, start=srt.srt_timestamp_to_timedelta('00:01:02,003'),
