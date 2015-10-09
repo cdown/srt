@@ -74,7 +74,15 @@ def is_strictly_legal_content(content):
         return True
 
 
-def subtitles(only_legal_content=True):
+def subs_eq(got, expected):
+    '''
+    Compare Subtitle objects using vars() so that differences are easy to
+    identify.
+    '''
+    eq([vars(sub) for sub in got], [vars(sub) for sub in expected])
+
+
+def subtitles(strict=True):
     '''A Hypothesis strategy to generate Subtitle objects.'''
     timestamp_strategy = st.builds(
         timedelta, hours=st.integers(min_value=0),
@@ -83,7 +91,7 @@ def subtitles(only_legal_content=True):
     content_strategy = st.text(min_size=1, alphabet=MIX_CHARS + '\n')
     proprietary_strategy = st.text(alphabet=MIX_CHARS)
 
-    if only_legal_content:
+    if strict:
         content_strategy = content_strategy.filter(is_strictly_legal_content)
 
     subtitle_strategy = st.builds(
@@ -102,11 +110,7 @@ def subtitles(only_legal_content=True):
 def test_compose_and_parse_strict(input_subs):
     composed = srt.compose(input_subs, reindex=False)
     reparsed_subs = srt.parse(composed)
-
-    eq(
-        [vars(sub) for sub in reparsed_subs],
-        [vars(sub) for sub in input_subs],
-    )
+    subs_eq(reparsed_subs, input_subs)
 
 
 @given(st.text(min_size=1, alphabet=MIX_CHARS))
@@ -137,33 +141,9 @@ def test_timedelta_to_srt_timestamp_can_go_over_24_hours(days):
     eq(srt_timestamp_hours, days * HOURS_IN_DAY)
 
 
-@given(st.integers(min_value=1), TIMESTAMP_ARGS, CONTENT_TEXT)
-def test_subtitle_to_srt(index, timestamp, content):
-    assume_content_passes_strict(content)
-    hour, minute, second, msecs = timestamp
-    srt_timestamp = '%02d:%02d:%02d,%03d' % (hour, minute, second, msecs)
-    sub = srt.Subtitle(
-        index=index, start=srt.srt_timestamp_to_timedelta(srt_timestamp),
-        end=srt.srt_timestamp_to_timedelta(srt_timestamp), content=content,
-    )
-    eq(
-        sub.to_srt(),
-        '%d\n%s --> %s\n%s\n\n' % (
-            index, srt_timestamp, srt_timestamp, content,
-        ),
-    )
-
-
-@given(st.integers(min_value=1), st.integers(min_value=0), CONTENT_TEXT)
-def test_subtitle_equality(index, seconds, content):
-    sub_1 = srt.Subtitle(
-        index=index, start=timedelta(seconds=seconds),
-        end=timedelta(seconds=seconds), content=content,
-    )
-    sub_2 = srt.Subtitle(
-        index=index, start=timedelta(seconds=seconds),
-        end=timedelta(seconds=seconds), content=content,
-    )
+@given(subtitles())
+def test_subtitle_equality(sub_1):
+    sub_2 = srt.Subtitle(**vars(sub_1))
     eq(sub_1, sub_2)
 
 
@@ -174,12 +154,21 @@ def test_subtitle_inequality(sub_1):
     neq(sub_1, sub_2)
 
 
-@given(st.integers(min_value=1), st.integers(min_value=0), CONTENT_TEXT)
-def test_subtitle_objects_hashable(index, seconds, content):
-    hash(srt.Subtitle(
-        index=index, start=timedelta(seconds=seconds),
-        end=timedelta(seconds=seconds), content=content,
+@given(subtitles())
+def test_subtitle_objects_hashable(subtitle):
+    hash(subtitle)
+
+@given(st.lists(subtitles()))
+def test_parsing_content_with_blank_lines(subs):
+    for subtitle in subs:
+        # We stuff a blank line in the middle so as to trigger the "special"
+        # content parsing for erroneous SRT files that have blank lines.
+        subtitle.content = subtitle.content + '\n\n' + subtitle.content
+
+    reparsed_subtitles = srt.parse(srt.compose(
+        subs, reindex=False, strict=False,
     ))
+    subs_eq(reparsed_subtitles, subs)
 
 
 class TestTinysrt(object):
@@ -351,17 +340,6 @@ class TestTinysrt(object):
             '挖一条隧道 然后把她丢到野外去\n\n'
             'we dig a tunnel under the city and release it into the wild.',
         )
-
-    def test_to_srt_strict(self):
-        srt_blocks = srt.compose(srt.parse(self.srt_sample_bad_newline))
-        eq(srt_blocks.count('\n\n'), 3)
-
-    def test_to_srt_unstrict(self):
-        srt_blocks = srt.compose(
-            srt.parse(self.srt_sample_bad_newline),
-            strict=False,
-        )
-        eq(srt_blocks.count('\n\n'), 6)
 
     def test_parser_noncontiguous(self):
         unfinished_srt = '\n'.join(self.srt_sample.split('\n')[:-5]) + '\n'
