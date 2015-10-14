@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 import srt
 from datetime import timedelta
 from nose.tools import eq_ as eq, assert_not_equal as neq, assert_raises, \
-                       assert_false, assert_true
+                       assert_false
 from hypothesis import given
 import hypothesis.strategies as st
 import zhon.cedict
@@ -110,9 +110,7 @@ def test_compose_and_parse_strict_mode(content):
 
     # When strict mode is false, no processing should be applied to the
     # content.
-    assert_true(parsed_unstrict.content.startswith('\n'))
-    assert_true(parsed_unstrict.content.endswith('\n'))
-    assert_true('\n\n' in parsed_unstrict.content)
+    eq(parsed_unstrict.content, sub.content)
 
 
 @given(st.integers(min_value=1, max_value=TIMEDELTA_MAX_DAYS))
