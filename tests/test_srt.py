@@ -7,7 +7,7 @@ import srt
 from datetime import timedelta
 from nose.tools import eq_ as eq, assert_not_equal as neq, assert_raises, \
                        assert_false, assert_true
-from hypothesis import given, assume
+from hypothesis import given
 import hypothesis.strategies as st
 import zhon.cedict
 import string
@@ -33,22 +33,6 @@ CONTENTLESS_SUB = functools.partial(
     start=timedelta(seconds=1), end=timedelta(seconds=2),
 )
 CONTENT_TEXT = st.text(min_size=1, alphabet=MIX_CHARS + '\n')
-
-
-def assume_content_passes_strict(content):
-    # There must actually be some content to strip, or the parser will
-    # fail. In fact, this subtitle will just simply be removed by the
-    # compose function's content existence checks.
-    assume(content.strip())
-
-    # Strict mode will strip these, which will break our equality checks.
-    assume(not content.startswith('\n'))
-    assume(not content.endswith('\n'))
-
-    # Blank lines are not legal in strict mode. We can actually parse them
-    # ok in most circumstances, but strict mode will strip them out,
-    # breaking our equality checks.
-    assume('\n\n' not in content)
 
 
 def is_strictly_legal_content(content):
