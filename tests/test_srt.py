@@ -202,3 +202,16 @@ def test_parser_noncontiguous(subs, fake_idx, fake_hours, garbage):
 
     with assert_raises(srt.SRTParseError):
         list(srt.parse(composed))
+
+@given(
+    st.lists(subtitles(), min_size=1), st.integers(min_value=0),
+    st.integers(min_value=0), st.text(min_size=1),
+)
+def test_parser_didnt_match_to_end_raises(subs, fake_idx, fake_hours, garbage):
+    srt_blocks = [sub.to_srt() for sub in subs]
+    garbage = '\n\n%d\n%d:%s' % (fake_idx, fake_hours, garbage)
+    srt_blocks.append(garbage)
+    composed = ''.join(srt_blocks)
+
+    with assert_raises(srt.SRTParseError):
+        list(srt.parse(composed))
