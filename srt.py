@@ -13,7 +13,6 @@ import logging
 log = logging.getLogger(__name__)
 
 
-
 class SRTParseError(Exception): pass
 
 
@@ -162,10 +161,6 @@ def parse(srt):
               objects
     :rtype: :term:`generator` of :py:class:`Subtitle` objects
     '''
-    # We use match_ranges to check that the regexes were contiguous and
-    # consumed all of the string, without silently ignoring anything.
-    match_ranges = []
-
     srt_regex_flags = re.MULTILINE | re.DOTALL
 
     # Python 3 searches for Unicode by default. The SRT spec doesn't allow for
@@ -185,8 +180,12 @@ def parse(srt):
         srt_regex_flags,
     )
 
+    expected_start = 0
+
     for match in srt_regex.finditer(srt):
-        match_ranges.append((match.start(), match.end()))
+        actual_start = match.start()
+        _raise_if_not_contiguous(srt, expected_start, actual_start)
+
         raw_index, raw_start, raw_end, proprietary, content = match.groups()
         yield Subtitle(
             index=int(raw_index), start=srt_timestamp_to_timedelta(raw_start),
@@ -194,24 +193,30 @@ def parse(srt):
             proprietary=proprietary,
         )
 
-    next_expected_start = 0
-    for start, end in match_ranges:
-        if start != next_expected_start:
-            raise SRTParseError(
-                'Expected to start at %d, but started at %d (content: %r)' % (
-                    next_expected_start, start, srt[next_expected_start:start],
-                )
-            )
+        expected_start = match.end()
 
-        next_expected_start = end
+    _raise_if_not_contiguous(srt, expected_start, len(srt))
 
-    if next_expected_start != len(srt):
+
+def _raise_if_not_contiguous(srt, expected_start, actual_start):
+    '''
+    Raise :py:class:`SRTParseError` with diagnostic info if expected_start does
+    not equal actual_start.
+
+    :param str srt: the data being matched
+    :param int expected_start: the expected next start, as from the last
+                               iteration's match.end()
+    :param int actual_start: the actual start, as from this iteration's
+                             match.start()
+    :raises SRTParseError: if the matches are not contiguous
+    '''
+    if expected_start != actual_start:
         raise SRTParseError(
-            'Expected to end at %d, but ended at %d (content: %r)' % (
-                next_expected_start, len(srt), srt[next_expected_start:],
+            'Expected contiguous start of match or end of string at char %d, '
+            'but started at char %d (unmatched content: %r)' % (
+                expected_start, actual_start, srt[expected_start:actual_start],
             )
         )
-
 
 def compose(subtitles, reindex=True, start_index=1, strict=True):
     r'''
