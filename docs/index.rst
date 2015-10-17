@@ -1,7 +1,9 @@
 `srt`: Parse SubRip files
 =========================
 
-`srt` is a tiny Python library for parsing, modifying, and composing SRT files.
+srt_ is a tiny Python library for parsing, modifying, and composing SRT files.
+
+.. _srt: https://github.com/cdown/srt
 
 Documentation
 =============
