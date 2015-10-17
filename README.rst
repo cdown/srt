@@ -18,7 +18,7 @@ To install the latest stable version from PyPi:
 
     pip install -U srt
 
-To install the development version, run
+To install the latest development version directly from GitHub:
 
 .. code::
 
