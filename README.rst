@@ -22,7 +22,7 @@ To install the development version, run
 
 .. code::
 
-    pip install -U git+git://github.com/cdown/srt.git@develop
+    pip install -U git+https://github.com/cdown/srt.git@develop
 
 Testing
 -------
