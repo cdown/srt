@@ -31,10 +31,8 @@ Testing
   :target: https://travis-ci.org/cdown/srt
   :alt: Test status
 
-To test on all supported Python versions using Tox_:
-
 .. code::
 
-   tox
+   tox -e quick
 
 .. _Tox: https://tox.readthedocs.org

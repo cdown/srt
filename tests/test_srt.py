@@ -7,11 +7,13 @@ import srt
 from datetime import timedelta
 from nose.tools import eq_ as eq, assert_not_equal as neq, assert_raises, \
                        assert_false
-from hypothesis import given
+from hypothesis import given, Settings
 import hypothesis.strategies as st
 import zhon.cedict
 import string
 import functools
+import os
+
 
 TIMESTAMP_ARGS = st.tuples(
     st.integers(min_value=0),  # Hour
@@ -33,6 +35,11 @@ CONTENTLESS_SUB = functools.partial(
     start=timedelta(seconds=1), end=timedelta(seconds=2),
 )
 CONTENT_TEXT = st.text(min_size=1, alphabet=MIX_CHARS + '\n')
+
+
+# TODO: Once a new version is out we can use Settings.{set,register}_profile
+if os.environ.get('QUICK_TEST'):
+    Settings.default.max_examples = 5
 
 
 def is_strictly_legal_content(content):
