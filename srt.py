@@ -5,7 +5,6 @@
 from __future__ import unicode_literals
 import functools
 import re
-import os
 from datetime import timedelta
 import logging
 
@@ -65,9 +64,11 @@ class Subtitle(object):
         :rtype: str
         '''
         if strict:
-            content = os.linesep.join(
-                line for line in self.content.splitlines() if line
-            ).strip('\r\n')
+            content = '\n'.join(
+                # We can't use .splitlines() here since it does all sorts of
+                # stuff that we don't want with \x1{c..e}, etc
+                line for line in self.content.split('\n') if line
+            ).strip('\n')
         else:
             content = self.content
 

@@ -9,8 +9,6 @@ from nose.tools import eq_ as eq, assert_not_equal as neq, assert_raises, \
                        assert_false
 from hypothesis import given, Settings
 import hypothesis.strategies as st
-import zhon.cedict
-import string
 import functools
 import os
 
@@ -22,19 +20,13 @@ TIMESTAMP_ARGS = st.tuples(
     st.integers(min_value=0, max_value=999),  # Millisecond
 )
 
-MIX_CHARS = ''.join([
-    zhon.cedict.all,
-    string.ascii_letters,
-    string.digits,
-    ' ',  # string.whitespace contains some funky shit that we don't care about
-])
 HOURS_IN_DAY = 24
 TIMEDELTA_MAX_DAYS = 999999999
 CONTENTLESS_SUB = functools.partial(
     srt.Subtitle, index=1,
     start=timedelta(seconds=1), end=timedelta(seconds=2),
 )
-CONTENT_TEXT = st.text(min_size=1, alphabet=MIX_CHARS + '\n')
+CONTENT_TEXT = st.text(min_size=1)
 
 
 # TODO: Once a new version is out we can use Settings.{set,register}_profile
@@ -54,7 +46,7 @@ def is_strictly_legal_content(content):
 
     if not content.strip():
         return False
-    elif content.startswith('\n') or content.endswith('\n'):
+    elif content.strip() != content:
         return False
     elif '\n\n' in content:
         return False
@@ -76,8 +68,9 @@ def subtitles(strict=True):
         timedelta, hours=st.integers(min_value=0),
         minutes=st.integers(min_value=0), seconds=st.integers(min_value=0),
     )
-    content_strategy = st.text(min_size=1, alphabet=MIX_CHARS + '\n')
-    proprietary_strategy = st.text(alphabet=MIX_CHARS)
+
+    content_strategy = st.text(min_size=1)
+    proprietary_strategy = st.text().filter(lambda x: '\n' not in x)
 
     if strict:
         content_strategy = content_strategy.filter(is_strictly_legal_content)
@@ -101,7 +94,7 @@ def test_compose_and_parse_strict(input_subs):
     subs_eq(reparsed_subs, input_subs)
 
 
-@given(st.text(min_size=1, alphabet=MIX_CHARS))
+@given(st.text().filter(is_strictly_legal_content))
 def test_compose_and_parse_strict_mode(content):
     content = '\n' + content + '\n\n' + content + '\n'
     sub = CONTENTLESS_SUB(content=content)
