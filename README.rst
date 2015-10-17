@@ -1,37 +1,28 @@
-===
-srt
-===
-
-srt is a tiny Python library for parsing, modifying, and composing SRT files.
-
-Documentation
--------------
-
-If you're new to the library, take a look at the quickstart_ for ideas about
-how to use it. `Detailed API documentation`_ is also available.
+srt is a tiny Python library for parsing, modifying, and composing `SRT
+files`_. Take a look at the quickstart_ for a basic overview of the library.
+`Detailed API documentation`_ is also available.
 
 Want to see some real-world examples? Take a look at the srt-tools_ repo.
 
 .. _quickstart: http://srt.readthedocs.org/en/latest/quickstart.html
 .. _`Detailed API documentation`: http://srt.readthedocs.org/en/latest/api.html
 .. _srt-tools: https://github.com/cdown/srt-tools
-
+.. _`SRT files`: https://en.wikipedia.org/wiki/SubRip#SubRip_text_file_format
 
 Installation
 ------------
 
-From pip:
+To install the latest stable version from PyPi:
 
 .. code::
 
-    $ pip install srt
+    pip install -U srt
 
-Manually:
+To install the development version, run
 
 .. code::
 
-    $ python setup.py install
-
+    pip install -U git+git://github.com/cdown/srt.git@develop
 
 Testing
 -------
@@ -40,20 +31,10 @@ Testing
   :target: https://travis-ci.org/cdown/srt
   :alt: Test status
 
-First, install the test requirements:
+To test on all supported Python versions using Tox_:
 
 .. code::
 
-    $ pip install -r tests/requirements.txt
+   tox
 
-Then, to test using your current Python interpreter:
-
-.. code::
-
-    $ nosetests
-
-Otherwise, to test on all supported Python versions:
-
-.. code::
-
-    $ tox
+.. _Tox: https://tox.readthedocs.org
