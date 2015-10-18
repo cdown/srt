@@ -105,6 +105,9 @@ def make_legal_content(content):
     * Blank lines
     * Starting or ending with a blank line
 
+    >>> srt.make_legal_content('\nfoo\n\nbar\n')
+    'foo\nbar'
+
     :param srt content: the content to make legal
     '''
     # We can't use content.splitlines() here since it does all sorts of stuff
