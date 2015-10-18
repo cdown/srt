@@ -1,6 +1,8 @@
 language: python
 python: 3.5  # 3.5 requires manual download, so it needs to be selected
-install: pip install tox
+
+install:
+  - pip install tox coveralls
 script: tox
 
 env:
@@ -17,6 +19,7 @@ sudo: false
 cache: pip
 
 after_success:
+  - coveralls
   - "curl -o /tmp/travis-automerge https://raw.githubusercontent.com/cdown/travis-automerge/master/travis-automerge"
   - "chmod a+x /tmp/travis-automerge"
   - "BRANCHES_TO_MERGE_REGEX='^f/' BRANCH_TO_MERGE_INTO=develop GITHUB_REPO=cdown/srt /tmp/travis-automerge"
