@@ -27,7 +27,7 @@ To install the latest development version directly from GitHub:
 Testing
 -------
 
-|travis| |coveralls|
+|travis| |coveralls| |scrutinizer|
 
 .. |travis| image:: https://travis-ci.org/cdown/srt.svg?branch=develop
   :target: https://travis-ci.org/cdown/srt
@@ -36,6 +36,10 @@ Testing
 .. |coveralls| image:: https://coveralls.io/repos/cdown/srt/badge.svg?branch=develop&service=github
   :target: https://coveralls.io/github/cdown/srt?branch=develop
   :alt: Coverage
+
+.. |scrutinizer| image:: https://img.shields.io/scrutinizer/g/cdown/srt/develop.svg
+  :target: https://scrutinizer-ci.com/g/cdown/srt/?branch=develop
+  :alt: Code quality
 
 .. code::
 
