@@ -99,7 +99,7 @@ class Subtitle(object):
 
 
 def make_legal_content(content):
-    '''
+    r'''
     Remove illegal content from a content block. Illegal content includes:
 
     * Blank lines
