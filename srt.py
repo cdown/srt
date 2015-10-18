@@ -24,6 +24,10 @@ SRT_REGEX = re.compile(
     re.MULTILINE | re.DOTALL | getattr(re, 'ASCII', 0),
 )
 
+SECONDS_IN_HOUR = 3600
+SECONDS_IN_MINUTE = 60
+HOURS_IN_DAY = 24
+
 
 class SRTParseError(Exception): pass
 
@@ -104,13 +108,10 @@ def timedelta_to_srt_timestamp(timedelta_timestamp):
     >>> srt.timedelta_to_srt_timestamp(delta)
     '01:23:04,000'
     '''
-    seconds_in_hour = 3600
-    seconds_in_minute = 60
-    hours_in_day = 24
 
-    hrs, secs_remainder = divmod(timedelta_timestamp.seconds, seconds_in_hour)
-    hrs += timedelta_timestamp.days * hours_in_day
-    mins, secs = divmod(secs_remainder, seconds_in_minute)
+    hrs, secs_remainder = divmod(timedelta_timestamp.seconds, SECONDS_IN_HOUR)
+    hrs += timedelta_timestamp.days * HOURS_IN_DAY
+    mins, secs = divmod(secs_remainder, SECONDS_IN_MINUTE)
     msecs = timedelta_timestamp.microseconds // 1000
     return '%02d:%02d:%02d,%03d' % (hrs, mins, secs, msecs)
 
