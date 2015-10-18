@@ -80,24 +80,36 @@ class Subtitle(object):
                   SRT formatted subtitle block
         :rtype: str
         '''
-        if strict:
-            content = '\n'.join(
-                # We can't use .splitlines() here since it does all sorts of
-                # stuff that we don't want with \x1{c..e}, etc
-                line for line in self.content.split('\n') if line
-            ).strip('\n')
-        else:
-            content = self.content
+        output_content = self.content
+        output_proprietary = self.proprietary
 
-        if self.proprietary:
-            proprietary_output = ' ' + self.proprietary
-        else:
-            proprietary_output = ''
+        if output_proprietary:
+            # output_proprietary is output directly next to the timestamp, so
+            # we need to add the space as a field delimiter.
+            output_proprietary = ' ' + output_proprietary
+
+        if strict:
+            output_content = make_legal_content(output_content)
 
         return '%d\n%s --> %s%s\n%s\n\n' % (
             self.index, timedelta_to_srt_timestamp(self.start),
-            timedelta_to_srt_timestamp(self.end), proprietary_output, content,
+            timedelta_to_srt_timestamp(self.end), output_proprietary,
+            output_content,
         )
+
+
+def make_legal_content(content):
+    '''
+    Remove illegal content from a content block. Illegal content includes:
+
+    * Blank lines
+    * Starting or ending with a blank line
+
+    :param srt content: the content to make legal
+    '''
+    # We can't use content.splitlines() here since it does all sorts of stuff
+    # that we don't want with \x1{c..e}, etc
+    return '\n'.join(line for line in content.split('\n') if line)
 
 
 def timedelta_to_srt_timestamp(timedelta_timestamp):
