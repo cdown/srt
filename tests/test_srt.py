@@ -12,6 +12,11 @@ import hypothesis.strategies as st
 import functools
 import os
 
+try:
+    from nose.tools import assert_count_equal
+except ImportError:  # Python 2 fallback
+    from nose.tools import assert_items_equal as assert_count_equal
+
 
 TIMESTAMP_ARGS = st.tuples(
     st.integers(min_value=0),  # Hour
@@ -54,12 +59,17 @@ def is_strictly_legal_content(content):
         return True
 
 
-def subs_eq(got, expected):
+def subs_eq(got, expected, any_order=False):
     '''
     Compare Subtitle objects using vars() so that differences are easy to
     identify.
     '''
-    eq([vars(sub) for sub in got], [vars(sub) for sub in expected])
+    got_vars = [vars(sub) for sub in got]
+    expected_vars = [vars(sub) for sub in expected]
+    if any_order:
+        assert_count_equal(got_vars, expected_vars)
+    else:
+        eq(got_vars, expected_vars)
 
 
 def subtitles(strict=True):
@@ -158,12 +168,22 @@ def test_subs_missing_content_removed(content_subs, contentless_subs,
     for sub in contentless_subs:
         sub.content = contentless_text
 
-    subs = content_subs + contentless_subs
-    num_composed = len(list(srt.sort_and_reindex(subs)))
+    subs = contentless_subs + content_subs
+    composed_subs = list(srt.sort_and_reindex(subs))
 
-    # We should have composed the same number of subs as there are in
-    # content_subs, as all contentless_subs should have been stripped.
-    eq(num_composed, len(content_subs))
+    # We should have composed the same subs as there are in content_subs, as
+    # all contentless_subs should have been stripped.
+    subs_eq(composed_subs, content_subs, any_order=True)
+
+    # The subtitles should be reindexed starting at start_index, excluding
+    # contentless subs
+    default_start_index = 1
+    eq(
+        [sub.index for sub in composed_subs],
+        list(range(
+            default_start_index, default_start_index + len(composed_subs),
+        ))
+    )
 
 
 @given(st.lists(subtitles(), min_size=1), st.integers(min_value=0))
