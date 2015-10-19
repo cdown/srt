@@ -162,6 +162,10 @@ def sort_and_reindex(subtitles, start_index=1):
         if not subtitle.content.strip():
             # Drop contentless subtitles, as they don't serve any purpose and
             # might confuse the media player's parser
+            log.warning(
+                'Skipped contentless subtitle that was at index %d',
+                subtitle.index,
+            )
             skipped_subs += 1
             continue
 
