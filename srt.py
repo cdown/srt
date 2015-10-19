@@ -114,7 +114,10 @@ def make_legal_content(content):
     '''
     # We can't use content.splitlines() here since it does all sorts of stuff
     # that we don't want with \x1{c..e}, etc
-    return '\n'.join(line for line in content.split('\n') if line)
+    legal_content = '\n'.join(line for line in content.split('\n') if line)
+    if legal_content != content:
+        log.warning('Legalised content %r to %r', content, legal_content)
+    return legal_content
 
 
 def timedelta_to_srt_timestamp(timedelta_timestamp):
