@@ -109,6 +109,8 @@ def make_legal_content(content):
     'foo\nbar'
 
     :param srt content: the content to make legal
+    :returns: the legalised content
+    :rtype: srt
     '''
     # We can't use content.splitlines() here since it does all sorts of stuff
     # that we don't want with \x1{c..e}, etc
