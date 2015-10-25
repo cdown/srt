@@ -44,14 +44,11 @@ def is_strictly_legal_content(content):
     Filter out things that would violate strict mode. Illegal content
     includes:
 
-    - A content section that is only made of whitespace
     - A content section that starts or ends with a newline
     - A content section that contains blank lines
     '''
 
-    if not content.strip():
-        return False
-    elif content.strip() != content:
+    if content.strip() != content:
         return False
     elif '\n\n' in content:
         return False
@@ -147,12 +144,24 @@ def test_subtitle_inequality(sub_1):
 def test_subtitle_objects_hashable(subtitle):
     hash(subtitle)
 
+
 @given(st.lists(subtitles()))
 def test_parsing_content_with_blank_lines(subs):
     for subtitle in subs:
         # We stuff a blank line in the middle so as to trigger the "special"
         # content parsing for erroneous SRT files that have blank lines.
         subtitle.content = subtitle.content + '\n\n' + subtitle.content
+
+    reparsed_subtitles = srt.parse(srt.compose(
+        subs, reindex=False, strict=False,
+    ))
+    subs_eq(reparsed_subtitles, subs)
+
+
+@given(st.lists(subtitles()))
+def test_parsing_no_content(subs):
+    for subtitle in subs:
+        subtitle.content = ''
 
     reparsed_subtitles = srt.parse(srt.compose(
         subs, reindex=False, strict=False,
