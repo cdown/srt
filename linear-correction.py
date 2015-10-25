@@ -48,8 +48,8 @@ def parse_args():
 
 
 def calc_correction(synced_start, synced_end, desynced_start, desynced_end):
-    angular = (desynced_end - desynced_start) / (synced_end - synced_start)
-    linear = desynced_end - angular * synced_end
+    angular = (synced_end - synced_start) / (desynced_end - desynced_start)
+    linear = synced_end - angular * desynced_end
     return angular, linear
 
 
