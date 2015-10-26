@@ -67,7 +67,12 @@ class Subtitle(object):
         return self.start < other.start
 
     def __repr__(self):
-        return '<%s:%d>' % (self.__class__.__name__, self.index)
+        return '<%s, index %d, from %s to %s (%r)>' % (
+            type(self).__name__, self.index,
+            timedelta_to_srt_timestamp(self.start),
+            timedelta_to_srt_timestamp(self.end),
+            self.content[:20],
+        )
 
     def to_srt(self, strict=True):
         r'''
