@@ -18,10 +18,7 @@ SRT_REGEX = re.compile(
     # next lines look like an index and a timestamp as a best-effort
     # solution to work around these.
     r'(?=(?:\d+\n\d+:|\Z))',
-    # Python 3 searches for Unicode by default. The SRT spec doesn't allow for
-    # this in indices or timestamps, so we limit \d to search for [0-9] only by
-    # using re.ASCII if necessary.
-    re.MULTILINE | re.DOTALL | getattr(re, 'ASCII', 0),
+    re.MULTILINE | re.DOTALL,
 )
 
 SECONDS_IN_HOUR = 3600
