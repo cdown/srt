@@ -29,9 +29,6 @@ SECONDS_IN_MINUTE = 60
 HOURS_IN_DAY = 24
 
 
-class SRTParseError(Exception): pass
-
-
 @functools.total_ordering
 class Subtitle(object):
     r'''
@@ -268,3 +265,9 @@ def compose(subtitles, reindex=True, start_index=1, strict=True):
     if reindex:
         subtitles = sort_and_reindex(subtitles, start_index=start_index)
     return ''.join(subtitle.to_srt(strict=strict) for subtitle in subtitles)
+
+
+class SRTParseError(Exception):
+    '''
+    Raised when an error is encountered parsing an SRT block.
+    '''
