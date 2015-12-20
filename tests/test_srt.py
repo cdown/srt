@@ -232,6 +232,7 @@ def test_parser_noncontiguous(subs, fake_idx, fake_hours, garbage):
     with assert_raises(srt.SRTParseError):
         list(srt.parse(composed))
 
+
 @given(
     st.lists(subtitles(), min_size=1), st.integers(min_value=0),
     st.integers(min_value=0), st.text(min_size=1),

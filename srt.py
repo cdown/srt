@@ -244,6 +244,7 @@ def _raise_if_not_contiguous(srt, expected_start, actual_start):
             )
         )
 
+
 def compose(subtitles, reindex=True, start_index=1, strict=True):
     r'''
     Convert an iterator of :py:class:`Subtitle` objects to a string of joined
