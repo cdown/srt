@@ -1,16 +1,24 @@
 language: python
-install:
-  - pip install -r docs/requirements.txt
-  - pip install -r tests/requirements.txt
-python:
-  - 2.7
-  - 3.3
-  - 3.4
-script:
-  - nosetests --with-coverage
+python: 3.5  # 3.5 requires manual download, so it needs to be selected
 
-  # doctest is not tested on Python 2 because Python 2/3 have differing
-  # invocations in some doctests, and we are mainly targeting Python 3.
-  - '[[ $(python --version 2>&1) == "Python 2"* ]] || (cd docs && make doctest)'
-after_success:
-  - coveralls
+env:
+  - TOXENV=py27
+  - TOXENV=py33
+  - TOXENV=py34
+  - TOXENV=py35
+  - TOXENV=coverage
+
+install: pip install tox
+script: tox
+
+matrix:
+  fast_finish: true
+
+# This is required to enable container based Travis CI infrastructure.
+# See http://docs.travis-ci.com/user/migrating-from-legacy/
+sudo: false
+
+notifications:
+  email:
+    on_success: never
+    on_failure: always

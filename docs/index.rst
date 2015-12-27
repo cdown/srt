@@ -1,7 +1,12 @@
-Documentation for srt
-=====================
+`srt`: Parse SubRip files
+=========================
 
-Contents:
+srt_ is a tiny Python library for parsing, modifying, and composing SRT files.
+
+.. _srt: https://github.com/cdown/srt
+
+Documentation
+=============
 
 .. toctree::
    :maxdepth: 2

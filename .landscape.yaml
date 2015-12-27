@@ -1,9 +1,0 @@
-strictness: veryhigh
-test-warnings: true
-
-ignore-patterns:
-  - '# pragma: no lint'
-
-pylint:
-  disable:
-    - attribute-defined-outside-init

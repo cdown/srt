@@ -1,238 +1,247 @@
 #!/usr/bin/env python
 # vim: set fileencoding=utf8
+# pylint: disable=attribute-defined-outside-init
 
-import codecs
-import tempfile
+from __future__ import unicode_literals
 import srt
-import os
 from datetime import timedelta
-from nose.tools import eq_ as eq, assert_not_equal as neq
+from nose.tools import eq_ as eq, assert_not_equal as neq, assert_raises, \
+                       assert_false
+from hypothesis import given, Settings
+import hypothesis.strategies as st
+import functools
+import os
+
+try:
+    from nose.tools import assert_count_equal
+except ImportError:  # Python 2 fallback
+    from nose.tools import assert_items_equal as assert_count_equal
 
 
-class TestTinysrt(object):
-    @staticmethod
-    def _fixture(path):
-        return os.path.join(os.path.dirname(__file__), path)
+TIMESTAMP_ARGS = st.tuples(
+    st.integers(min_value=0),  # Hour
+    st.integers(min_value=0, max_value=59),  # Minute
+    st.integers(min_value=0, max_value=59),  # Second
+    st.integers(min_value=0, max_value=999),  # Millisecond
+)
 
-    @classmethod
-    def setup_class(cls):
-        cls.srt_filename = cls._fixture('srt_samples/monsters.srt')
-        cls.srt_filename_windows = cls._fixture('srt_samples/monsters-win.srt')
-        cls.srt_filename_bad_order = cls._fixture(
-            'srt_samples/monsters-bad-order.srt'
-        )
+HOURS_IN_DAY = 24
+TIMEDELTA_MAX_DAYS = 999999999
+CONTENTLESS_SUB = functools.partial(
+    srt.Subtitle, index=1,
+    start=timedelta(seconds=1), end=timedelta(seconds=2),
+)
+CONTENT_TEXT = st.text(min_size=1)
 
-        with codecs.open(cls.srt_filename, 'r', 'utf8') as srt_f:
-            cls.srt_sample = srt_f.read()
 
-        with codecs.open(cls.srt_filename_bad_order, 'r', 'utf8') as srt_bad_f:
-            cls.srt_sample_bad_order = srt_bad_f.read()
+# TODO: Once a new version is out we can use Settings.{set,register}_profile
+if os.environ.get('QUICK_TEST'):
+    Settings.default.max_examples = 5
 
-    def setup(self):
-        self.srt_f = codecs.open(self.srt_filename, 'r', 'utf8')
-        self.srt_bad_order_f = codecs.open(
-            self.srt_filename_bad_order, 'r', 'utf8'
-        )
-        self._temp_fd_bad_enc, self.temp_path = tempfile.mkstemp()
-        os.close(self._temp_fd_bad_enc)
-        self.temp_f = codecs.open(self.temp_path, 'w', 'utf8')
 
-    def teardown(self):
-        self.srt_f.close()
-        self.srt_bad_order_f.close()
-        self.temp_f.close()
-        os.remove(self.temp_path)
+def is_strictly_legal_content(content):
+    '''
+    Filter out things that would violate strict mode. Illegal content
+    includes:
 
-    @staticmethod
-    def _test_monsters_subs(subs, start_index=421):
-        '''
-        Test that monsters.srt was parsed correctly.
+    - A content section that starts or ends with a newline
+    - A content section that contains blank lines
+    '''
 
-        This is in its own function since these tests are used both when
-        testing srt.parse and srt.parse_file.
-        '''
-        subs = list(subs)
+    if content.strip() != content:
+        return False
+    elif '\n\n' in content:
+        return False
+    else:
+        return True
 
-        eq(3, len(subs))
 
-        eq(start_index, subs[0].index)
-        eq(
-            timedelta(
-                hours=0,
-                minutes=31,
-                seconds=37,
-                milliseconds=894,
-            ),
-            subs[0].start,
-        )
-        eq(
-            timedelta(
-                hours=0,
-                minutes=31,
-                seconds=39,
-                milliseconds=928,
-            ),
-            subs[0].end,
-        )
-        eq(
-            u'我有个点子\nOK, look, I think I have a plan here.',
-            subs[0].content,
-        )
-        eq(
-            u' hack the gibson',
-            subs[0].proprietary,
-        )
+def subs_eq(got, expected, any_order=False):
+    '''
+    Compare Subtitle objects using vars() so that differences are easy to
+    identify.
+    '''
+    got_vars = [vars(sub) for sub in got]
+    expected_vars = [vars(sub) for sub in expected]
+    if any_order:
+        assert_count_equal(got_vars, expected_vars)
+    else:
+        eq(got_vars, expected_vars)
 
-        eq(start_index + 1, subs[1].index)
-        eq(
-            timedelta(
-                hours=0,
-                minutes=31,
-                seconds=39,
-                milliseconds=931,
-            ),
-            subs[1].start,
-        )
-        eq(
-            timedelta(
-                hours=0,
-                minutes=31,
-                seconds=41,
-                milliseconds=931,
-            ),
-            subs[1].end,
-        )
-        eq(
-            u'我们要拿一堆汤匙\nUsing mainly spoons,',
-            subs[1].content,
-        )
 
-    def test_subtitle_sort_by_start(self):
-        subs = srt.parse(self.srt_sample_bad_order)
-        sorted_subs = sorted(subs)
+def subtitles(strict=True):
+    '''A Hypothesis strategy to generate Subtitle objects.'''
+    timestamp_strategy = st.builds(
+        timedelta, hours=st.integers(min_value=0),
+        minutes=st.integers(min_value=0), seconds=st.integers(min_value=0),
+    )
 
-        eq(
-            [x.index for x in sorted_subs],
-            [422, 421, 423],
-        )
+    content_strategy = st.text(min_size=1)
+    proprietary_strategy = st.text().filter(lambda x: '\n' not in x)
 
-    def test_subtitle_equality_false(self):
-        subs_1 = list(srt.parse(self.srt_sample))
-        subs_2 = list(srt.parse(self.srt_sample))
-        subs_2[0].content += 'blah'
+    if strict:
+        content_strategy = content_strategy.filter(is_strictly_legal_content)
 
-        neq(subs_1, subs_2)
+    subtitle_strategy = st.builds(
+        srt.Subtitle,
+        index=st.integers(min_value=0),
+        start=timestamp_strategy,
+        end=timestamp_strategy,
+        proprietary=proprietary_strategy,
+        content=content_strategy,
+    )
 
-    def test_subtitle_equality_true(self):
-        subs_1 = list(srt.parse(self.srt_sample))
-        subs_2 = list(srt.parse(self.srt_sample))
-        eq(subs_1, subs_2)
+    return subtitle_strategy
 
-    @staticmethod
-    def test_subtitle_to_srt():
-        sub = srt.Subtitle(
-            index=1, start=srt.srt_timestamp_to_timedelta('00:01:02,003'),
-            end=srt.srt_timestamp_to_timedelta('00:02:03,004'), content='foo',
-        )
-        eq(sub.to_srt(), '1\n00:01:02,003 --> 00:02:03,004\nfoo\n\n')
 
-    @staticmethod
-    def test_timedelta_to_srt_timestamp():
-        timedelta_ts = timedelta(
-                hours=1, minutes=2, seconds=3, milliseconds=400,
-        )
-        eq(srt.timedelta_to_srt_timestamp(timedelta_ts), '01:02:03,400')
+@given(st.lists(subtitles()))
+def test_compose_and_parse_strict(input_subs):
+    composed = srt.compose(input_subs, reindex=False)
+    reparsed_subs = srt.parse(composed)
+    subs_eq(reparsed_subs, input_subs)
 
-    @staticmethod
-    def test_srt_timestamp_to_timedelta():
-        eq(
-            timedelta(hours=1, minutes=2, seconds=3, milliseconds=400),
-            srt.srt_timestamp_to_timedelta('01:02:03,400'),
-        )
 
-    def test_parse(self):
-        subs = list(srt.parse(self.srt_sample))
-        self._test_monsters_subs(subs)
+@given(st.text().filter(is_strictly_legal_content))
+def test_compose_and_parse_strict_mode(content):
+    content = '\n' + content + '\n\n' + content + '\n'
+    sub = CONTENTLESS_SUB(content=content)
 
-    def test_parse_file(self):
-        srt_f = codecs.open(self.srt_filename, 'r', 'utf8')
-        subs = list(srt.parse_file(srt_f))
-        self._test_monsters_subs(subs)
-        srt_f.close()
+    parsed_strict = list(srt.parse(sub.to_srt()))[0]
+    parsed_unstrict = list(srt.parse(sub.to_srt(strict=False)))[0]
 
-    def test_parse_file_windows(self):
-        srt_f = codecs.open(self.srt_filename_windows, 'r', 'utf8')
-        subs = list(srt.parse_file(srt_f))
-        self._test_monsters_subs(subs)
-        srt_f.close()
+    # Strict mode should remove blank lines in content, leading, and trailing
+    # newlines.
+    assert_false(parsed_strict.content.startswith('\n'))
+    assert_false(parsed_strict.content.endswith('\n'))
+    assert_false('\n\n' in parsed_strict.content)
 
-    def test_compose(self):
-        subs = srt.parse(self.srt_sample)
-        eq(self.srt_sample, srt.compose(subs, reindex=True, start_index=421))
+    # When strict mode is false, no processing should be applied to the
+    # content.
+    eq(parsed_unstrict.content, sub.content)
 
-    def test_compose_file(self):
-        srt_in_f = codecs.open(self.srt_filename, 'r', 'utf8')
-        srt_out_f = self.temp_f
 
-        subs = srt.parse_file(srt_in_f)
-        srt.compose_file(subs, srt_out_f, reindex=False)
+@given(st.integers(min_value=1, max_value=TIMEDELTA_MAX_DAYS))
+def test_timedelta_to_srt_timestamp_can_go_over_24_hours(days):
+    srt_timestamp = srt.timedelta_to_srt_timestamp(timedelta(days=days))
+    srt_timestamp_hours = int(srt_timestamp.split(':')[0])
+    eq(srt_timestamp_hours, days * HOURS_IN_DAY)
 
-        srt_in_f.seek(0)
 
-        srt_out_f.close()
-        srt_out_f_2 = codecs.open(self.temp_path, 'r', 'utf8')
+@given(subtitles())
+def test_subtitle_equality(sub_1):
+    sub_2 = srt.Subtitle(**vars(sub_1))
+    eq(sub_1, sub_2)
 
-        eq(srt_in_f.read(), srt_out_f_2.read())
 
-        srt_in_f.close()
-        srt_out_f_2.close()
+@given(subtitles())
+def test_subtitle_inequality(sub_1):
+    sub_2 = srt.Subtitle(**vars(sub_1))
+    sub_2.index += 1
+    neq(sub_1, sub_2)
 
-    def test_compose_file_num(self):
-        srt_in_f = codecs.open(self.srt_filename, 'r', 'utf8')
-        srt_out_f = self.temp_f
 
-        subs = srt.parse_file(srt_in_f)
-        num_written = srt.compose_file(subs, srt_out_f)
+@given(subtitles())
+def test_subtitle_objects_hashable(subtitle):
+    hash(subtitle)
 
-        eq(3, num_written)
 
-        srt_in_f.close()
+@given(st.lists(subtitles()))
+def test_parsing_content_with_blank_lines(subs):
+    for subtitle in subs:
+        # We stuff a blank line in the middle so as to trigger the "special"
+        # content parsing for erroneous SRT files that have blank lines.
+        subtitle.content = subtitle.content + '\n\n' + subtitle.content
 
-    def test_compose_file_num_none(self):
-        srt_out_f = self.temp_f
+    reparsed_subtitles = srt.parse(srt.compose(
+        subs, reindex=False, strict=False,
+    ))
+    subs_eq(reparsed_subtitles, subs)
 
-        subs = list(srt.parse(''))
-        num_written = srt.compose_file(subs, srt_out_f)
 
-        eq(0, num_written)
+@given(st.lists(subtitles()))
+def test_parsing_no_content(subs):
+    for subtitle in subs:
+        subtitle.content = ''
 
-    @staticmethod
-    def test_subtitle_objects_hashable():
-        hash(srt.Subtitle(
-            index=1, start=srt.srt_timestamp_to_timedelta('00:01:02,003'),
-            end=srt.srt_timestamp_to_timedelta('00:02:03,004'), content='foo',
+    reparsed_subtitles = srt.parse(srt.compose(
+        subs, reindex=False, strict=False,
+    ))
+    subs_eq(reparsed_subtitles, subs)
+
+
+@given(
+    st.lists(subtitles()), st.lists(subtitles()), st.text(alphabet='\n\r\t '),
+)
+def test_subs_missing_content_removed(content_subs, contentless_subs,
+                                      contentless_text):
+    for sub in contentless_subs:
+        sub.content = contentless_text
+
+    subs = contentless_subs + content_subs
+    composed_subs = list(srt.sort_and_reindex(subs))
+
+    # We should have composed the same subs as there are in content_subs, as
+    # all contentless_subs should have been stripped.
+    subs_eq(composed_subs, content_subs, any_order=True)
+
+    # The subtitles should be reindexed starting at start_index, excluding
+    # contentless subs
+    default_start_index = 1
+    eq(
+        [sub.index for sub in composed_subs],
+        list(range(
+            default_start_index, default_start_index + len(composed_subs),
         ))
+    )
 
-    def test_sort_and_reindex_basic(self):
-        subs = srt.parse(self.srt_sample_bad_order)
-        sorted_and_reindexed_subs = srt.sort_and_reindex(subs, start_index=20)
-        self._test_monsters_subs(sorted_and_reindexed_subs, start_index=20)
 
-    def test_sar_skips_missing_content(self):
-        subs = list(srt.parse(self.srt_sample))
-        subs[1].content = '\n'
-        sorted_and_reindexed_subs = srt.sort_and_reindex(subs, start_index=20)
-        sorted_and_reindexed_subs = list(sorted_and_reindexed_subs)
+@given(st.lists(subtitles(), min_size=1), st.integers(min_value=0))
+def test_sort_and_reindex(input_subs, start_index):
+    reindexed_subs = list(
+        srt.sort_and_reindex(input_subs, start_index=start_index),
+    )
 
-        eq(2, len(sorted_and_reindexed_subs))
-        eq(20, sorted_and_reindexed_subs[0].index)
-        eq(21, sorted_and_reindexed_subs[1].index)
-        eq(
-            u'我有个点子\nOK, look, I think I have a plan here.',
-            sorted_and_reindexed_subs[0].content,
+    # The subtitles should be reindexed starting at start_index
+    eq(
+        [sub.index for sub in reindexed_subs],
+        list(range(start_index, start_index + len(input_subs)))
+    )
+
+    # The subtitles should be sorted by start time
+    expected_sorting = sorted(input_subs, key=lambda sub: sub.start)
+    eq(reindexed_subs, expected_sorting)
+
+
+@given(
+    st.lists(subtitles(), min_size=1), st.integers(min_value=0),
+    st.integers(min_value=0), st.text(min_size=1),
+)
+def test_parser_noncontiguous(subs, fake_idx, fake_hours, garbage):
+    composed = srt.compose(subs)
+
+    # Put some garbage between subs that should trigger our failed parsing
+    # detection. Since we do some magic to try and detect blank lines that
+    # don't really delimit subtitles, it has to look at least a little like an
+    # SRT block.
+    composed = composed.replace(
+        '\n\n', '\n\n%d\n%d:%s' % (
+            fake_idx, fake_hours, garbage,
         )
-        eq(
-            u'挖一条隧道 然后把她丢到野外去\n'
-             'we dig a tunnel under the city and release it into the wild.',
-            sorted_and_reindexed_subs[1].content,
-        )
+    )
+
+    with assert_raises(srt.SRTParseError):
+        list(srt.parse(composed))
+
+
+@given(
+    st.lists(subtitles(), min_size=1), st.integers(min_value=0),
+    st.integers(min_value=0), st.text(min_size=1),
+)
+def test_parser_didnt_match_to_end_raises(subs, fake_idx, fake_hours, garbage):
+    srt_blocks = [sub.to_srt() for sub in subs]
+    garbage = '\n\n%d\n%d:%s' % (fake_idx, fake_hours, garbage)
+    srt_blocks.append(garbage)
+    composed = ''.join(srt_blocks)
+
+    with assert_raises(srt.SRTParseError):
+        list(srt.parse(composed))

@@ -14,7 +14,7 @@ with open('tests/requirements.txt') as test_requirements_f:
 
 setup(
     name='srt',
-    version='0.0.7',
+    version='0.0.8',
     description='A tiny library for parsing, modifying, and composing SRT '
                 'files.',
     long_description=README,
@@ -33,6 +33,7 @@ setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
     ],
     test_suite='nose.collector',
     tests_require=TEST_REQUIREMENTS
