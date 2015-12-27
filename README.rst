@@ -40,7 +40,7 @@ To install the latest development version directly from GitHub:
 Testing
 -------
 
-|travis| |coveralls| |scrutinizer|
+|travis| |coveralls|
 
 .. |travis| image:: https://travis-ci.org/cdown/srt.svg?branch=develop
   :target: https://travis-ci.org/cdown/srt
