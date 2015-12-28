@@ -52,10 +52,10 @@ class Subtitle(object):
         self.proprietary = proprietary
 
     def __hash__(self):
-        return hash(frozenset(self.__dict__.items()))
+        return hash(frozenset(vars(self).items()))
 
     def __eq__(self, other):
-        return self.__dict__ == other.__dict__
+        return vars(self) == vars(other)
 
     def __lt__(self, other):
         return self.start < other.start
