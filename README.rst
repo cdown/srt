@@ -6,6 +6,7 @@ Why choose this library? Well, it's:
 
 - Very fast (shifting the time on 50 2-hour SRT subtitles takes around 2
   seconds on a fairly recent machine);
+- All functionality is covered with tests;
 - Able to parse many not-totally-legal SRT files without sacrificing
   performance (for example, SRT files with blank lines in the content, and
   proprietary metadata after the timestamps);
