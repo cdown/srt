@@ -142,7 +142,9 @@ def srt_timestamp_to_timedelta(srt_timestamp):
     >>> srt.srt_timestamp_to_timedelta('01:23:04,000')
     datetime.timedelta(0, 4984)
     '''
-    hrs, mins, secs, msecs = (int(x) for x in re.split('[,:]', srt_timestamp))
+    # "." is not technically a legal separator, but some subtitle editors use
+    # it to delimit msecs, and some players accept it.
+    hrs, mins, secs, msecs = (int(x) for x in re.split('[,:.]', srt_timestamp))
     return timedelta(hours=hrs, minutes=mins, seconds=secs, milliseconds=msecs)
 
 
