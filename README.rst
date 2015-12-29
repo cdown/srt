@@ -7,13 +7,15 @@ Why choose this library? Well, it's:
 - Very fast (shifting the time on 50 2-hour SRT subtitles takes around 2
   seconds on a fairly recent machine);
 - All functionality is covered with tests;
+- Well documented API, without being overly verbose;
 - Able to parse many not-totally-legal SRT files without sacrificing
   performance (for example, SRT files with blank lines in the content, and
   proprietary metadata after the timestamps);
 - Completely Unicode compliant both on Python 2 and 3;
 - Small (excluding docstrings/blank lines/etc, only a little more than 100
   lines of code);
-- Complete -- currently used in production every day on real-world SRT files.
+- Complete without feature creep -- currently used in production every day on
+  real-world SRT files.
 
 Want to see some real-world examples of its use? Take a look at the srt-tools_
 repo.
