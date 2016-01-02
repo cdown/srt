@@ -12,7 +12,10 @@ import logging
 log = logging.getLogger(__name__)
 
 SRT_REGEX = re.compile(
-    r'(\d+)\n(\d+:\d+:\d+,\d+) --> (\d+:\d+:\d+,\d+) ?([^\n]*)\n(.*?)\n\n'
+    r'(\d+)\n(\d+:\d+:\d+,\d+) --> (\d+:\d+:\d+,\d+) ?([^\n]*)\n(.*?)'
+    # Many sub editors don't add a blank line to the end, and many editors
+    # accept it. We allow it in input.
+    r'\n(?:\n|\Z)'
     # Some SRT blocks, while this is technically invalid, have blank lines
     # inside the subtitle content. We look ahead a little to check that the
     # next lines look like an index and a timestamp as a best-effort

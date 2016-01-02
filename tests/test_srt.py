@@ -101,6 +101,20 @@ def test_compose_and_parse_strict(input_subs):
     subs_eq(reparsed_subs, input_subs)
 
 
+@given(st.lists(subtitles()))
+def test_can_compose_without_ending_blank_line(input_subs):
+    '''
+    Many sub editors don't add a blank line to the end, and many editors accept
+    it. We should just accept this too in input.
+    '''
+    composed = srt.compose(input_subs, reindex=False)
+    composed_without_ending_blank = composed[:-1]
+    print(repr(composed))
+    print(repr(composed_without_ending_blank))
+    reparsed_subs = srt.parse(composed_without_ending_blank)
+    subs_eq(reparsed_subs, input_subs)
+
+
 @given(st.text().filter(is_strictly_legal_content))
 def test_compose_and_parse_strict_mode(content):
     content = '\n' + content + '\n\n' + content + '\n'
