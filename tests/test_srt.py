@@ -109,8 +109,14 @@ def test_can_compose_without_ending_blank_line(input_subs):
     '''
     composed = srt.compose(input_subs, reindex=False)
     composed_without_ending_blank = composed[:-1]
-    print(repr(composed))
-    print(repr(composed_without_ending_blank))
+    reparsed_subs = srt.parse(composed_without_ending_blank)
+    subs_eq(reparsed_subs, input_subs)
+
+
+@given(st.lists(subtitles()))
+def test_can_compose_without_eol_at_all(input_subs):
+    composed = srt.compose(input_subs, reindex=False)
+    composed_without_ending_blank = composed.rstrip('\n')
     reparsed_subs = srt.parse(composed_without_ending_blank)
     subs_eq(reparsed_subs, input_subs)
 
