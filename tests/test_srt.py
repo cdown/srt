@@ -18,6 +18,10 @@ except ImportError:  # Python 2 fallback
     from nose.tools import assert_items_equal as assert_count_equal
 
 
+Settings.register_profile('quick', Settings(max_examples=5))
+Settings.load_profile(os.environ.get('HYPOTHESIS_PROFILE', 'default'))
+
+
 TIMESTAMP_ARGS = st.tuples(
     st.integers(min_value=0),  # Hour
     st.integers(min_value=0, max_value=59),  # Minute
@@ -32,11 +36,6 @@ CONTENTLESS_SUB = functools.partial(
     start=timedelta(seconds=1), end=timedelta(seconds=2),
 )
 CONTENT_TEXT = st.text(min_size=1)
-
-
-# TODO: Once a new version is out we can use Settings.{set,register}_profile
-if os.environ.get('QUICK_TEST'):
-    Settings.default.max_examples = 5
 
 
 def is_strictly_legal_content(content):
