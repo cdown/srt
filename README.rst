@@ -55,6 +55,7 @@ Testing
 
 .. code::
 
+   pip install tox
    tox -e quick
 
 .. _Tox: https://tox.readthedocs.org
