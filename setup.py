@@ -23,7 +23,6 @@ setup(
     url='https://github.com/cdown/srt',
     py_modules=['srt'],
     license='ISC',
-    zip_safe=False,
     keywords='srt',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
