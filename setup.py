@@ -26,7 +26,7 @@ setup(
     zip_safe=False,
     keywords='srt',
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'License :: Public Domain',
         'Operating System :: OS Independent',
