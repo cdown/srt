@@ -12,7 +12,10 @@ import logging
 log = logging.getLogger(__name__)
 
 SRT_REGEX = re.compile(
-    r'(\d+)\n(\d+:\d+:\d+,\d+) --> (\d+:\d+:\d+,\d+) ?([^\n]*)\n(.*?)\n\n'
+    r'(\d+)\n(\d+:\d+:\d+,\d+) --> (\d+:\d+:\d+,\d+) ?([^\n]*)\n(.*?)'
+    # Many sub editors don't add a blank line to the end, and many editors
+    # accept it. We allow it in input.
+    r'(?:\n|\Z)(?:\n|\Z)'
     # Some SRT blocks, while this is technically invalid, have blank lines
     # inside the subtitle content. We look ahead a little to check that the
     # next lines look like an index and a timestamp as a best-effort
@@ -52,10 +55,10 @@ class Subtitle(object):
         self.proprietary = proprietary
 
     def __hash__(self):
-        return hash(frozenset(self.__dict__.items()))
+        return hash(frozenset(vars(self).items()))
 
     def __eq__(self, other):
-        return self.__dict__ == other.__dict__
+        return vars(self) == vars(other)
 
     def __lt__(self, other):
         return self.start < other.start
@@ -142,7 +145,9 @@ def srt_timestamp_to_timedelta(srt_timestamp):
     >>> srt.srt_timestamp_to_timedelta('01:23:04,000')
     datetime.timedelta(0, 4984)
     '''
-    hrs, mins, secs, msecs = (int(x) for x in re.split('[,:]', srt_timestamp))
+    # "." is not technically a legal separator, but some subtitle editors use
+    # it to delimit msecs, and some players accept it.
+    hrs, mins, secs, msecs = (int(x) for x in re.split('[,:.]', srt_timestamp))
     return timedelta(hours=hrs, minutes=mins, seconds=secs, milliseconds=msecs)
 
 
