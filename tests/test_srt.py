@@ -262,3 +262,21 @@ def test_parser_didnt_match_to_end_raises(subs, fake_idx, fake_hours, garbage):
 
     with assert_raises(srt.SRTParseError):
         list(srt.parse(composed))
+
+
+@given(st.lists(subtitles()))
+def test_parser_can_parse_with_dot_msec_delimiter(subs):
+    original_srt_blocks = [sub.to_srt() for sub in subs]
+    dot_srt_blocks = []
+
+    for srt_block in original_srt_blocks:
+        srt_lines = srt_block.split('\n')
+        # We should only do the first two, as it might also be in the
+        # proprietary metadata, causing this test to fail.
+        dot_timestamp = srt_lines[1].replace(',', '.', 2)
+        srt_lines[1] = dot_timestamp
+        dot_srt_blocks.append('\n'.join(srt_lines))
+
+    composed_with_dots = ''.join(dot_srt_blocks)
+    reparsed_subs = srt.parse(composed_with_dots)
+    subs_eq(reparsed_subs, subs)

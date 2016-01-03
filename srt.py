@@ -12,7 +12,7 @@ import logging
 log = logging.getLogger(__name__)
 
 SRT_REGEX = re.compile(
-    r'(\d+)\n(\d+:\d+:\d+,\d+) --> (\d+:\d+:\d+,\d+) ?([^\n]*)\n(.*?)'
+    r'(\d+)\n(\d+:\d+:\d+[,.]\d+) --> (\d+:\d+:\d+[,.]\d+) ?([^\n]*)\n(.*?)'
     # Many sub editors don't add a blank line to the end, and many editors
     # accept it. We allow it in input.
     r'(?:\n|\Z)(?:\n|\Z)'
