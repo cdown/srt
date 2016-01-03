@@ -1,6 +1,4 @@
 #!/usr/bin/env python
-# vim: set fileencoding=utf8
-# pylint: disable=attribute-defined-outside-init
 
 from __future__ import unicode_literals
 import srt
