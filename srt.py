@@ -21,7 +21,7 @@ SRT_REGEX = re.compile(
     # next lines look like an index and a timestamp as a best-effort
     # solution to work around these.
     r'(?=(?:\d+\n\d+:|\Z))',
-    re.MULTILINE | re.DOTALL,
+    re.DOTALL,
 )
 
 SECONDS_IN_HOUR = 3600
