@@ -9,9 +9,6 @@ except ImportError:
 with open('README.rst') as readme_f:
     README = readme_f.read()
 
-with open('tests/requirements.txt') as test_requirements_f:
-    TEST_REQUIREMENTS = test_requirements_f.readlines()
-
 setup(
     name='srt',
     version='1.0.0',
@@ -39,6 +36,4 @@ setup(
         'Topic :: Software Development :: Libraries',
         'Topic :: Text Processing',
     ],
-    test_suite='nose.collector',
-    tests_require=TEST_REQUIREMENTS
 )
