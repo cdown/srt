@@ -22,7 +22,7 @@ setup(
     author_email='chris@chrisdown.name',
     url='https://github.com/cdown/srt',
     py_modules=['srt'],
-    license='ISC',
+    license='Public Domain',
     keywords='srt',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
