@@ -45,7 +45,9 @@ def is_strictly_legal_content(content):
     - A content section that contains blank lines
     '''
 
-    if content.strip() != content:
+    if content.strip('\n') != content:
+        return False
+    elif not content.strip():
         return False
     elif '\n\n' in content:
         return False
