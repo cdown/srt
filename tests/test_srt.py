@@ -5,7 +5,7 @@ import srt
 from datetime import timedelta
 from nose.tools import eq_ as eq, assert_not_equal as neq, assert_raises, \
                        assert_false
-from hypothesis import given, Settings
+from hypothesis import given, settings
 import hypothesis.strategies as st
 import functools
 import os
@@ -16,8 +16,8 @@ except ImportError:  # Python 2 fallback
     from nose.tools import assert_items_equal as assert_count_equal
 
 
-Settings.register_profile('quick', Settings(max_examples=5))
-Settings.load_profile(os.environ.get('HYPOTHESIS_PROFILE', 'default'))
+settings.register_profile('quick', settings(max_examples=5))
+settings.load_profile(os.environ.get('HYPOTHESIS_PROFILE', 'default'))
 
 
 TIMESTAMP_ARGS = st.tuples(
