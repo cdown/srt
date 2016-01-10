@@ -236,12 +236,8 @@ def _raise_if_not_contiguous(srt, expected_start, actual_start):
     :raises SRTParseError: if the matches are not contiguous
     '''
     if expected_start != actual_start:
-        raise SRTParseError(
-            'Expected contiguous start of match or end of string at char %d, '
-            'but started at char %d (unmatched content: %r)' % (
-                expected_start, actual_start, srt[expected_start:actual_start],
-            )
-        )
+        unmatched_content = srt[expected_start:actual_start]
+        raise SRTParseError(expected_start, actual_start, unmatched_content)
 
 
 def compose(subtitles, reindex=True, start_index=1, strict=True):
@@ -271,5 +267,17 @@ def compose(subtitles, reindex=True, start_index=1, strict=True):
 
 class SRTParseError(Exception):
     '''
-    Raised when an error is encountered parsing an SRT block.
+    Raised when part of an SRT block could not be parsed.
     '''
+    def __init__(self, expected_start, actual_start, unmatched_content):
+        message = (
+            'Expected contiguous start of match or end of input at char %d, '
+            'but started at char %d (unmatched content: %r)' % (
+                expected_start, actual_start, unmatched_content
+            )
+        )
+        super(SRTParseError, self).__init__(message)
+
+        self.expected_start = expected_start
+        self.actual_start = actual_start
+        self.unmatched_content = unmatched_content

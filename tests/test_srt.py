@@ -262,8 +262,19 @@ def test_parser_didnt_match_to_end_raises(subs, fake_idx, fake_hours, garbage):
     srt_blocks.append(garbage)
     composed = ''.join(srt_blocks)
 
-    with assert_raises(srt.SRTParseError):
+    with assert_raises(srt.SRTParseError) as thrown_exc:
         list(srt.parse(composed))
+
+    # Since we will consume as many \n as needed until we meet the lookahead
+    # assertion, leading newlines in `garbage` will be stripped.
+    garbage_stripped = garbage.lstrip('\n')
+
+    eq(garbage_stripped, thrown_exc.exception.unmatched_content)
+    eq(
+        len(composed) - len(garbage_stripped),
+        thrown_exc.exception.expected_start,
+    )
+    eq(len(composed), thrown_exc.exception.actual_start)
 
 
 @given(st.lists(subtitles()))
