@@ -151,7 +151,7 @@ def srt_timestamp_to_timedelta(srt_timestamp):
     return timedelta(hours=hrs, minutes=mins, seconds=secs, milliseconds=msecs)
 
 
-def sort_and_reindex(subtitles, start_index=1):
+def sort_and_reindex(subtitles, start_index=1, in_place=False):
     '''
     Reorder subtitles to be sorted by start time order, and rewrite the indexes
     to be in that same order. This ensures that the SRT file will play in an
@@ -160,9 +160,14 @@ def sort_and_reindex(subtitles, start_index=1):
 
     :param subtitles: :py:class:`Subtitle` objects in any order
     :param int start_index: the index to start from
+    :param bool in_place: whether to modify subs in-place for performance
+                          (version <=1.0.0 behaviour)
     '''
     skipped_subs = 0
-    for new_index, subtitle in enumerate(sorted(subtitles), start=start_index):
+    for sub_num, subtitle in enumerate(sorted(subtitles), start=start_index):
+        if not in_place:
+            subtitle = Subtitle(**vars(subtitle))
+
         if not subtitle.content.strip():
             # Drop contentless subtitles, as they don't serve any purpose and
             # might confuse the media player's parser
@@ -173,7 +178,8 @@ def sort_and_reindex(subtitles, start_index=1):
             skipped_subs += 1
             continue
 
-        subtitle.index = new_index - skipped_subs
+        subtitle.index = sub_num - skipped_subs
+
         yield subtitle
 
 

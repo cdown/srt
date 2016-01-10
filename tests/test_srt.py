@@ -3,8 +3,8 @@
 from __future__ import unicode_literals
 import srt
 from datetime import timedelta
-from nose.tools import eq_ as eq, assert_not_equal as neq, assert_raises, \
-                       assert_false
+from nose.tools import (eq_ as eq, assert_not_equal as neq, assert_raises,
+                        assert_false, assert_true)
 from hypothesis import given, settings
 import hypothesis.strategies as st
 import functools
@@ -197,7 +197,7 @@ def test_subs_missing_content_removed(content_subs, contentless_subs,
         sub.content = contentless_text
 
     subs = contentless_subs + content_subs
-    composed_subs = list(srt.sort_and_reindex(subs))
+    composed_subs = list(srt.sort_and_reindex(subs, in_place=True))
 
     # We should have composed the same subs as there are in content_subs, as
     # all contentless_subs should have been stripped.
@@ -217,7 +217,9 @@ def test_subs_missing_content_removed(content_subs, contentless_subs,
 @given(st.lists(subtitles(), min_size=1), st.integers(min_value=0))
 def test_sort_and_reindex(input_subs, start_index):
     reindexed_subs = list(
-        srt.sort_and_reindex(input_subs, start_index=start_index),
+        srt.sort_and_reindex(
+            input_subs, start_index=start_index, in_place=True,
+        ),
     )
 
     # The subtitles should be reindexed starting at start_index
@@ -229,6 +231,37 @@ def test_sort_and_reindex(input_subs, start_index):
     # The subtitles should be sorted by start time
     expected_sorting = sorted(input_subs, key=lambda sub: sub.start)
     eq(reindexed_subs, expected_sorting)
+
+
+@given(st.lists(subtitles(), min_size=1), st.integers(min_value=0))
+def test_sort_and_reindex_not_in_place_matches(input_subs, start_index):
+    # Make copies for both sort_and_reindex calls so that they can't affect
+    # each other
+    not_in_place_subs = [srt.Subtitle(**vars(sub)) for sub in input_subs]
+    in_place_subs = [srt.Subtitle(**vars(sub)) for sub in input_subs]
+
+    nip_ids = [id(sub) for sub in not_in_place_subs]
+    ip_ids = [id(sub) for sub in in_place_subs]
+
+    not_in_place_output = list(
+        srt.sort_and_reindex(
+            not_in_place_subs, start_index=start_index,
+        ),
+    )
+    in_place_output = list(
+        srt.sort_and_reindex(
+            in_place_subs, start_index=start_index, in_place=True
+        ),
+    )
+
+    # The results in each case should be the same
+    subs_eq(not_in_place_output, in_place_output)
+
+    # Not in place sort_and_reindex should have created new subs
+    assert_false(any(id(sub) in nip_ids for sub in not_in_place_output))
+
+    # In place sort_and_reindex should be reusing the same subs
+    assert_true(all(id(sub) in ip_ids for sub in in_place_output))
 
 
 @given(
