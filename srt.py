@@ -104,8 +104,10 @@ def make_legal_content(content):
     * Blank lines
     * Starting or ending with a blank line
 
-    >>> srt.make_legal_content('\nfoo\n\nbar\n')
-    'foo\nbar'
+    .. doctest::
+
+        >>> make_legal_content('\nfoo\n\nbar\n')
+        'foo\nbar'
 
     :param str content: The content to make legal
     :returns: The legalised content
@@ -123,9 +125,12 @@ def timedelta_to_srt_timestamp(timedelta_timestamp):
     r'''
     Convert a :py:class:`~datetime.timedelta` to an SRT timestamp.
 
-    >>> delta = datetime.timedelta(hours=1, minutes=23, seconds=4)
-    >>> srt.timedelta_to_srt_timestamp(delta)
-    '01:23:04,000'
+    .. doctest::
+
+        >>> import datetime
+        >>> delta = datetime.timedelta(hours=1, minutes=23, seconds=4)
+        >>> timedelta_to_srt_timestamp(delta)
+        '01:23:04,000'
     '''
 
     hrs, secs_remainder = divmod(timedelta_timestamp.seconds, SECONDS_IN_HOUR)
@@ -139,8 +144,10 @@ def srt_timestamp_to_timedelta(srt_timestamp):
     r'''
     Convert an SRT timestamp to a :py:class:`~datetime.timedelta`.
 
-    >>> srt.srt_timestamp_to_timedelta('01:23:04,000')
-    datetime.timedelta(0, 4984)
+    .. doctest::
+
+        >>> srt_timestamp_to_timedelta('01:23:04,000')
+        datetime.timedelta(0, 4984)
     '''
     # "." is not technically a legal separator, but some subtitle editors use
     # it to delimit msecs, and some players accept it.
@@ -189,18 +196,20 @@ def parse(srt):
     that it is designed to not bork when presented with a blank line as part of
     a subtitle's content.
 
-    >>> subs = srt.parse("""\
-    ... 422
-    ... 00:31:39,931 --> 00:31:41,931
-    ... Using mainly spoons,
-    ...
-    ... 423
-    ... 00:31:41,933 --> 00:31:43,435
-    ... we dig a tunnel under the city and release it into the wild.
-    ...
-    ... """)
-    >>> list(subs)
-    [<Subtitle:422>, <Subtitle:423>]
+    .. doctest::
+
+        >>> subs = parse("""\
+        ... 422
+        ... 00:31:39,931 --> 00:31:41,931
+        ... Using mainly spoons,
+        ...
+        ... 423
+        ... 00:31:41,933 --> 00:31:43,435
+        ... we dig a tunnel under the city and release it into the wild.
+        ...
+        ... """)
+        >>> list(subs)  # doctest: +ELLIPSIS
+        [<Subtitle, index 422...>, <Subtitle, index 423...>]
 
     :param str srt: Subtitles in SRT format
     :returns: The subtitles contained in the SRT file as py:class:`Subtitle`
@@ -248,9 +257,16 @@ def compose(subtitles, reindex=True, start_index=1, strict=True):
     Convert an iterator of :py:class:`Subtitle` objects to a string of joined
     SRT blocks.
 
-    >>> subs = [Subtitle(...), Subtitle(...)]
-    >>> compose(subs)
-    '1\n00:01:02,003 --> 00:02:03,004\nfoo\n\n2\n...'
+    .. doctest::
+
+        >>> from datetime import timedelta
+        >>> td = timedelta(seconds=1)
+        >>> subs = [
+        ...     Subtitle(index=1, start=td, end=td, content='x'),
+        ...     Subtitle(index=2, start=td, end=td, content='y'),
+        ... ]
+        >>> compose(subs)  # doctest: +ELLIPSIS
+        '1\n00:00:01,000 --> 00:00:01,000\nx\n\n2\n00:00:01,000 --> ...'
 
     :param subtitles: The subtitles to convert to SRT blocks
     :type subtitles: :term:`iterator` of :py:class:`Subtitle` objects
