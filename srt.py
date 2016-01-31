@@ -35,16 +35,13 @@ class Subtitle(object):
     The metadata relating to a single subtitle. Subtitles are sorted by start
     time by default.
 
-    :param index: The SRT index for this subtitle
-    :type index: int
+    :param int index: The SRT index for this subtitle
     :param start: The time that the subtitle should start being shown
     :type start: :py:class:`datetime.timedelta`
     :param end: The time that the subtitle should stop being shown
     :type end: :py:class:`datetime.timedelta`
-    :param proprietary: Proprietary metadata for this subtitle
-    :type proprietary: str
-    :param content: The subtitle content
-    :type content: str
+    :param str proprietary: Proprietary metadata for this subtitle
+    :param str content: The subtitle content
     '''
 
     def __init__(self, index, start, end, content, proprietary=''):
@@ -110,7 +107,7 @@ def make_legal_content(content):
     >>> srt.make_legal_content('\nfoo\n\nbar\n')
     'foo\nbar'
 
-    :param srt content: the content to make legal
+    :param str content: the content to make legal
     :returns: the legalised content
     :rtype: srt
     '''
@@ -259,7 +256,6 @@ def compose(subtitles, reindex=True, start_index=1, strict=True):
     :type subtitles: :term:`iterator` of :py:class:`Subtitle` objects
     :param bool reindex: Whether to reindex subtitles based on start time
     :param int start_index: If reindexing, the index to start reindexing from
-    :type start_index: int
     :param bool strict: Whether to enable strict mode, see
                         :py:func:`Subtitle.to_srt` for more information
     :returns: A single SRT formatted string, with each input
