@@ -274,6 +274,11 @@ def compose(subtitles, reindex=True, start_index=1, strict=True):
 class SRTParseError(Exception):
     '''
     Raised when part of an SRT block could not be parsed.
+
+    :param int expected_start: The expected contiguous start index
+    :param int actual_start: The actual non-contiguous start index
+    :param str unmatched_content: The content between the expected start index
+                                  and the actual start index
     '''
     def __init__(self, expected_start, actual_start, unmatched_content):
         message = (
