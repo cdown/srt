@@ -107,8 +107,8 @@ def make_legal_content(content):
     >>> srt.make_legal_content('\nfoo\n\nbar\n')
     'foo\nbar'
 
-    :param str content: the content to make legal
-    :returns: the legalised content
+    :param str content: The content to make legal
+    :returns: The legalised content
     :rtype: srt
     '''
     # We can't use content.splitlines() here since it does all sorts of stuff
@@ -156,8 +156,8 @@ def sort_and_reindex(subtitles, start_index=1, in_place=False):
     and they may need to be resorted.
 
     :param subtitles: :py:class:`Subtitle` objects in any order
-    :param int start_index: the index to start from
-    :param bool in_place: whether to modify subs in-place for performance
+    :param int start_index: The index to start from
+    :param bool in_place: Whether to modify subs in-place for performance
                           (version <=1.0.0 behaviour)
     '''
     skipped_subs = 0
@@ -231,12 +231,12 @@ def _raise_if_not_contiguous(srt, expected_start, actual_start):
     Raise :py:class:`SRTParseError` with diagnostic info if expected_start does
     not equal actual_start.
 
-    :param str srt: the data being matched
-    :param int expected_start: the expected next start, as from the last
+    :param str srt: The data being matched
+    :param int expected_start: The expected next start, as from the last
                                iteration's match.end()
-    :param int actual_start: the actual start, as from this iteration's
+    :param int actual_start: The actual start, as from this iteration's
                              match.start()
-    :raises SRTParseError: if the matches are not contiguous
+    :raises SRTParseError: If the matches are not contiguous
     '''
     if expected_start != actual_start:
         unmatched_content = srt[expected_start:actual_start]
