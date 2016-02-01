@@ -162,6 +162,18 @@ def sort_and_reindex(subtitles, start_index=1, in_place=False):
     expected fashion after, for example, times were changed in some subtitles
     and they may need to be resorted.
 
+    .. doctest::
+
+        >>> from datetime import timedelta
+        >>> one = timedelta(seconds=1)
+        >>> two = timedelta(seconds=2)
+        >>> subs = [
+        ...     Subtitle(index=999, start=one, end=one, content='1'),
+        ...     Subtitle(index=0, start=two, end=two, content='2'),
+        ... ]
+        >>> list(sort_and_reindex(subs))  # doctest: +ELLIPSIS
+        [<Subtitle, index 1, ... ('1')>, <Subtitle, index 2, ... ('2')>]
+
     :param subtitles: :py:class:`Subtitle` objects in any order
     :param int start_index: The index to start from
     :param bool in_place: Whether to modify subs in-place for performance
