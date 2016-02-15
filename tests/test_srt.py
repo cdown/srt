@@ -1,13 +1,11 @@
 #!/usr/bin/env python
-# vim: set fileencoding=utf8
-# pylint: disable=attribute-defined-outside-init
 
 from __future__ import unicode_literals
 import srt
 from datetime import timedelta
-from nose.tools import eq_ as eq, assert_not_equal as neq, assert_raises, \
-                       assert_false
-from hypothesis import given, Settings
+from nose.tools import (eq_ as eq, assert_not_equal as neq, assert_raises,
+                        assert_false, assert_true)
+from hypothesis import given, settings
 import hypothesis.strategies as st
 import functools
 import os
@@ -18,8 +16,8 @@ except ImportError:  # Python 2 fallback
     from nose.tools import assert_items_equal as assert_count_equal
 
 
-Settings.register_profile('quick', Settings(max_examples=5))
-Settings.load_profile(os.environ.get('HYPOTHESIS_PROFILE', 'default'))
+settings.register_profile('quick', settings(max_examples=5))
+settings.load_profile(os.environ.get('HYPOTHESIS_PROFILE', 'default'))
 
 
 TIMESTAMP_ARGS = st.tuples(
@@ -47,7 +45,9 @@ def is_strictly_legal_content(content):
     - A content section that contains blank lines
     '''
 
-    if content.strip() != content:
+    if content.strip('\n') != content:
+        return False
+    elif not content.strip():
         return False
     elif '\n\n' in content:
         return False
@@ -197,7 +197,7 @@ def test_subs_missing_content_removed(content_subs, contentless_subs,
         sub.content = contentless_text
 
     subs = contentless_subs + content_subs
-    composed_subs = list(srt.sort_and_reindex(subs))
+    composed_subs = list(srt.sort_and_reindex(subs, in_place=True))
 
     # We should have composed the same subs as there are in content_subs, as
     # all contentless_subs should have been stripped.
@@ -217,7 +217,9 @@ def test_subs_missing_content_removed(content_subs, contentless_subs,
 @given(st.lists(subtitles(), min_size=1), st.integers(min_value=0))
 def test_sort_and_reindex(input_subs, start_index):
     reindexed_subs = list(
-        srt.sort_and_reindex(input_subs, start_index=start_index),
+        srt.sort_and_reindex(
+            input_subs, start_index=start_index, in_place=True,
+        ),
     )
 
     # The subtitles should be reindexed starting at start_index
@@ -229,6 +231,37 @@ def test_sort_and_reindex(input_subs, start_index):
     # The subtitles should be sorted by start time
     expected_sorting = sorted(input_subs, key=lambda sub: sub.start)
     eq(reindexed_subs, expected_sorting)
+
+
+@given(st.lists(subtitles(), min_size=1), st.integers(min_value=0))
+def test_sort_and_reindex_not_in_place_matches(input_subs, start_index):
+    # Make copies for both sort_and_reindex calls so that they can't affect
+    # each other
+    not_in_place_subs = [srt.Subtitle(**vars(sub)) for sub in input_subs]
+    in_place_subs = [srt.Subtitle(**vars(sub)) for sub in input_subs]
+
+    nip_ids = [id(sub) for sub in not_in_place_subs]
+    ip_ids = [id(sub) for sub in in_place_subs]
+
+    not_in_place_output = list(
+        srt.sort_and_reindex(
+            not_in_place_subs, start_index=start_index,
+        ),
+    )
+    in_place_output = list(
+        srt.sort_and_reindex(
+            in_place_subs, start_index=start_index, in_place=True
+        ),
+    )
+
+    # The results in each case should be the same
+    subs_eq(not_in_place_output, in_place_output)
+
+    # Not in place sort_and_reindex should have created new subs
+    assert_false(any(id(sub) in nip_ids for sub in not_in_place_output))
+
+    # In place sort_and_reindex should be reusing the same subs
+    assert_true(all(id(sub) in ip_ids for sub in in_place_output))
 
 
 @given(
@@ -262,5 +295,34 @@ def test_parser_didnt_match_to_end_raises(subs, fake_idx, fake_hours, garbage):
     srt_blocks.append(garbage)
     composed = ''.join(srt_blocks)
 
-    with assert_raises(srt.SRTParseError):
+    with assert_raises(srt.SRTParseError) as thrown_exc:
         list(srt.parse(composed))
+
+    # Since we will consume as many \n as needed until we meet the lookahead
+    # assertion, leading newlines in `garbage` will be stripped.
+    garbage_stripped = garbage.lstrip('\n')
+
+    eq(garbage_stripped, thrown_exc.exception.unmatched_content)
+    eq(
+        len(composed) - len(garbage_stripped),
+        thrown_exc.exception.expected_start,
+    )
+    eq(len(composed), thrown_exc.exception.actual_start)
+
+
+@given(st.lists(subtitles()))
+def test_parser_can_parse_with_dot_msec_delimiter(subs):
+    original_srt_blocks = [sub.to_srt() for sub in subs]
+    dot_srt_blocks = []
+
+    for srt_block in original_srt_blocks:
+        srt_lines = srt_block.split('\n')
+        # We should only do the first two, as it might also be in the
+        # proprietary metadata, causing this test to fail.
+        dot_timestamp = srt_lines[1].replace(',', '.', 2)
+        srt_lines[1] = dot_timestamp
+        dot_srt_blocks.append('\n'.join(srt_lines))
+
+    composed_with_dots = ''.join(dot_srt_blocks)
+    reparsed_subs = srt.parse(composed_with_dots)
+    subs_eq(reparsed_subs, subs)

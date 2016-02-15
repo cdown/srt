@@ -13,6 +13,7 @@ Why choose this library?
 - `Well documented API`_, at both a high and low level
 - Tolerant of many common errors found in real-world SRT files
 - Completely Unicode compliant
+- `Released into the public domain`_
 - Real world tested — used in production to process thousands of SRT files
   every day
 
@@ -24,6 +25,7 @@ Why choose this library?
 .. _Hypothesis: https://github.com/DRMacIver/hypothesis
 .. _`100% test coverage`: https://coveralls.io/github/cdown/srt?branch=develop
 .. _`Well documented API`: http://srt.readthedocs.org/en/latest/index.html
+.. _`Released into the public domain`: https://cr.yp.to/publicdomain.html
 
 Installation
 ------------
