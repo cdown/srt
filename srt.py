@@ -102,7 +102,7 @@ def make_legal_content(content):
     Remove illegal content from a content block. Illegal content includes:
 
     * Blank lines
-    * Starting or ending with a blank line
+    * Starting or ending with a newline
 
     .. doctest::
 
