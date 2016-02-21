@@ -70,9 +70,12 @@ def subs_eq(got, expected, any_order=False):
 
 def subtitles(strict=True):
     '''A Hypothesis strategy to generate Subtitle objects.'''
+    # max_value settings are just to avoid overflowing TIMEDELTA_MAX_DAYS by
+    # using arbitrary low enough numbers
+    time_unit_strategy = st.integers(min_value=0, max_value=999999)
     timestamp_strategy = st.builds(
-        timedelta, hours=st.integers(min_value=0),
-        minutes=st.integers(min_value=0), seconds=st.integers(min_value=0),
+        timedelta, hours=time_unit_strategy, minutes=time_unit_strategy,
+        seconds=time_unit_strategy,
     )
 
     content_strategy = st.text(min_size=1)
