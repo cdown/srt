@@ -3,7 +3,6 @@ python: 3.5  # 3.5 requires manual download, so it needs to be selected
 
 env:
   - TOXENV=py27
-  - TOXENV=py33
   - TOXENV=py34
   - TOXENV=py35
   - TOXENV=coverage
