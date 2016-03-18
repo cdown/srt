@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 import srt
 from datetime import timedelta
 from nose.tools import (eq_ as eq, assert_not_equal as neq, assert_raises,
-                        assert_false, assert_true)
+                        assert_false, assert_true, assert_in)
 from hypothesis import given, settings
 import hypothesis.strategies as st
 import functools
@@ -329,3 +329,11 @@ def test_parser_can_parse_with_dot_msec_delimiter(subs):
     composed_with_dots = ''.join(dot_srt_blocks)
     reparsed_subs = srt.parse(composed_with_dots)
     subs_eq(reparsed_subs, subs)
+
+
+@given(subtitles())
+def test_repr_doesnt_crash(sub):
+    # Not much we can do here, but we should make sure __repr__ doesn't crash
+    # or anything and it does at least vaguely look like what we want
+    assert_in('Subtitle', repr(sub))
+    assert_in(str(sub.index), repr(sub))
