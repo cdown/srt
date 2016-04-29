@@ -68,15 +68,28 @@ def subs_eq(got, expected, any_order=False):
         eq(got_vars, expected_vars)
 
 
-def subtitles(strict=True):
-    '''A Hypothesis strategy to generate Subtitle objects.'''
-    # max_value settings are just to avoid overflowing TIMEDELTA_MAX_DAYS by
-    # using arbitrary low enough numbers
-    time_unit_strategy = st.integers(min_value=0, max_value=999999)
+def timedeltas(min_value, max_value):
+    '''
+    A Hypothesis strategy to generate timedeltas.
+
+    Right now {min,max}_value are shoved into multiple fields in timedelta(),
+    which is not very customisable, but it's good enough for our current test
+    purposes. If you need more precise control, you may need to add more
+    parameters to this function to be able to customise more freely.
+    '''
+    time_unit_strategy = st.integers(min_value=min_value, max_value=max_value)
     timestamp_strategy = st.builds(
         timedelta, hours=time_unit_strategy, minutes=time_unit_strategy,
         seconds=time_unit_strategy,
     )
+    return timestamp_strategy
+
+
+def subtitles(strict=True):
+    '''A Hypothesis strategy to generate Subtitle objects.'''
+    # max_value settings are just to avoid overflowing TIMEDELTA_MAX_DAYS by
+    # using arbitrary low enough numbers
+    timestamp_strategy = timedeltas(min_value=0, max_value=999999)
 
     content_strategy = st.text(min_size=1)
     proprietary_strategy = st.text().filter(lambda x: '\n' not in x)
@@ -214,7 +227,25 @@ def test_subs_missing_content_removed(content_subs, contentless_subs,
         list(range(
             default_start_index, default_start_index + len(composed_subs),
         ))
+
     )
+
+
+@given(
+    st.lists(subtitles()), st.lists(subtitles()),
+    timedeltas(min_value=-999, max_value=-1),
+)
+def test_subs_starts_before_zero_removed(positive_subs, negative_subs,
+                                         negative_td):
+    for sub in negative_subs:
+        sub.start = negative_td
+        sub.end = negative_td  # Just to avoid tripping any start >= end errors
+
+    subs = positive_subs + negative_subs
+    composed_subs = list(srt.sort_and_reindex(subs, in_place=True))
+
+    # There should be no negative subs
+    subs_eq(composed_subs, positive_subs, any_order=True)
 
 
 @given(st.lists(subtitles(), min_size=1), st.integers(min_value=0))

@@ -47,6 +47,14 @@ SRT_REGEX = re.compile(
     re.DOTALL,
 )
 
+ZERO_TIMEDELTA = timedelta(0)
+
+# Warning message if truthy return -> Function taking a Subtitle, skip if True
+SUBTITLE_SKIP_CONDITIONS = (
+    ('No content', lambda sub: not sub.content.strip()),
+    ('Start time < 0 seconds', lambda sub: sub.start < ZERO_TIMEDELTA),
+)
+
 SECONDS_IN_HOUR = 3600
 SECONDS_IN_MINUTE = 60
 HOURS_IN_DAY = 24
@@ -209,12 +217,12 @@ def sort_and_reindex(subtitles, start_index=1, in_place=False):
         if not in_place:
             subtitle = Subtitle(**vars(subtitle))
 
-        if not subtitle.content.strip():
-            # Drop contentless subtitles, as they don't serve any purpose and
-            # might confuse the media player's parser
+        try:
+            should_skip_sub(subtitle)
+        except ShouldSkipException as thrown_exc:
             log.warning(
-                'Skipped contentless subtitle that was at index %d',
-                subtitle.index,
+                'Skipped subtitle at index %d: %s',
+                subtitle.index, thrown_exc,
             )
             skipped_subs += 1
             continue
@@ -222,6 +230,19 @@ def sort_and_reindex(subtitles, start_index=1, in_place=False):
         subtitle.index = sub_num - skipped_subs
 
         yield subtitle
+
+
+def should_skip_sub(subtitle):
+    '''
+    Check if a subtitle should be skipped based on the rules in
+    SUBTITLE_SKIP_CONDITIONS.
+
+    :param subtitle: a :py:class:`Subtitle` to check whether to skip
+    :raises ShouldSkipException: if the subtitle should be skipped
+    '''
+    for warning_msg, sub_skipper in SUBTITLE_SKIP_CONDITIONS:
+        if sub_skipper(subtitle):
+            raise ShouldSkipException(warning_msg)
 
 
 def parse(srt):
@@ -341,3 +362,9 @@ class SRTParseError(Exception):
         self.expected_start = expected_start
         self.actual_start = actual_start
         self.unmatched_content = unmatched_content
+
+
+class ShouldSkipException(Exception):
+    '''
+    Raised when a subtitle should be skipped.
+    '''
