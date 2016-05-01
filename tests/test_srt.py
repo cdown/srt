@@ -68,7 +68,7 @@ def subs_eq(got, expected, any_order=False):
         eq(got_vars, expected_vars)
 
 
-def timedeltas(min_value, max_value):
+def timedeltas(min_value=0, max_value=TIMEDELTA_MAX_DAYS):
     '''
     A Hypothesis strategy to generate timedeltas.
 
@@ -300,16 +300,16 @@ def test_sort_and_reindex_not_in_place_matches(input_subs, start_index):
 
 @given(
     st.lists(subtitles(), min_size=1), st.integers(min_value=0),
-    st.integers(min_value=0), st.text(min_size=1),
+    st.text(min_size=1), timedeltas(),
 )
-def test_parser_noncontiguous(subs, fake_idx, fake_hours, garbage):
+def test_parser_noncontiguous(subs, fake_idx, garbage, fake_timedelta):
     composed = srt.compose(subs)
 
     # Put some garbage between subs that should trigger our failed parsing
     # detection. Since we do some magic to try and detect blank lines that
     # don't really delimit subtitles, it has to look at least a little like an
     # SRT block.
-    srt_timestamp = srt.timedelta_to_srt_timestamp(timedelta(hours=fake_hours))
+    srt_timestamp = srt.timedelta_to_srt_timestamp(fake_timedelta)
     composed = composed.replace(
         '\n\n', '\n\n%d\n%s %s' % (
             fake_idx, srt_timestamp, garbage,
@@ -322,11 +322,12 @@ def test_parser_noncontiguous(subs, fake_idx, fake_hours, garbage):
 
 @given(
     st.lists(subtitles(), min_size=1), st.integers(min_value=0),
-    st.integers(min_value=0), st.text(min_size=1),
+    st.text(min_size=1), timedeltas(),
 )
-def test_parser_didnt_match_to_end_raises(subs, fake_idx, fake_hours, garbage):
+def test_parser_didnt_match_to_end_raises(subs, fake_idx, garbage,
+                                          fake_timedelta):
     srt_blocks = [sub.to_srt() for sub in subs]
-    srt_timestamp = srt.timedelta_to_srt_timestamp(timedelta(hours=fake_hours))
+    srt_timestamp = srt.timedelta_to_srt_timestamp(fake_timedelta)
     garbage = '\n\n%d\n%s %s' % (fake_idx, srt_timestamp, garbage)
     srt_blocks.append(garbage)
     composed = ''.join(srt_blocks)
