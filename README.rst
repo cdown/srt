@@ -11,6 +11,7 @@ Why choose this library?
 - High quality test suite using Hypothesis_
 - `100% test coverage`_ (including branches)
 - `Well documented API`_, at both a high and low level
+- No dependencies outside of the standard library
 - Tolerant of many common errors found in real-world SRT files
 - Completely Unicode compliant
 - `Released into the public domain`_
