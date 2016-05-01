@@ -218,7 +218,7 @@ def sort_and_reindex(subtitles, start_index=1, in_place=False):
             subtitle = Subtitle(**vars(subtitle))
 
         try:
-            should_skip_sub(subtitle)
+            _should_skip_sub(subtitle)
         except ShouldSkipException as thrown_exc:
             log.warning(
                 'Skipped subtitle at index %d: %s',
@@ -232,13 +232,13 @@ def sort_and_reindex(subtitles, start_index=1, in_place=False):
         yield subtitle
 
 
-def should_skip_sub(subtitle):
+def _should_skip_sub(subtitle):
     '''
     Check if a subtitle should be skipped based on the rules in
     SUBTITLE_SKIP_CONDITIONS.
 
-    :param subtitle: a :py:class:`Subtitle` to check whether to skip
-    :raises ShouldSkipException: if the subtitle should be skipped
+    :param subtitle: A :py:class:`Subtitle` to check whether to skip
+    :raises ShouldSkipException: If the subtitle should be skipped
     '''
     for warning_msg, sub_skipper in SUBTITLE_SKIP_CONDITIONS:
         if sub_skipper(subtitle):
