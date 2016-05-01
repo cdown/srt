@@ -11,10 +11,23 @@ import logging
 
 log = logging.getLogger(__name__)
 
+
 SRT_REGEX = re.compile(
+    # "," is not technically valid as a delimiter but often appears in SRT
+    # files created in locales where "," is the decimal separator. Many editors
+    # and players accept it.
     r'(\d+)\n(\d+:\d+:\d+[,.]\d+) --> (\d+:\d+:\d+[,.]\d+) ?([^\n]*)\n(.*?)'
-    # Many sub editors don't add a blank line to the end, and many editors
-    # accept it. We allow it in input.
+    # Many sub editors don't add a blank line to the end, and many editors and
+    # players accept that. We allow it to be missing in input.
+    #
+    # We also allow subs that are missing a double blank newline. This often
+    # happens on subs which were first created as a mixed language subtitle,
+    # for example chs/eng, and then were stripped using naive methods (such as
+    # ed/sed) that don't understand newline preservation rules in SRT files.
+    #
+    # This means that when you are, say, only keeping chs, and the line only
+    # contains english, you end up with not only no content, but also all of
+    # the content lines are stripped instead of retaining a newline.
     r'(?:\n|\Z)(?:\n|\Z|(?=(?:\d+\n\d+:|\Z)))'
     # Some SRT blocks, while this is technically invalid, have blank lines
     # inside the subtitle content. We look ahead a little to check that the
