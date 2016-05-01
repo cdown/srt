@@ -278,9 +278,10 @@ def test_parser_noncontiguous(subs, fake_idx, fake_hours, garbage):
     # detection. Since we do some magic to try and detect blank lines that
     # don't really delimit subtitles, it has to look at least a little like an
     # SRT block.
+    srt_timestamp = srt.timedelta_to_srt_timestamp(timedelta(hours=fake_hours))
     composed = composed.replace(
-        '\n\n', '\n\n%d\n%d:%s' % (
-            fake_idx, fake_hours, garbage,
+        '\n\n', '\n\n%d\n%s %s' % (
+            fake_idx, srt_timestamp, garbage,
         )
     )
 
@@ -294,7 +295,8 @@ def test_parser_noncontiguous(subs, fake_idx, fake_hours, garbage):
 )
 def test_parser_didnt_match_to_end_raises(subs, fake_idx, fake_hours, garbage):
     srt_blocks = [sub.to_srt() for sub in subs]
-    garbage = '\n\n%d\n%d:%s' % (fake_idx, fake_hours, garbage)
+    srt_timestamp = srt.timedelta_to_srt_timestamp(timedelta(hours=fake_hours))
+    garbage = '\n\n%d\n%s %s' % (fake_idx, srt_timestamp, garbage)
     srt_blocks.append(garbage)
     composed = ''.join(srt_blocks)
 

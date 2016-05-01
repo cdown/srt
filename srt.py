@@ -11,12 +11,17 @@ import logging
 
 log = logging.getLogger(__name__)
 
+# "." is not technically valid as a delimiter, but many editors create SRT
+# files with this delimiter for whatever reason. Many editors and players
+# accept it, so we do too.
+RGX_TIMESTAMP_MAGNITUDE_DELIM = r'[,.:]'
+RGX_TIMESTAMP = RGX_TIMESTAMP_MAGNITUDE_DELIM.join([r'\d+'] * 4)
+RGX_INDEX = r'\d+'
+RGX_PROPRIETARY = r'[^\n]*'
+RGX_CONTENT = r'.*?'
 
 SRT_REGEX = re.compile(
-    # "," is not technically valid as a delimiter but often appears in SRT
-    # files created in locales where "," is the decimal separator. Many editors
-    # and players accept it.
-    r'(\d+)\n(\d+:\d+:\d+[,.]\d+) --> (\d+:\d+:\d+[,.]\d+) ?([^\n]*)\n(.*?)'
+    r'({idx})\n({ts}) --> ({ts}) ?({proprietary})\n({content})'
     # Many sub editors don't add a blank line to the end, and many editors and
     # players accept that. We allow it to be missing in input.
     #
@@ -28,12 +33,17 @@ SRT_REGEX = re.compile(
     # This means that when you are, say, only keeping chs, and the line only
     # contains english, you end up with not only no content, but also all of
     # the content lines are stripped instead of retaining a newline.
-    r'(?:\n|\Z)(?:\n|\Z|(?=(?:\d+\n\d+:|\Z)))'
+    r'(?:\n|\Z)(?:\n|\Z|(?=(?:{idx}\n{ts})))'
     # Some SRT blocks, while this is technically invalid, have blank lines
     # inside the subtitle content. We look ahead a little to check that the
     # next lines look like an index and a timestamp as a best-effort
     # solution to work around these.
-    r'(?=(?:\d+\n\d+:|\Z))',
+    r'(?=(?:{idx}\n{ts}|\Z))'.format(
+        idx=RGX_INDEX,
+        ts=RGX_TIMESTAMP,
+        proprietary=RGX_PROPRIETARY,
+        content=RGX_CONTENT,
+    ),
     re.DOTALL,
 )
 
@@ -164,7 +174,9 @@ def srt_timestamp_to_timedelta(srt_timestamp):
     '''
     # "." is not technically a legal separator, but some subtitle editors use
     # it to delimit msecs, and some players accept it.
-    hrs, mins, secs, msecs = (int(x) for x in re.split('[,:.]', srt_timestamp))
+    hrs, mins, secs, msecs = (
+        int(x) for x in re.split(RGX_TIMESTAMP_MAGNITUDE_DELIM, srt_timestamp)
+    )
     return timedelta(hours=hrs, minutes=mins, seconds=secs, milliseconds=msecs)
 
 
