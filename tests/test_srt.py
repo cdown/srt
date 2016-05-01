@@ -1,14 +1,16 @@
 #!/usr/bin/env python
 
 from __future__ import unicode_literals
-import srt
 from datetime import timedelta
-from nose.tools import (eq_ as eq, assert_not_equal as neq, assert_raises,
-                        assert_false, assert_true, assert_in)
-from hypothesis import given, settings
-import hypothesis.strategies as st
 import functools
 import os
+
+from hypothesis import given, settings
+import hypothesis.strategies as st
+from nose.tools import (eq_ as eq, assert_not_equal as neq, assert_raises,
+                        assert_false, assert_true, assert_in)
+
+import srt
 
 try:
     from nose.tools import assert_count_equal
