@@ -337,3 +337,16 @@ def test_repr_doesnt_crash(sub):
     # or anything and it does at least vaguely look like what we want
     assert_in('Subtitle', repr(sub))
     assert_in(str(sub.index), repr(sub))
+
+
+@given(st.lists(subtitles()))
+def test_parser_accepts_no_newline_no_content(subs):
+    for sub in subs:
+        # Limit size so we know how many lines to remove
+        sub.content = ''
+
+    # Remove the last \n so that there is only one
+    stripped_srt_blocks = ''.join(sub.to_srt()[:-1] for sub in subs)
+
+    reparsed_subs = srt.parse(stripped_srt_blocks)
+    subs_eq(reparsed_subs, subs)
