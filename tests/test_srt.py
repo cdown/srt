@@ -22,13 +22,6 @@ settings.register_profile('quick', settings(max_examples=5))
 settings.load_profile(os.environ.get('HYPOTHESIS_PROFILE', 'default'))
 
 
-TIMESTAMP_ARGS = st.tuples(
-    st.integers(min_value=0),  # Hour
-    st.integers(min_value=0, max_value=59),  # Minute
-    st.integers(min_value=0, max_value=59),  # Second
-    st.integers(min_value=0, max_value=999),  # Millisecond
-)
-
 HOURS_IN_DAY = 24
 TIMEDELTA_MAX_DAYS = 999999999
 CONTENTLESS_SUB = functools.partial(
