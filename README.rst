@@ -1,3 +1,13 @@
+|travis| |coveralls|
+
+.. |travis| image:: https://travis-ci.org/cdown/srt.svg?branch=develop
+  :target: https://travis-ci.org/cdown/srt
+  :alt: Test status
+
+.. |coveralls| image:: https://coveralls.io/repos/cdown/srt/badge.svg?branch=develop&service=github
+  :target: https://coveralls.io/github/cdown/srt?branch=develop
+  :alt: Coverage
+
 srt is a tiny Python library for parsing, modifying, and composing `SRT
 files`_. Take a look at the quickstart_ for a basic overview of the library.
 `Detailed API documentation`_ is also available.
@@ -45,16 +55,6 @@ To install the latest development version directly from GitHub:
 
 Testing
 -------
-
-|travis| |coveralls|
-
-.. |travis| image:: https://travis-ci.org/cdown/srt.svg?branch=develop
-  :target: https://travis-ci.org/cdown/srt
-  :alt: Test status
-
-.. |coveralls| image:: https://coveralls.io/repos/cdown/srt/badge.svg?branch=develop&service=github
-  :target: https://coveralls.io/github/cdown/srt?branch=develop
-  :alt: Coverage
 
 .. code::
 
