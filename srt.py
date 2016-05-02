@@ -55,7 +55,7 @@ SUBTITLE_SKIP_CONDITIONS = (
     ('Start time < 0 seconds', lambda sub: sub.start < ZERO_TIMEDELTA),
 )
 SUBTITLE_WARN_CONDITIONS = (
-    ('Subtitle starts time > end time', lambda sub: sub.start > sub.end),
+    ('Subtitle start time > end time', lambda sub: sub.start > sub.end),
 )
 
 SECONDS_IN_HOUR = 3600
