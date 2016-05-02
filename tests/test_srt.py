@@ -171,8 +171,18 @@ def test_subtitle_inequality(sub_1):
 
 
 @given(subtitles())
-def test_subtitle_objects_hashable(subtitle):
-    hash(subtitle)
+def test_subtitle_from_scratch_equality(subtitle):
+    srt_block = subtitle.to_srt()
+
+    # Get two totally new sets of objects so as not to affect the hash
+    # comparison
+    sub_1 = list(srt.parse(srt_block))[0]
+    sub_2 = list(srt.parse(srt_block))[0]
+
+    subs_eq([sub_1], [sub_2])
+    # In case subs_eq and eq disagree for some reason
+    eq(sub_1, sub_2)
+    eq(hash(sub_1), hash(sub_2))
 
 
 @given(st.lists(subtitles()))
