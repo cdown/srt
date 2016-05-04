@@ -219,7 +219,7 @@ def sort_and_reindex(subtitles, start_index=1, in_place=False):
         ...     Subtitle(index=0, start=two, end=two, content='2'),
         ... ]
         >>> list(sort_and_reindex(subs))  # doctest: +ELLIPSIS
-        [<Subtitle, index 1, ... ('1')>, <Subtitle, index 2, ... ('2')>]
+        [Subtitle(...index=1...), Subtitle(...index=2...)]
 
     :param subtitles: :py:class:`Subtitle` objects in any order
     :param int start_index: The index to start from
@@ -281,7 +281,7 @@ def parse(srt):
         ...
         ... """)
         >>> list(subs)  # doctest: +ELLIPSIS
-        [<Subtitle, index 422...>, <Subtitle, index 423...>]
+        [Subtitle(...index=422...), Subtitle(...index=423...)]
 
     :param str srt: Subtitles in SRT format
     :returns: The subtitles contained in the SRT file as py:class:`Subtitle`
