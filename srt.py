@@ -233,7 +233,7 @@ def sort_and_reindex(subtitles, start_index=1, in_place=False):
 
         try:
             _should_skip_sub(subtitle)
-        except ShouldSkipException as thrown_exc:
+        except _ShouldSkipException as thrown_exc:
             log.warning(
                 'Skipped subtitle at index %d: %s',
                 subtitle.index, thrown_exc,
@@ -252,11 +252,11 @@ def _should_skip_sub(subtitle):
     SUBTITLE_SKIP_CONDITIONS.
 
     :param subtitle: A :py:class:`Subtitle` to check whether to skip
-    :raises ShouldSkipException: If the subtitle should be skipped
+    :raises _ShouldSkipException: If the subtitle should be skipped
     '''
     for warning_msg, sub_skipper in SUBTITLE_SKIP_CONDITIONS:
         if sub_skipper(subtitle):
-            raise ShouldSkipException(warning_msg)
+            raise _ShouldSkipException(warning_msg)
 
 
 def parse(srt):
@@ -378,7 +378,7 @@ class SRTParseError(Exception):
         self.unmatched_content = unmatched_content
 
 
-class ShouldSkipException(Exception):
+class _ShouldSkipException(Exception):
     '''
     Raised when a subtitle should be skipped.
     '''
