@@ -98,12 +98,14 @@ class Subtitle(object):
             return self.start == other.start and self.end < other.end
 
     def __repr__(self):
-        return '<%s, index %d, from %s to %s (%r)>' % (
-            type(self).__name__, self.index,
-            timedelta_to_srt_timestamp(self.start),
-            timedelta_to_srt_timestamp(self.end),
-            self.content[:20],
+        # Python 2/3 cross compatibility
+        var_items = getattr(
+            vars(self), 'iteritems', getattr(vars(self), 'items')
         )
+        item_list = ', '.join(
+            '%s=%r' % (k, v) for k, v in var_items()
+        )
+        return "%s(%s)" % (type(self).__name__, item_list)
 
     def to_srt(self, strict=True):
         r'''
