@@ -255,6 +255,10 @@ def test_subs_starts_before_zero_removed(positive_subs, negative_subs,
 
 @given(st.lists(subtitles(), min_size=1), st.integers(min_value=0))
 def test_sort_and_reindex(input_subs, start_index):
+    for sub in input_subs:
+        # Pin all subs to same end time so that start time is compared only
+        sub.end = timedelta(1)
+
     reindexed_subs = list(
         srt.sort_and_reindex(
             input_subs, start_index=start_index, in_place=True,
