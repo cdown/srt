@@ -272,6 +272,19 @@ def test_sort_and_reindex(input_subs, start_index):
     eq(reindexed_subs, expected_sorting)
 
 
+@given(st.lists(subtitles(), min_size=1))
+def test_sort_and_reindex_same_start_time_uses_end(input_subs):
+    for sub in input_subs:
+        # Pin all subs to same start time so that end time is compared only
+        sub.start = timedelta(1)
+
+    reindexed_subs = list(srt.sort_and_reindex(input_subs, in_place=True))
+
+    # The subtitles should be sorted by end time when start time is the same
+    expected_sorting = sorted(input_subs, key=lambda sub: sub.end)
+    eq(reindexed_subs, expected_sorting)
+
+
 @given(st.lists(subtitles(), min_size=1), st.integers(min_value=0))
 def test_sort_and_reindex_not_in_place_matches(input_subs, start_index):
     # Make copies for both sort_and_reindex calls so that they can't affect

@@ -92,7 +92,10 @@ class Subtitle(object):
         return vars(self) == vars(other)
 
     def __lt__(self, other):
-        return self.start < other.start
+        if self.start < other.start:
+            return True
+        else:
+            return self.start == other.start and self.end < other.end
 
     def __repr__(self):
         return '<%s, index %d, from %s to %s (%r)>' % (
