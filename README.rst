@@ -21,6 +21,7 @@ Why choose this library?
 - High quality test suite using Hypothesis_
 - `100% test coverage`_ (including branches)
 - `Well documented API`_, at both a high and low level
+- Native support for Python 2 and 3
 - No dependencies outside of the standard library
 - Tolerant of many common errors found in real-world SRT files
 - Completely Unicode compliant
