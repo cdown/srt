@@ -22,24 +22,28 @@ def parse_args():
     parser = utils.basic_parser()
     parser.add_argument(
         '--desynced-start',
+        '--f1',
         type=lambda arg: srt_timestamp_to_milliseconds(parser, arg),
         required=True,
         help='the first desynchronised timestamp',
     )
     parser.add_argument(
         '--synced-start',
+        '--t1',
         type=lambda arg: srt_timestamp_to_milliseconds(parser, arg),
         required=True,
         help='the first synchronised timestamp',
     )
     parser.add_argument(
         '--desynced-end',
+        '--f2',
         type=lambda arg: srt_timestamp_to_milliseconds(parser, arg),
         required=True,
         help='the second desynchronised timestamp',
     )
     parser.add_argument(
         '--synced-end',
+        '--t2',
         type=lambda arg: srt_timestamp_to_milliseconds(parser, arg),
         required=True,
         help='the second synchronised timestamp',
