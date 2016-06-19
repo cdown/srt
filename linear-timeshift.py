@@ -21,28 +21,28 @@ def parse_args():
 
     parser = utils.basic_parser()
     parser.add_argument(
-        '--desynced-start',
+        '--from-start',
         '--f1',
         type=lambda arg: srt_timestamp_to_milliseconds(parser, arg),
         required=True,
         help='the first desynchronised timestamp',
     )
     parser.add_argument(
-        '--synced-start',
+        '--to-start',
         '--t1',
         type=lambda arg: srt_timestamp_to_milliseconds(parser, arg),
         required=True,
         help='the first synchronised timestamp',
     )
     parser.add_argument(
-        '--desynced-end',
+        '--from-end',
         '--f2',
         type=lambda arg: srt_timestamp_to_milliseconds(parser, arg),
         required=True,
         help='the second desynchronised timestamp',
     )
     parser.add_argument(
-        '--synced-end',
+        '--to-end',
         '--t2',
         type=lambda arg: srt_timestamp_to_milliseconds(parser, arg),
         required=True,
@@ -51,9 +51,9 @@ def parse_args():
     return parser.parse_args()
 
 
-def calc_correction(synced_start, synced_end, desynced_start, desynced_end):
-    angular = (synced_end - synced_start) / (desynced_end - desynced_start)
-    linear = synced_end - angular * desynced_end
+def calc_correction(to_start, to_end, from_start, from_end):
+    angular = (to_end - to_start) / (from_end - from_start)
+    linear = to_end - angular * from_end
     return angular, linear
 
 
@@ -78,8 +78,8 @@ def linear_correct_subs(subtitles, angular, linear):
 def main():
     args = parse_args()
     angular, linear = calc_correction(
-        args.synced_start, args.synced_end,
-        args.desynced_start, args.desynced_end,
+        args.to_start, args.to_end,
+        args.from_start, args.from_end,
     )
     subtitles_in = srt.parse(args.input.read())
     corrected_subs = linear_correct_subs(subtitles_in, angular, linear)
