@@ -18,7 +18,7 @@ Utilities
   timestamps for the subtitles they are associated with. This makes some media
   players unable to display those subtitles, and they are subsequently lost
   into the ether.
-- *linear-correction* does linear time correction. If you have a movie that
+- *linear-timeshift* does linear time correction. If you have a movie that
   runs slower or faster than the subtitle that you have, it will repeatedly
   lose sync. This tool can apply linear time corrections to all subtitles in
   the SRT, resyncing it with the video.
