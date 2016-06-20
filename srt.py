@@ -61,6 +61,7 @@ SUBTITLE_WARN_CONDITIONS = (
 SECONDS_IN_HOUR = 3600
 SECONDS_IN_MINUTE = 60
 HOURS_IN_DAY = 24
+MICROSECONDS_IN_MILLISECOND = 1000
 
 
 @functools.total_ordering
@@ -181,7 +182,7 @@ def timedelta_to_srt_timestamp(timedelta_timestamp):
     hrs, secs_remainder = divmod(timedelta_timestamp.seconds, SECONDS_IN_HOUR)
     hrs += timedelta_timestamp.days * HOURS_IN_DAY
     mins, secs = divmod(secs_remainder, SECONDS_IN_MINUTE)
-    msecs = timedelta_timestamp.microseconds // 1000
+    msecs = timedelta_timestamp.microseconds // MICROSECONDS_IN_MILLISECOND
     return '%02d:%02d:%02d,%03d' % (hrs, mins, secs, msecs)
 
 
