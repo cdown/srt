@@ -10,7 +10,7 @@ def strip_to_matching_lines_only(subtitles, imports, func_str):
         real_import = importlib.import_module(import_name)
         globals()[import_name] = real_import
 
-    func = eval(func_str)
+    func = eval(func_str)  # pylint: disable-msg=eval-used
 
     for subtitle in subtitles:
         subtitle_lines = subtitle.content.splitlines()
