@@ -1,9 +1,5 @@
-=========
-srt-tools
-=========
-
-srt-tools is a repo containing utilities written to process SRT files. All
-utilities use the Python srt_ library internally.
+srt_tools contains utilities written to process SRT files. All utilities use
+the Python srt_ library internally.
 
 .. _srt: https://github.com/cdown/srt
 
