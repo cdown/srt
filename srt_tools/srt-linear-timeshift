@@ -2,7 +2,7 @@
 
 import srt
 import datetime
-import utils
+import srt_tools.utils
 
 
 def timedelta_to_milliseconds(delta):
@@ -19,7 +19,7 @@ def parse_args():
         else:
             return timedelta_to_milliseconds(delta)
 
-    parser = utils.basic_parser()
+    parser = srt_tools.utils.basic_parser()
     parser.add_argument(
         '--from-start',
         '--f1',

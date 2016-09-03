@@ -2,14 +2,14 @@
 
 import datetime
 import srt
-import utils
+import srt_tools.utils
 import logging
 import operator
 
 log = logging.getLogger(__name__)
 
 def parse_args():
-    parser = utils.basic_parser(multi_input=True)
+    parser = srt_tools.utils.basic_parser(multi_input=True)
     parser.add_argument(
         '--ms', metavar='MILLISECONDS',
         default=datetime.timedelta(milliseconds=600),
@@ -34,7 +34,7 @@ def merge_subs(subs, acceptable_diff, attr, width):
     '''
     sorted_subs = sorted(subs, key=operator.attrgetter(attr))
 
-    for subs in utils.sliding_window(sorted_subs, width=width):
+    for subs in srt_tools.utils.sliding_window(sorted_subs, width=width):
         current_sub = subs[0]
         future_subs = subs[1:]
         current_comp = getattr(current_sub, attr)

@@ -18,7 +18,21 @@ setup(
     author='Chris Down',
     author_email='chris@chrisdown.name',
     url='https://github.com/cdown/srt',
-    py_modules=['srt'],
+
+    py_modules=[
+        'srt',
+        'srt_tools.utils',
+    ],
+    scripts=[
+        'srt_tools/srt-chinese-lines-only',
+        'srt_tools/srt-fix-subtitle-indexing',
+        'srt_tools/srt-fixed-timeshift',
+        'srt_tools/srt-linear-timeshift',
+        'srt_tools/srt-lines-matching',
+        'srt_tools/srt-mux',
+        'srt_tools/srt-strip-html',
+    ],
+
     license='Public Domain',
     keywords='srt',
     classifiers=[

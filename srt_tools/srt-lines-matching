@@ -2,7 +2,7 @@
 
 import importlib
 import srt
-import utils
+import srt_tools.utils
 
 
 def strip_to_matching_lines_only(subtitles, imports, func_str):
@@ -23,7 +23,7 @@ def strip_to_matching_lines_only(subtitles, imports, func_str):
 
 
 def parse_args():
-    parser = utils.basic_parser()
+    parser = srt_tools.utils.basic_parser()
     parser.add_argument(
         '-f', '--func',
         help='a function to use to match lines',

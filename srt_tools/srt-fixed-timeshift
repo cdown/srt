@@ -2,11 +2,11 @@
 
 import srt
 import datetime
-import utils
+import srt_tools.utils
 
 
 def parse_args():
-    parser = utils.basic_parser()
+    parser = srt_tools.utils.basic_parser()
     parser.add_argument(
         '--seconds',
         type=float,

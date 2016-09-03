@@ -2,7 +2,7 @@
 
 import re
 import srt
-import utils
+import srt_tools.utils
 import logging
 
 
@@ -17,7 +17,7 @@ def strip_html_from_subs(subtitles):
 
 
 def main():
-    args = utils.basic_parser().parse_args()
+    args = srt_tools.utils.basic_parser().parse_args()
     logging.basicConfig(level=args.log_level)
     subtitles_in = srt.parse(args.input.read())
     stripped_subs = strip_html_from_subs(subtitles_in)
