@@ -3,6 +3,15 @@ the Python srt_ library internally.
 
 .. _srt: https://github.com/cdown/srt
 
+Usage
+-----
+
+You can call ``srt`` directly to see a list of all available utilities.
+
+.. code::
+
+    srt [utility-name] [args ...]
+
 Utilities
 ---------
 
