@@ -25,7 +25,6 @@ setup(
     ],
     scripts=[
         'srt_tools/srt',
-        'srt_tools/srt-chinese-lines-only',
         'srt_tools/srt-fix-subtitle-indexing',
         'srt_tools/srt-fixed-timeshift',
         'srt_tools/srt-linear-timeshift',
