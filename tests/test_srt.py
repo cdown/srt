@@ -1,14 +1,16 @@
 #!/usr/bin/env python
 
 from __future__ import unicode_literals
-import srt
 from datetime import timedelta
-from nose.tools import (eq_ as eq, assert_not_equal as neq, assert_raises,
-                        assert_false, assert_true)
-from hypothesis import given, settings
-import hypothesis.strategies as st
 import functools
 import os
+
+from hypothesis import given, settings
+import hypothesis.strategies as st
+from nose.tools import (eq_ as eq, assert_not_equal as neq, assert_raises,
+                        assert_false, assert_true, assert_in)
+
+import srt
 
 try:
     from nose.tools import assert_count_equal
@@ -19,13 +21,6 @@ except ImportError:  # Python 2 fallback
 settings.register_profile('quick', settings(max_examples=5))
 settings.load_profile(os.environ.get('HYPOTHESIS_PROFILE', 'default'))
 
-
-TIMESTAMP_ARGS = st.tuples(
-    st.integers(min_value=0),  # Hour
-    st.integers(min_value=0, max_value=59),  # Minute
-    st.integers(min_value=0, max_value=59),  # Second
-    st.integers(min_value=0, max_value=999),  # Millisecond
-)
 
 HOURS_IN_DAY = 24
 TIMEDELTA_MAX_DAYS = 999999999
@@ -68,12 +63,28 @@ def subs_eq(got, expected, any_order=False):
         eq(got_vars, expected_vars)
 
 
+def timedeltas(min_value=0, max_value=TIMEDELTA_MAX_DAYS):
+    '''
+    A Hypothesis strategy to generate timedeltas.
+
+    Right now {min,max}_value are shoved into multiple fields in timedelta(),
+    which is not very customisable, but it's good enough for our current test
+    purposes. If you need more precise control, you may need to add more
+    parameters to this function to be able to customise more freely.
+    '''
+    time_unit_strategy = st.integers(min_value=min_value, max_value=max_value)
+    timestamp_strategy = st.builds(
+        timedelta, hours=time_unit_strategy, minutes=time_unit_strategy,
+        seconds=time_unit_strategy,
+    )
+    return timestamp_strategy
+
+
 def subtitles(strict=True):
     '''A Hypothesis strategy to generate Subtitle objects.'''
-    timestamp_strategy = st.builds(
-        timedelta, hours=st.integers(min_value=0),
-        minutes=st.integers(min_value=0), seconds=st.integers(min_value=0),
-    )
+    # max_value settings are just to avoid overflowing TIMEDELTA_MAX_DAYS by
+    # using arbitrary low enough numbers
+    timestamp_strategy = timedeltas(min_value=0, max_value=999999)
 
     content_strategy = st.text(min_size=1)
     proprietary_strategy = st.text().filter(lambda x: '\n' not in x)
@@ -160,8 +171,18 @@ def test_subtitle_inequality(sub_1):
 
 
 @given(subtitles())
-def test_subtitle_objects_hashable(subtitle):
-    hash(subtitle)
+def test_subtitle_from_scratch_equality(subtitle):
+    srt_block = subtitle.to_srt()
+
+    # Get two totally new sets of objects so as not to affect the hash
+    # comparison
+    sub_1 = list(srt.parse(srt_block))[0]
+    sub_2 = list(srt.parse(srt_block))[0]
+
+    subs_eq([sub_1], [sub_2])
+    # In case subs_eq and eq disagree for some reason
+    eq(sub_1, sub_2)
+    eq(hash(sub_1), hash(sub_2))
 
 
 @given(st.lists(subtitles()))
@@ -211,11 +232,33 @@ def test_subs_missing_content_removed(content_subs, contentless_subs,
         list(range(
             default_start_index, default_start_index + len(composed_subs),
         ))
+
     )
+
+
+@given(
+    st.lists(subtitles()), st.lists(subtitles()),
+    timedeltas(min_value=-999, max_value=-1),
+)
+def test_subs_starts_before_zero_removed(positive_subs, negative_subs,
+                                         negative_td):
+    for sub in negative_subs:
+        sub.start = negative_td
+        sub.end = negative_td  # Just to avoid tripping any start >= end errors
+
+    subs = positive_subs + negative_subs
+    composed_subs = list(srt.sort_and_reindex(subs, in_place=True))
+
+    # There should be no negative subs
+    subs_eq(composed_subs, positive_subs, any_order=True)
 
 
 @given(st.lists(subtitles(), min_size=1), st.integers(min_value=0))
 def test_sort_and_reindex(input_subs, start_index):
+    for sub in input_subs:
+        # Pin all subs to same end time so that start time is compared only
+        sub.end = timedelta(1)
+
     reindexed_subs = list(
         srt.sort_and_reindex(
             input_subs, start_index=start_index, in_place=True,
@@ -230,6 +273,19 @@ def test_sort_and_reindex(input_subs, start_index):
 
     # The subtitles should be sorted by start time
     expected_sorting = sorted(input_subs, key=lambda sub: sub.start)
+    eq(reindexed_subs, expected_sorting)
+
+
+@given(st.lists(subtitles(), min_size=1))
+def test_sort_and_reindex_same_start_time_uses_end(input_subs):
+    for sub in input_subs:
+        # Pin all subs to same start time so that end time is compared only
+        sub.start = timedelta(1)
+
+    reindexed_subs = list(srt.sort_and_reindex(input_subs, in_place=True))
+
+    # The subtitles should be sorted by end time when start time is the same
+    expected_sorting = sorted(input_subs, key=lambda sub: sub.end)
     eq(reindexed_subs, expected_sorting)
 
 
@@ -266,18 +322,19 @@ def test_sort_and_reindex_not_in_place_matches(input_subs, start_index):
 
 @given(
     st.lists(subtitles(), min_size=1), st.integers(min_value=0),
-    st.integers(min_value=0), st.text(min_size=1),
+    st.text(min_size=1), timedeltas(),
 )
-def test_parser_noncontiguous(subs, fake_idx, fake_hours, garbage):
+def test_parser_noncontiguous(subs, fake_idx, garbage, fake_timedelta):
     composed = srt.compose(subs)
 
     # Put some garbage between subs that should trigger our failed parsing
     # detection. Since we do some magic to try and detect blank lines that
     # don't really delimit subtitles, it has to look at least a little like an
     # SRT block.
+    srt_timestamp = srt.timedelta_to_srt_timestamp(fake_timedelta)
     composed = composed.replace(
-        '\n\n', '\n\n%d\n%d:%s' % (
-            fake_idx, fake_hours, garbage,
+        '\n\n', '\n\n%d\n%s %s' % (
+            fake_idx, srt_timestamp, garbage,
         )
     )
 
@@ -287,11 +344,13 @@ def test_parser_noncontiguous(subs, fake_idx, fake_hours, garbage):
 
 @given(
     st.lists(subtitles(), min_size=1), st.integers(min_value=0),
-    st.integers(min_value=0), st.text(min_size=1),
+    st.text(min_size=1), timedeltas(),
 )
-def test_parser_didnt_match_to_end_raises(subs, fake_idx, fake_hours, garbage):
+def test_parser_didnt_match_to_end_raises(subs, fake_idx, garbage,
+                                          fake_timedelta):
     srt_blocks = [sub.to_srt() for sub in subs]
-    garbage = '\n\n%d\n%d:%s' % (fake_idx, fake_hours, garbage)
+    srt_timestamp = srt.timedelta_to_srt_timestamp(fake_timedelta)
+    garbage = '\n\n%d\n%s %s' % (fake_idx, srt_timestamp, garbage)
     srt_blocks.append(garbage)
     composed = ''.join(srt_blocks)
 
@@ -325,4 +384,25 @@ def test_parser_can_parse_with_dot_msec_delimiter(subs):
 
     composed_with_dots = ''.join(dot_srt_blocks)
     reparsed_subs = srt.parse(composed_with_dots)
+    subs_eq(reparsed_subs, subs)
+
+
+@given(subtitles())
+def test_repr_doesnt_crash(sub):
+    # Not much we can do here, but we should make sure __repr__ doesn't crash
+    # or anything and it does at least vaguely look like what we want
+    assert_in('Subtitle', repr(sub))
+    assert_in(str(sub.index), repr(sub))
+
+
+@given(st.lists(subtitles()))
+def test_parser_accepts_no_newline_no_content(subs):
+    for sub in subs:
+        # Limit size so we know how many lines to remove
+        sub.content = ''
+
+    # Remove the last \n so that there is only one
+    stripped_srt_blocks = ''.join(sub.to_srt()[:-1] for sub in subs)
+
+    reparsed_subs = srt.parse(stripped_srt_blocks)
     subs_eq(reparsed_subs, subs)

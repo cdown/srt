@@ -11,22 +11,57 @@ import logging
 
 log = logging.getLogger(__name__)
 
+# "." is not technically valid as a delimiter, but many editors create SRT
+# files with this delimiter for whatever reason. Many editors and players
+# accept it, so we do too.
+RGX_TIMESTAMP_MAGNITUDE_DELIM = r'[,.:]'
+RGX_TIMESTAMP = RGX_TIMESTAMP_MAGNITUDE_DELIM.join([r'\d+'] * 4)
+RGX_INDEX = r'\d+'
+RGX_PROPRIETARY = r'[^\n]*'
+RGX_CONTENT = r'.*?'
+
 SRT_REGEX = re.compile(
-    r'(\d+)\n(\d+:\d+:\d+[,.]\d+) --> (\d+:\d+:\d+[,.]\d+) ?([^\n]*)\n(.*?)'
-    # Many sub editors don't add a blank line to the end, and many editors
-    # accept it. We allow it in input.
-    r'(?:\n|\Z)(?:\n|\Z)'
+    r'({idx})\n({ts}) --> ({ts}) ?({proprietary})\n({content})'
+    # Many sub editors don't add a blank line to the end, and many editors and
+    # players accept that. We allow it to be missing in input.
+    #
+    # We also allow subs that are missing a double blank newline. This often
+    # happens on subs which were first created as a mixed language subtitle,
+    # for example chs/eng, and then were stripped using naive methods (such as
+    # ed/sed) that don't understand newline preservation rules in SRT files.
+    #
+    # This means that when you are, say, only keeping chs, and the line only
+    # contains english, you end up with not only no content, but also all of
+    # the content lines are stripped instead of retaining a newline.
+    r'(?:\n|\Z)(?:\n|\Z|(?=(?:{idx}\n{ts})))'
     # Some SRT blocks, while this is technically invalid, have blank lines
     # inside the subtitle content. We look ahead a little to check that the
     # next lines look like an index and a timestamp as a best-effort
     # solution to work around these.
-    r'(?=(?:\d+\n\d+:|\Z))',
+    r'(?=(?:{idx}\n{ts}|\Z))'.format(
+        idx=RGX_INDEX,
+        ts=RGX_TIMESTAMP,
+        proprietary=RGX_PROPRIETARY,
+        content=RGX_CONTENT,
+    ),
     re.DOTALL,
+)
+
+ZERO_TIMEDELTA = timedelta(0)
+
+# Warning message if truthy return -> Function taking a Subtitle, skip if True
+SUBTITLE_SKIP_CONDITIONS = (
+    ('No content', lambda sub: not sub.content.strip()),
+    ('Start time < 0 seconds', lambda sub: sub.start < ZERO_TIMEDELTA),
+)
+SUBTITLE_WARN_CONDITIONS = (
+    ('Subtitle start time > end time', lambda sub: sub.start > sub.end),
 )
 
 SECONDS_IN_HOUR = 3600
 SECONDS_IN_MINUTE = 60
 HOURS_IN_DAY = 24
+MICROSECONDS_IN_MILLISECOND = 1000
 
 
 @functools.total_ordering
@@ -58,15 +93,20 @@ class Subtitle(object):
         return vars(self) == vars(other)
 
     def __lt__(self, other):
-        return self.start < other.start
+        if self.start < other.start:
+            return True
+        else:
+            return self.start == other.start and self.end < other.end
 
     def __repr__(self):
-        return '<%s, index %d, from %s to %s (%r)>' % (
-            type(self).__name__, self.index,
-            timedelta_to_srt_timestamp(self.start),
-            timedelta_to_srt_timestamp(self.end),
-            self.content[:20],
+        # Python 2/3 cross compatibility
+        var_items = getattr(
+            vars(self), 'iteritems', getattr(vars(self), 'items')
         )
+        item_list = ', '.join(
+            '%s=%r' % (k, v) for k, v in var_items()
+        )
+        return "%s(%s)" % (type(self).__name__, item_list)
 
     def to_srt(self, strict=True):
         r'''
@@ -79,6 +119,12 @@ class Subtitle(object):
                   SRT formatted subtitle block
         :rtype: str
         '''
+        for warning_msg, check_func in SUBTITLE_WARN_CONDITIONS:
+            if check_func(self):
+                log.warning(
+                    'Subtitle at index %d: %s', self.index, warning_msg,
+                )
+
         output_content = self.content
         output_proprietary = self.proprietary
 
@@ -102,7 +148,7 @@ def make_legal_content(content):
     Remove illegal content from a content block. Illegal content includes:
 
     * Blank lines
-    * Starting or ending with a blank line
+    * Starting or ending with a newline
 
     .. doctest::
 
@@ -136,7 +182,7 @@ def timedelta_to_srt_timestamp(timedelta_timestamp):
     hrs, secs_remainder = divmod(timedelta_timestamp.seconds, SECONDS_IN_HOUR)
     hrs += timedelta_timestamp.days * HOURS_IN_DAY
     mins, secs = divmod(secs_remainder, SECONDS_IN_MINUTE)
-    msecs = timedelta_timestamp.microseconds // 1000
+    msecs = timedelta_timestamp.microseconds // MICROSECONDS_IN_MILLISECOND
     return '%02d:%02d:%02d,%03d' % (hrs, mins, secs, msecs)
 
 
@@ -151,7 +197,9 @@ def srt_timestamp_to_timedelta(srt_timestamp):
     '''
     # "." is not technically a legal separator, but some subtitle editors use
     # it to delimit msecs, and some players accept it.
-    hrs, mins, secs, msecs = (int(x) for x in re.split('[,:.]', srt_timestamp))
+    hrs, mins, secs, msecs = (
+        int(x) for x in re.split(RGX_TIMESTAMP_MAGNITUDE_DELIM, srt_timestamp)
+    )
     return timedelta(hours=hrs, minutes=mins, seconds=secs, milliseconds=msecs)
 
 
@@ -172,7 +220,7 @@ def sort_and_reindex(subtitles, start_index=1, in_place=False):
         ...     Subtitle(index=0, start=two, end=two, content='2'),
         ... ]
         >>> list(sort_and_reindex(subs))  # doctest: +ELLIPSIS
-        [<Subtitle, index 1, ... ('1')>, <Subtitle, index 2, ... ('2')>]
+        [Subtitle(...index=1...), Subtitle(...index=2...)]
 
     :param subtitles: :py:class:`Subtitle` objects in any order
     :param int start_index: The index to start from
@@ -184,12 +232,12 @@ def sort_and_reindex(subtitles, start_index=1, in_place=False):
         if not in_place:
             subtitle = Subtitle(**vars(subtitle))
 
-        if not subtitle.content.strip():
-            # Drop contentless subtitles, as they don't serve any purpose and
-            # might confuse the media player's parser
+        try:
+            _should_skip_sub(subtitle)
+        except _ShouldSkipException as thrown_exc:
             log.warning(
-                'Skipped contentless subtitle that was at index %d',
-                subtitle.index,
+                'Skipped subtitle at index %d: %s',
+                subtitle.index, thrown_exc,
             )
             skipped_subs += 1
             continue
@@ -197,6 +245,19 @@ def sort_and_reindex(subtitles, start_index=1, in_place=False):
         subtitle.index = sub_num - skipped_subs
 
         yield subtitle
+
+
+def _should_skip_sub(subtitle):
+    '''
+    Check if a subtitle should be skipped based on the rules in
+    SUBTITLE_SKIP_CONDITIONS.
+
+    :param subtitle: A :py:class:`Subtitle` to check whether to skip
+    :raises _ShouldSkipException: If the subtitle should be skipped
+    '''
+    for warning_msg, sub_skipper in SUBTITLE_SKIP_CONDITIONS:
+        if sub_skipper(subtitle):
+            raise _ShouldSkipException(warning_msg)
 
 
 def parse(srt):
@@ -221,7 +282,7 @@ def parse(srt):
         ...
         ... """)
         >>> list(subs)  # doctest: +ELLIPSIS
-        [<Subtitle, index 422...>, <Subtitle, index 423...>]
+        [Subtitle(...index=422...), Subtitle(...index=423...)]
 
     :param str srt: Subtitles in SRT format
     :returns: The subtitles contained in the SRT file as py:class:`Subtitle`
@@ -316,3 +377,9 @@ class SRTParseError(Exception):
         self.expected_start = expected_start
         self.actual_start = actual_start
         self.unmatched_content = unmatched_content
+
+
+class _ShouldSkipException(Exception):
+    '''
+    Raised when a subtitle should be skipped.
+    '''
