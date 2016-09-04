@@ -11,7 +11,7 @@ with open('README.rst') as readme_f:
 
 setup(
     name='srt',
-    version='1.1.0',
+    version='1.2.0',
     description='A tiny library for parsing, modifying, and composing SRT '
                 'files.',
     long_description=README,
