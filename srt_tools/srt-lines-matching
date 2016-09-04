@@ -5,7 +5,7 @@ import srt
 import srt_tools.utils
 
 
-def strip_to_matching_lines_only(subtitles, imports, func_str, invert):
+def strip_to_matching_lines_only(subtitles, imports, func_str, invert, per_sub):
     for import_name in imports:
         real_import = importlib.import_module(import_name)
         globals()[import_name] = real_import
@@ -18,13 +18,15 @@ def strip_to_matching_lines_only(subtitles, imports, func_str, invert):
         func = raw_func
 
     for subtitle in subtitles:
-        subtitle_lines = subtitle.content.splitlines()
+        if per_sub:
+            if not func(subtitle.content):
+                subtitle.content = ''
+        else:
+            subtitle.content = '\n'.join(
+                line for line in subtitle.content.splitlines()
+                if func(line)
+            )
 
-        matching_subtitle_lines = (
-            line for line in subtitle_lines
-            if func(line)
-        )
-        subtitle.content = '\n'.join(matching_subtitle_lines)
         yield subtitle
 
 
@@ -41,6 +43,11 @@ def parse_args():
         action='append', default=[],
     )
     parser.add_argument(
+        '-s', '--per-subtitle',
+        help='match the content of each subtitle, not each line',
+        action='store_true',
+    )
+    parser.add_argument(
         '-v', '--invert',
         help='invert matching -- only match lines returning False',
         action='store_true',
@@ -52,7 +59,7 @@ def main():
     args = parse_args()
     subtitles_in = srt.parse(args.input.read())
     matching_subtitles_only = strip_to_matching_lines_only(
-        subtitles_in, args.module, args.func, args.invert,
+        subtitles_in, args.module, args.func, args.invert, args.per_subtitle,
     )
     output = srt.compose(matching_subtitles_only, strict=args.strict)
     args.output.write(output)
