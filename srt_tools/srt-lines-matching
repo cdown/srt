@@ -61,7 +61,9 @@ def main():
     matching_subtitles_only = strip_to_matching_lines_only(
         args.input, args.module, args.func, args.invert, args.per_subtitle,
     )
-    output = srt.compose(matching_subtitles_only, strict=args.strict)
+    output = srt_tools.utils.compose_suggest_on_fail(
+        matching_subtitles_only, strict=args.strict,
+    )
     args.output.write(output)
 
 

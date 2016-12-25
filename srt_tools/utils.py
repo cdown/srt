@@ -88,6 +88,17 @@ def set_basic_args(args):
                 args.output = open(args.output, 'w+', encoding=args.encoding)
 
 
+def compose_suggest_on_fail(subs, strict=True):
+    try:
+        return srt.compose(subs, strict=strict)
+    except srt.SRTParseError as thrown_exc:
+        log.fatal(
+            'Parsing failed, maybe you need to pass a different encoding '
+            'with --encoding?'
+        )
+        raise
+
+
 def sliding_window(seq, width=2):
     seq_iter = iter(seq)
     sliced = tuple(itertools.islice(seq_iter, width))

@@ -7,7 +7,9 @@ import srt
 def main():
     args = srt_tools.utils.basic_parser().parse_args()
     srt_tools.utils.set_basic_args(args)
-    output = srt.compose(args.input, strict=args.strict)
+    output = srt_tools.utils.compose_suggest_on_fail(
+        args.input, strict=args.strict,
+    )
     args.output.write(output)
 
 

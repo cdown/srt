@@ -28,7 +28,9 @@ def main():
     args = parse_args()
     srt_tools.utils.set_basic_args(args)
     corrected_subs = scalar_correct_subs(args.input, args.seconds)
-    output = srt.compose(corrected_subs, strict=args.strict)
+    output = srt_tools.utils.compose_suggest_on_fail(
+        corrected_subs, strict=args.strict,
+    )
     args.output.write(output)
 
 

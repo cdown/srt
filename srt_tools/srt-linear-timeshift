@@ -83,7 +83,9 @@ def main():
     )
     srt_tools.utils.set_basic_args(args)
     corrected_subs = linear_correct_subs(args.input, angular, linear)
-    output = srt.compose(corrected_subs, strict=args.strict)
+    output = srt_tools.utils.compose_suggest_on_fail(
+        corrected_subs, strict=args.strict,
+    )
     args.output.write(output)
 
 
