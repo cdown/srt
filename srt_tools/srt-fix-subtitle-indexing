@@ -6,8 +6,8 @@ import srt
 
 def main():
     args = srt_tools.utils.basic_parser().parse_args()
-    subtitles_in = srt.parse(args.input.read())
-    output = srt.compose(subtitles_in, strict=args.strict)
+    srt_tools.utils.set_basic_args(args)
+    output = srt.compose(args.input, strict=args.strict)
     args.output.write(output)
 
 

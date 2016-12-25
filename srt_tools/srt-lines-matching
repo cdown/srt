@@ -57,9 +57,9 @@ def parse_args():
 
 def main():
     args = parse_args()
-    subtitles_in = srt.parse(args.input.read())
+    srt_tools.utils.set_basic_args(args)
     matching_subtitles_only = strip_to_matching_lines_only(
-        subtitles_in, args.module, args.func, args.invert, args.per_subtitle,
+        args.input, args.module, args.func, args.invert, args.per_subtitle,
     )
     output = srt.compose(matching_subtitles_only, strict=args.strict)
     args.output.write(output)

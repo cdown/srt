@@ -81,8 +81,8 @@ def main():
         args.to_start, args.to_end,
         args.from_start, args.from_end,
     )
-    subtitles_in = srt.parse(args.input.read())
-    corrected_subs = linear_correct_subs(subtitles_in, angular, linear)
+    srt_tools.utils.set_basic_args(args)
+    corrected_subs = linear_correct_subs(args.input, angular, linear)
     output = srt.compose(corrected_subs, strict=args.strict)
     args.output.write(output)
 
