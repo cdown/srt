@@ -5,6 +5,7 @@ import srt
 import srt_tools.utils
 import logging
 
+log = logging.getLogger(__name__)
 
 def strip_html_from_subs(subtitles):
     for subtitle in subtitles:
