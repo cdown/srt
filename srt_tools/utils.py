@@ -2,15 +2,30 @@
 
 import argparse
 import srt
-import sys
 import logging
+import sys
 import itertools
 import collections
 
+DASH_STREAM_MAP = {
+    'input': sys.stdin,
+    'output': sys.stdout,
+}
 
 DEFAULT_ENCODING = 'utf8'
 
 log = logging.getLogger(__name__)
+
+STREAM_ENC_MSG = (
+    '-e/--encoding has no effect on %s, you need to use --input or --output '
+    'with a real file'
+)
+
+
+def dash_to_stream(arg, arg_type):
+    if arg == '-':
+        return DASH_STREAM_MAP[arg_type]
+    return arg
 
 
 def basic_parser(multi_input=False):
@@ -23,6 +38,7 @@ def basic_parser(multi_input=False):
         parser.add_argument(
             '--input', '-i', metavar='FILE',
             action='append',
+            type=lambda arg: dash_to_stream(arg, 'input'),
             help='the files to process',
             required=True,
         )
@@ -30,12 +46,14 @@ def basic_parser(multi_input=False):
         parser.add_argument(
             '--input', '-i', metavar='FILE',
             default=sys.stdin,
+            type=lambda arg: dash_to_stream(arg, 'input'),
             help='the file to process (default: stdin)',
         )
 
     parser.add_argument(
         '--output', '-o', metavar='FILE',
         default=sys.stdout,
+        type=lambda arg: dash_to_stream(arg, 'output'),
         help='the file to write to (default: stdout)',
     )
     parser.add_argument(
@@ -65,22 +83,30 @@ def set_basic_args(args):
         args.encoding = DEFAULT_ENCODING
         encoding_explicitly_specified = False
 
+    # TODO: dedupe some of this
     for stream_name in ('input', 'output'):
+        log.debug('Processing stream "%s"', stream_name)
         stream = getattr(args, stream_name)
-        if stream in (sys.stdin, sys.stdout):
+        log.debug('Got %r as stream', stream)
+        if stream in DASH_STREAM_MAP.values():
+            log.debug('%s in DASH_STREAM_MAP', stream_name)
             if stream is args.input:
                 args.input = srt.parse(args.input.read())
             if encoding_explicitly_specified:
-                log.warning(
-                    '-e/--encoding has no effect on %s, you need to use '
-                    '--input or --output', stream.name,
-                )
+                log.warning(STREAM_ENC_MSG, stream.name)
         else:
+            log.debug('%s not in DASH_STREAM_MAP', stream_name)
             if stream is args.input:
                 if isinstance(args.input, collections.MutableSequence):
                     for i, input_fn in enumerate(args.input):
-                        with open(input_fn, encoding=args.encoding) as input_f:
-                            args.input[i] = srt.parse(input_f.read())
+                        if input_fn in DASH_STREAM_MAP.values():
+                            if encoding_explicitly_specified:
+                                log.warning(STREAM_ENC_MSG, input_fn.name)
+                            if stream is args.input:
+                                args.input[i] = srt.parse(input_fn.read())
+                        else:
+                            with open(input_fn, encoding=args.encoding) as f:
+                                args.input[i] = srt.parse(f.read())
                 else:
                     with open(stream, encoding=args.encoding) as input_f:
                         args.input = srt.parse(input_f.read())
