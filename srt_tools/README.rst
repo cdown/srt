@@ -36,6 +36,10 @@ Utilities
   subtitle file that contains both, this tool can do that for you. It also
   supports clamping subtitles starting or ending at similar times to the same
   time to avoid subtitles jumping around the screen.
+- *play* plays subtitles in the terminal at the time they are scheduled to
+  display (note: it does not clear them from the screen afterwards). If you
+  need to fast-forward to some point, you can combine it with
+  *fixed-timeshift*.
 - *strip-html* strips HTML formatting from subtitle content. This is especially
   prevalant in `SSA/ASS`_ subtitles that have been directly converted to SRT.
 
