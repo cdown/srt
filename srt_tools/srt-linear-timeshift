@@ -90,7 +90,11 @@ def main():
     output = srt_tools.utils.compose_suggest_on_fail(
         corrected_subs, strict=args.strict,
     )
-    args.output.write(output)
+
+    try:
+        args.output.write(output)
+    except UnicodeEncodeError:  # Python 2 fallback
+        args.output.write(output.encode(args.encoding))
 
 
 if __name__ == '__main__':
