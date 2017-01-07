@@ -28,7 +28,7 @@ def dash_to_stream(arg, arg_type):
     return arg
 
 
-def basic_parser(multi_input=False):
+def basic_parser(multi_input=False, no_output=False):
     parser = argparse.ArgumentParser(description=__doc__)
 
     # Cannot use argparse.FileType as we need to know the encoding from the
@@ -50,12 +50,14 @@ def basic_parser(multi_input=False):
             help='the file to process (default: stdin)',
         )
 
-    parser.add_argument(
-        '--output', '-o', metavar='FILE',
-        default=sys.stdout,
-        type=lambda arg: dash_to_stream(arg, 'output'),
-        help='the file to write to (default: stdout)',
-    )
+    if not no_output:
+        parser.add_argument(
+            '--output', '-o', metavar='FILE',
+            default=sys.stdout,
+            type=lambda arg: dash_to_stream(arg, 'output'),
+            help='the file to write to (default: stdout)',
+        )
+
     parser.add_argument(
         '--no-strict',
         action='store_false', dest='strict',
@@ -86,7 +88,13 @@ def set_basic_args(args):
     # TODO: dedupe some of this
     for stream_name in ('input', 'output'):
         log.debug('Processing stream "%s"', stream_name)
-        stream = getattr(args, stream_name)
+
+        try:
+            stream = getattr(args, stream_name)
+        except AttributeError:
+            # For example, in the case of no_output
+            continue
+
         log.debug('Got %r as stream', stream)
         if stream in DASH_STREAM_MAP.values():
             log.debug('%s in DASH_STREAM_MAP', stream_name)

@@ -1,0 +1,43 @@
+#!/usr/bin/env python
+
+from __future__ import print_function
+import logging
+from threading import Timer, Lock
+import srt_tools.utils
+
+log = logging.getLogger(__name__)
+output_lock = Lock()
+
+
+def print_sub(sub):
+    log.debug('Timer woke up to print %s', sub.content)
+    output_lock.acquire()
+    print(sub.content, end='\n\n')
+    output_lock.release()
+
+
+def schedule(subs):
+    timers = set()
+    log.debug('Scheduling subtitles')
+
+    for sub in subs:
+        secs = sub.start.total_seconds()
+        cur_timer = Timer(secs, print_sub, [sub])
+        cur_timer.name = '%s:%s:%s' % (sub.index, secs, sub.content[:10])
+        log.debug('Adding "%s" to schedule queue', cur_timer.name)
+        timers.add(cur_timer)
+
+    for timer in timers:
+        log.debug('Starting timer for "%s"', timer.name)
+        timer.start()
+
+
+def main():
+    args = srt_tools.utils.basic_parser(no_output=True).parse_args()
+    logging.basicConfig(level=args.log_level)
+    srt_tools.utils.set_basic_args(args)
+    schedule(args.input)
+
+
+if __name__ == '__main__':
+    main()
