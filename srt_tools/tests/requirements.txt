@@ -1,1 +1,2 @@
 shellescape
+nose_parameterized

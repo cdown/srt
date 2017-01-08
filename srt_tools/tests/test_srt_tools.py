@@ -4,6 +4,7 @@ import os
 import subprocess
 import tempfile
 from nose.tools import assert_true
+from nose_parameterized import parameterized
 
 try:
     from shlex import quote
@@ -21,28 +22,57 @@ def run_srt_util(cmd, shell=False, encoding='ascii'):
     return raw_out.decode(encoding)
 
 
-def assert_supports_all_io_methods(cmd):
-    cmd = 'srt_tools/' + cmd
+def assert_supports_all_io_methods(cmd, exclude_output=False,
+                                   exclude_stdin=False):
+    cmd[0] = 'srt_tools/' + cmd[0]
     in_file = os.path.join(sample_dir, 'ascii.srt')
     in_file_gb = os.path.join(sample_dir, 'gb2312.srt')
     _, out_file = tempfile.mkstemp()
 
     outputs = []
+    cmd_string = ' '.join(quote(x) for x in cmd)
 
     try:
-        outputs.append(run_srt_util([cmd, '-i', in_file, '-o', out_file]))
-        outputs.append(run_srt_util(
-            '%s < %s > %s' % (quote(cmd), quote(in_file), quote(out_file)),
-            shell=True,
-        ))
-        assert_true(len(set(outputs)) == 1)
-        run_srt_util(
-            [cmd, '-i', in_file_gb, '-o', out_file, '-e', 'gb2312'],
-            encoding='gb2312',
-        )
+        outputs.append(run_srt_util(cmd + ['-i', in_file]))
+        if not exclude_stdin:
+            outputs.append(run_srt_util(
+                '%s < %s' % (cmd_string, quote(in_file)),
+                shell=True,
+            ))
+        if not exclude_output:
+            run_srt_util(cmd + ['-i', in_file, '-o', out_file])
+            run_srt_util(
+                cmd + ['-i', in_file_gb, '-o', out_file, '-e', 'gb2312'],
+                encoding='gb2312',
+            )
+            if not exclude_stdin:
+                run_srt_util(
+                    '%s < %s > %s' % (
+                        cmd_string, quote(in_file), quote(out_file),
+                    ),
+                    shell=True,
+                )
+        assert_true(len(set(outputs)) == 1, repr(outputs))
     finally:
         os.remove(out_file)
 
 
-def test_srt_fix_subtitle_ordering():
-    assert_supports_all_io_methods('srt-fix-subtitle-indexing')
+@parameterized([
+    (['srt-fix-subtitle-indexing'], False),
+    (['srt-fixed-timeshift', '--seconds', '5'], False),
+    ([
+        'srt-linear-timeshift',
+        '--f1', '00:00:01,000',
+        '--f2', '00:00:02,000',
+        '--t1', '00:00:03,000',
+        '--t2', '00:00:04,000',
+    ], False),
+    (['srt-lines-matching', '-f', 'lambda x: True'], False),
+    (['srt-mux'], False, True),
+    (['srt-strip-html'], False),
+
+    # Need to sort out time/thread issues
+    # (('srt-play'), True),
+])
+def test_tools_support(args, exclude_output=False, exclude_stdin=False):
+    assert_supports_all_io_methods(args, exclude_output, exclude_stdin)
