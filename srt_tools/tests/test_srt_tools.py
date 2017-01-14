@@ -30,7 +30,7 @@ def run_srt_util(cmd, shell=False, encoding='ascii'):
             new_path = f.read().strip().split('=', 1)[1]
         extra_env = {'PATH': new_path}
 
-    env = {'PYTHONPATH': '.'}
+    env = {'PYTHONPATH': '.', 'SystemRoot': 'C:\Windows'}
     env.update(extra_env)
 
     raw_out = subprocess.check_output(cmd, shell=shell, env=env)
