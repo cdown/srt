@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 
+import codecs
+
 try:
     from setuptools import setup
 except ImportError:
     from distutils.core import setup
 
 
-with open('README.rst') as readme_f:
+with codecs.open('README.rst', encoding='utf8') as readme_f:
     README = readme_f.read()
 
 setup(
