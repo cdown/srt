@@ -22,20 +22,14 @@ def run_srt_util(cmd, shell=False, encoding='ascii'):
     extra_env = {}
 
     if os.name == 'nt':
-        # Comes from appveyor
-        cur_path = os.environ['PATH']
-        python_path = os.environ.get('PYTHON')
-        if python_path:
-            new_path = r'{py};{py}\Scripts;{path}'.format(
-                py=python_path, path=cur_path,
-            )
-            extra_env = {'PATH': new_path}
+        # Comes from appveyor config
+        path_file = os.path.join(os.environ['TEMP'], 'path')
+        with open(path_file, 'r') as f:
+            new_path = f.read().strip().split('=', 1)[1]
+        extra_env = {'PATH': new_path}
 
     env = {'PYTHONPATH': '.'}
     env.update(extra_env)
-
-    print(env)
-    print(os.listdir(os.environ.get('PYTHON')))
 
     raw_out = subprocess.check_output(cmd, shell=shell, env=env)
     return raw_out.decode(encoding)
