@@ -27,7 +27,10 @@ def assert_supports_all_io_methods(cmd, exclude_output=False,
     cmd[0] = 'srt_tools/' + cmd[0]
     in_file = os.path.join(sample_dir, 'ascii.srt')
     in_file_gb = os.path.join(sample_dir, 'gb2312.srt')
-    _, out_file = tempfile.mkstemp()
+    fd, out_file = tempfile.mkstemp()
+
+    # This is accessed by filename, not fd
+    os.close(fd)
 
     outputs = []
     cmd_string = ' '.join(quote(x) for x in cmd)
