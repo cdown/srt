@@ -18,19 +18,20 @@ if os.name == 'nt':
     # Sigh, shlex.quote quotes incorrectly on Windows
     quote = lambda x: x
 
-    # Comes from appveyor
-    cur_path = os.environ['PATH']
-    python_path = os.environ.get('PYTHON')
-    if python_path:
-        new_path = r'{py};{py}\Scripts;{path}'.format(
-            py=python_path, path=cur_path,
-        )
-        os.environ['PATH'] = new_path
-
-
 def run_srt_util(cmd, shell=False, encoding='ascii'):
+    if os.name == 'nt':
+        # Comes from appveyor
+        cur_path = os.environ['PATH']
+        python_path = os.environ.get('PYTHON')
+        if python_path:
+            new_path = r'{py};{py}\Scripts;{path}'.format(
+                py=python_path, path=cur_path,
+            )
+        else:
+            new_path = cur_path
+
     raw_out = subprocess.check_output(
-        cmd, shell=shell, env={'PYTHONPATH': '.'},
+        cmd, shell=shell, env={'PYTHONPATH': '.', 'PATH': new_path},
     )
     return raw_out.decode(encoding)
 
