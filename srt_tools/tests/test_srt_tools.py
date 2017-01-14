@@ -25,6 +25,10 @@ def run_srt_util(cmd, shell=False, encoding='ascii'):
 def assert_supports_all_io_methods(cmd, exclude_output=False,
                                    exclude_stdin=False):
     cmd[0] = 'srt_tools/' + cmd[0]
+
+    if os.name == 'nt':
+        cmd.insert(0, 'python')
+
     in_file = os.path.join(sample_dir, 'ascii.srt')
     in_file_gb = os.path.join(sample_dir, 'gb2312.srt')
     fd, out_file = tempfile.mkstemp()
