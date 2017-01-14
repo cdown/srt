@@ -12,11 +12,20 @@ except ImportError:  # <3.3 fallback
     from shellescape import quote
 
 
+sample_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'files')
+
 if os.name == 'nt':
     # Sigh, shlex.quote quotes incorrectly on Windows
     quote = lambda x: x
 
-sample_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'files')
+    # Comes from appveyor
+    cur_path = os.environ['PATH']
+    python_path = os.environ.get('PYTHON')
+    if python_path:
+        new_path = r'{py};{py}\Scripts;{path}'.format(
+            py=python_path, path=cur_path,
+        )
+        os.environ['PATH'] = new_path
 
 
 def run_srt_util(cmd, shell=False, encoding='ascii'):
