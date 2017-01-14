@@ -8,7 +8,7 @@ environment:
     - PYTHON: "C:\\Python27"
       PYTHON_VERSION: "2.7.13"
       PYTHON_ARCH: "64"
-    - PYTHON: "C:\\Python34"
+    - PYTHON: "C:\\Python33"
       PYTHON_VERSION: "3.3.6"
       PYTHON_ARCH: "64"
     - PYTHON: "C:\\Python34"
