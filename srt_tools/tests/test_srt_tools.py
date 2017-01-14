@@ -19,6 +19,8 @@ if os.name == 'nt':
     quote = lambda x: x
 
 def run_srt_util(cmd, shell=False, encoding='ascii'):
+    extra_env = {}
+
     if os.name == 'nt':
         # Comes from appveyor
         cur_path = os.environ['PATH']
@@ -27,12 +29,12 @@ def run_srt_util(cmd, shell=False, encoding='ascii'):
             new_path = r'{py};{py}\Scripts;{path}'.format(
                 py=python_path, path=cur_path,
             )
-        else:
-            new_path = cur_path
+            extra_env = {'PATH': new_path}
 
-    raw_out = subprocess.check_output(
-        cmd, shell=shell, env={'PYTHONPATH': '.', 'PATH': new_path},
-    )
+    env = {'PYTHONPATH': '.'}
+    env.update(extra_env)
+
+    raw_out = subprocess.check_output(cmd, shell=shell, env=env)
     return raw_out.decode(encoding)
 
 
