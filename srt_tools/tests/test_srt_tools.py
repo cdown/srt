@@ -12,6 +12,10 @@ except ImportError:  # <3.3 fallback
     from shellescape import quote
 
 
+if os.name == 'nt':
+    # Sigh, shlex.quote quotes incorrectly on Windows
+    quote = lambda x: x
+
 sample_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'files')
 
 
