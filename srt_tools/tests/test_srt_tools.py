@@ -34,6 +34,9 @@ def run_srt_util(cmd, shell=False, encoding='ascii'):
     env = {'PYTHONPATH': '.'}
     env.update(extra_env)
 
+    print(env)
+    print(os.listdir(os.environ.get('PYTHON')))
+
     raw_out = subprocess.check_output(cmd, shell=shell, env=env)
     return raw_out.decode(encoding)
 
