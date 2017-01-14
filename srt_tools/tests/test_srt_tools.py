@@ -14,9 +14,11 @@ except ImportError:  # <3.3 fallback
 
 sample_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'files')
 
+
 if os.name == 'nt':
     # Sigh, shlex.quote quotes incorrectly on Windows
-    quote = lambda x: x
+    quote = lambda x: windows_crappy_quote(x)
+
 
 def run_srt_util(cmd, shell=False, encoding='ascii'):
     extra_env = {}
@@ -33,6 +35,15 @@ def run_srt_util(cmd, shell=False, encoding='ascii'):
 
     raw_out = subprocess.check_output(cmd, shell=shell, env=env)
     return raw_out.decode(encoding)
+
+
+def windows_crappy_quote(data):
+    '''
+    I'm 100% sure this isn't secure, please don't use it with untrusted code. I
+    beg you.
+    '''
+    data = data.replace('"', '""')
+    return '"' + data + '"'
 
 
 def assert_supports_all_io_methods(cmd, exclude_output=False,
