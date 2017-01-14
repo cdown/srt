@@ -1,24 +1,40 @@
 language: python
-python: 3.5  # 3.5 requires manual download, so it needs to be selected
+cache: pip
 
-env:
-  - TOXENV=py27
-  - TOXENV=py34
-  - TOXENV=py35
-  - TOXENV=coverage
-  - TOXENV=doctest
+python:
+  - '2.7'
+  - '3.3'
+  - '3.4'
+  - '3.5'
+  - '3.6'
+
+  # Allowed to fail
+  - '3.7-dev'
+  - 'nightly'
 
 install: pip install tox
-script: tox
+
+script:
+  - 'tox'
 
 matrix:
   fast_finish: true
+  allow_failures:
+    - python: '3.7-dev'
+    - python: 'nightly'
+  include:
+    # One-off runs
+    - python: '3.6'
+      env: TOXENV=coverage
+    - python: '3.5'  # 3.6 after https://github.com/PyCQA/pylint/issues/1113
+      env: TOXENV=pylint
+
+    # OSX -- takes a while to start up on Travis, so once we get a worker just
+    # run them all with one instance of tox
+    - os: osx
+      language: generic
+      env: TOXENV=py27,py33,py34,py35,py36
 
 # This is required to enable container based Travis CI infrastructure.
 # See http://docs.travis-ci.com/user/migrating-from-legacy/
 sudo: false
-
-notifications:
-  email:
-    on_success: never
-    on_failure: always
