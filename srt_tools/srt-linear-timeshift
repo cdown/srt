@@ -3,6 +3,9 @@
 import srt
 import datetime
 import srt_tools.utils
+import logging
+
+log = logging.getLogger(__name__)
 
 
 def timedelta_to_milliseconds(delta):
@@ -77,14 +80,21 @@ def linear_correct_subs(subtitles, angular, linear):
 
 def main():
     args = parse_args()
+    logging.basicConfig(level=args.log_level)
     angular, linear = calc_correction(
         args.to_start, args.to_end,
         args.from_start, args.from_end,
     )
-    subtitles_in = srt.parse(args.input.read())
-    corrected_subs = linear_correct_subs(subtitles_in, angular, linear)
-    output = srt.compose(corrected_subs, strict=args.strict)
-    args.output.write(output)
+    srt_tools.utils.set_basic_args(args)
+    corrected_subs = linear_correct_subs(args.input, angular, linear)
+    output = srt_tools.utils.compose_suggest_on_fail(
+        corrected_subs, strict=args.strict,
+    )
+
+    try:
+        args.output.write(output)
+    except UnicodeEncodeError:  # Python 2 fallback
+        args.output.write(output.encode(args.encoding))
 
 
 if __name__ == '__main__':

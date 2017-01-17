@@ -3,9 +3,8 @@
 from __future__ import unicode_literals
 from datetime import timedelta
 import functools
-import os
 
-from hypothesis import given, settings
+from hypothesis import given
 import hypothesis.strategies as st
 from nose.tools import (eq_ as eq, assert_not_equal as neq, assert_raises,
                         assert_false, assert_true, assert_in)
@@ -16,10 +15,6 @@ try:
     from nose.tools import assert_count_equal
 except ImportError:  # Python 2 fallback
     from nose.tools import assert_items_equal as assert_count_equal
-
-
-settings.register_profile('quick', settings(max_examples=5))
-settings.load_profile(os.environ.get('HYPOTHESIS_PROFILE', 'default'))
 
 
 HOURS_IN_DAY = 24

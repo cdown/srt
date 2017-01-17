@@ -1,17 +1,19 @@
 #!/usr/bin/env python
 
+import codecs
+
 try:
     from setuptools import setup
 except ImportError:
     from distutils.core import setup
 
 
-with open('README.rst') as readme_f:
+with codecs.open('README.rst', encoding='utf8') as readme_f:
     README = readme_f.read()
 
 setup(
     name='srt',
-    version='1.2.0',
+    version='1.3.0',
     description='A tiny library for parsing, modifying, and composing SRT '
                 'files.',
     long_description=README,
@@ -30,6 +32,7 @@ setup(
         'srt_tools/srt-linear-timeshift',
         'srt_tools/srt-lines-matching',
         'srt_tools/srt-mux',
+        'srt_tools/srt-play',
         'srt_tools/srt-strip-html',
     ],
 

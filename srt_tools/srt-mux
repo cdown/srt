@@ -57,15 +57,23 @@ def main():
     args = parse_args()
     logging.basicConfig(level=args.log_level)
 
+    srt_tools.utils.set_basic_args(args)
+
     muxed_subs = []
-    for file_input in args.input:
-        muxed_subs.extend(srt.parse(file_input.read()))
+    for subs in args.input:
+        muxed_subs.extend(subs)
 
     merge_subs(muxed_subs, args.ms, 'start', args.width)
     merge_subs(muxed_subs, args.ms, 'end', args.width)
 
-    output = srt.compose(muxed_subs, strict=args.strict)
-    args.output.write(output)
+    output = srt_tools.utils.compose_suggest_on_fail(
+        muxed_subs, strict=args.strict,
+    )
+
+    try:
+        args.output.write(output)
+    except UnicodeEncodeError:  # Python 2 fallback
+        args.output.write(output.encode(args.encoding))
 
 
 if __name__ == '__main__':

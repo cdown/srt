@@ -16,7 +16,7 @@ def find_srt_commands_in_path():
         try:
             path_files = os.listdir(path)
         except OSError as thrown_exc:
-            if thrown_exc.errno == errno.ENOENT:
+            if thrown_exc.errno in (errno.ENOENT, errno.ENOTDIR):
                 continue
             else:
                 raise
@@ -31,7 +31,7 @@ def show_help():
         'Available commands '
         '(pass --help to a specific command for usage information):\n'
     )
-    commands = sorted(find_srt_commands_in_path())
+    commands = sorted(set(find_srt_commands_in_path()))
     for command in commands:
         print('- {}'.format(command))
 
