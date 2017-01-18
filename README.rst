@@ -67,7 +67,7 @@ non-Chinese lines:
 
     2
     00:00:40,641 --> 00:00:44,687
-    Yet, these previous waters are rich with surprise.
+    Yet, these precious waters are rich with surprise.
     可是这些珍贵的淡水中却充满了惊奇
 
     3
