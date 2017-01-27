@@ -99,6 +99,7 @@ def assert_supports_all_io_methods(cmd, exclude_output=False,
         '--t2', '00:00:04,000',
     ], False),
     (['srt-lines-matching', '-f', 'lambda x: True'], False),
+    (['srt-process', '-f', 'lambda x: x'], False),
     (['srt-mux'], False, True),
     (['srt-strip-html'], False),
 

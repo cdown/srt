@@ -40,6 +40,10 @@ Utilities
   display (note: it does not clear them from the screen afterwards). If you
   need to fast-forward to some point, you can combine it with
   *fixed-timeshift*.
+- *process* allows processing text freely. It takes a function, similarly to
+  *lines-matching*, and changes SRT content into the return value. For example,
+  you can strip HTML with ``srt process -m re -f 'lambda sub:
+  re.sub("<[^<]+?>", "", sub)'``
 - *strip-html* strips HTML formatting from subtitle content. This is especially
   prevalant in `SSA/ASS`_ subtitles that have been directly converted to SRT.
 
