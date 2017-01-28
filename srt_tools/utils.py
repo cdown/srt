@@ -118,13 +118,15 @@ def set_basic_args(args):
                             if stream is args.input:
                                 args.input[i] = srt.parse(input_fn.read())
                         else:
-                            with _open(input_fn, encoding=args.encoding) as f:
+                            f = _open(input_fn, 'r', encoding=args.encoding)
+                            with f:
                                 args.input[i] = srt.parse(f.read())
                 else:
-                    with _open(stream, encoding=args.encoding) as input_f:
-                        args.input = srt.parse(input_f.read())
+                    f = _open(stream, 'r', encoding=args.encoding)
+                    with f:
+                        args.input = srt.parse(f.read())
             else:
-                args.output = _open(args.output, 'w+', encoding=args.encoding)
+                args.output = _open(args.output, 'w', encoding=args.encoding)
 
 
 def compose_suggest_on_fail(subs, strict=True):

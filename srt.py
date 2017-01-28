@@ -17,11 +17,12 @@ log = logging.getLogger(__name__)
 RGX_TIMESTAMP_MAGNITUDE_DELIM = r'[,.:]'
 RGX_TIMESTAMP = RGX_TIMESTAMP_MAGNITUDE_DELIM.join([r'\d+'] * 4)
 RGX_INDEX = r'\d+'
-RGX_PROPRIETARY = r'[^\n]*'
+RGX_PROPRIETARY = r'[^\r\n]*'
 RGX_CONTENT = r'.*?'
+RGX_POSSIBLE_CRLF = r'\r?\n'
 
 SRT_REGEX = re.compile(
-    r'({idx})\n({ts}) --> ({ts}) ?({proprietary})\n({content})'
+    r'({idx}){eof}({ts}) --> ({ts}) ?({proprietary}){eof}({content})'
     # Many sub editors don't add a blank line to the end, and many editors and
     # players accept that. We allow it to be missing in input.
     #
@@ -33,16 +34,17 @@ SRT_REGEX = re.compile(
     # This means that when you are, say, only keeping chs, and the line only
     # contains english, you end up with not only no content, but also all of
     # the content lines are stripped instead of retaining a newline.
-    r'(?:\n|\Z)(?:\n|\Z|(?=(?:{idx}\n{ts})))'
+    r'(?:{eof}|\Z)(?:{eof}|\Z|(?=(?:{idx}{eof}{ts})))'
     # Some SRT blocks, while this is technically invalid, have blank lines
     # inside the subtitle content. We look ahead a little to check that the
     # next lines look like an index and a timestamp as a best-effort
     # solution to work around these.
-    r'(?=(?:{idx}\n{ts}|\Z))'.format(
+    r'(?=(?:{idx}{eof}{ts}|\Z))'.format(
         idx=RGX_INDEX,
         ts=RGX_TIMESTAMP,
         proprietary=RGX_PROPRIETARY,
         content=RGX_CONTENT,
+        eof=RGX_POSSIBLE_CRLF,
     ),
     re.DOTALL,
 )
@@ -108,13 +110,14 @@ class Subtitle(object):
         )
         return "%s(%s)" % (type(self).__name__, item_list)
 
-    def to_srt(self, strict=True):
+    def to_srt(self, strict=True, eol=None):
         r'''
         Convert the current :py:class:`Subtitle` to an SRT block.
 
         :param bool strict: If disabled, will allow blank lines in the content
                             of the SRT block, which is a violation of the SRT
                             standard and may case your media player to explode
+        :param str eol: The end of line string to use (default "\n")
         :returns: The metadata of the current :py:class:`Subtitle` object as an
                   SRT formatted subtitle block
         :rtype: str
@@ -136,10 +139,16 @@ class Subtitle(object):
         if strict:
             output_content = make_legal_content(output_content)
 
-        return '%d\n%s --> %s%s\n%s\n\n' % (
-            self.index, timedelta_to_srt_timestamp(self.start),
-            timedelta_to_srt_timestamp(self.end), output_proprietary,
-            output_content,
+        if eol is not None:
+            output_content = output_content.replace('\n', eol)
+        else:
+            eol = '\n'
+
+        template = '{idx}{eol}{start} --> {end}{prop}{eol}{content}{eol}{eol}'
+        return template.format(
+            idx=self.index, start=timedelta_to_srt_timestamp(self.start),
+            end=timedelta_to_srt_timestamp(self.end), prop=output_proprietary,
+            content=output_content, eol=eol,
         )
 
 
@@ -299,8 +308,8 @@ def parse(srt):
         raw_index, raw_start, raw_end, proprietary, content = match.groups()
         yield Subtitle(
             index=int(raw_index), start=srt_timestamp_to_timedelta(raw_start),
-            end=srt_timestamp_to_timedelta(raw_end), content=content,
-            proprietary=proprietary,
+            end=srt_timestamp_to_timedelta(raw_end),
+            content=content.replace('\r\n', '\n'), proprietary=proprietary,
         )
 
         expected_start = match.end()
@@ -325,7 +334,7 @@ def _raise_if_not_contiguous(srt, expected_start, actual_start):
         raise SRTParseError(expected_start, actual_start, unmatched_content)
 
 
-def compose(subtitles, reindex=True, start_index=1, strict=True):
+def compose(subtitles, reindex=True, start_index=1, strict=True, eol=None):
     r'''
     Convert an iterator of :py:class:`Subtitle` objects to a string of joined
     SRT blocks.
@@ -347,13 +356,17 @@ def compose(subtitles, reindex=True, start_index=1, strict=True):
     :param int start_index: If reindexing, the index to start reindexing from
     :param bool strict: Whether to enable strict mode, see
                         :py:func:`Subtitle.to_srt` for more information
+    :param str eol: The end of line string to use (default "\n")
     :returns: A single SRT formatted string, with each input
               :py:class:`Subtitle` represented as an SRT block
     :rtype: str
     '''
     if reindex:
         subtitles = sort_and_reindex(subtitles, start_index=start_index)
-    return ''.join(subtitle.to_srt(strict=strict) for subtitle in subtitles)
+
+    return ''.join(
+        subtitle.to_srt(strict=strict, eol=eol) for subtitle in subtitles
+    )
 
 
 class SRTParseError(Exception):

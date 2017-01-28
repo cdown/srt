@@ -23,7 +23,6 @@ CONTENTLESS_SUB = functools.partial(
     srt.Subtitle, index=1,
     start=timedelta(seconds=1), end=timedelta(seconds=2),
 )
-CONTENT_TEXT = st.text(min_size=1)
 
 
 def is_strictly_legal_content(content):
@@ -35,7 +34,7 @@ def is_strictly_legal_content(content):
     - A content section that contains blank lines
     '''
 
-    if content.strip('\n') != content:
+    if content.strip('\r\n') != content:
         return False
     elif not content.strip():
         return False
@@ -81,8 +80,12 @@ def subtitles(strict=True):
     # using arbitrary low enough numbers
     timestamp_strategy = timedeltas(min_value=0, max_value=999999)
 
-    content_strategy = st.text(min_size=1)
-    proprietary_strategy = st.text().filter(lambda x: '\n' not in x)
+    # If we want to test \r, we'll test it by ourselves. It makes testing
+    # harder without because we don't get the same outputs as inputs on Unix.
+    content_strategy = st.text(min_size=1).filter(lambda x: '\r' not in x)
+    proprietary_strategy = st.text().filter(
+        lambda x: all(eol not in x for eol in '\r\n')
+    )
 
     if strict:
         content_strategy = content_strategy.filter(is_strictly_legal_content)
@@ -121,7 +124,7 @@ def test_can_compose_without_ending_blank_line(input_subs):
 @given(st.lists(subtitles()))
 def test_can_compose_without_eol_at_all(input_subs):
     composed = srt.compose(input_subs, reindex=False)
-    composed_without_ending_blank = composed.rstrip('\n')
+    composed_without_ending_blank = composed.rstrip('\r\n')
     reparsed_subs = srt.parse(composed_without_ending_blank)
     subs_eq(reparsed_subs, input_subs)
 
@@ -141,8 +144,8 @@ def test_compose_and_parse_strict_mode(content):
     assert_false('\n\n' in parsed_strict.content)
 
     # When strict mode is false, no processing should be applied to the
-    # content.
-    eq(parsed_unstrict.content, sub.content)
+    # content (other than \r\n becoming \n).
+    eq(parsed_unstrict.content, sub.content.replace('\r\n', '\n'))
 
 
 @given(st.integers(min_value=1, max_value=TIMEDELTA_MAX_DAYS))
@@ -401,3 +404,22 @@ def test_parser_accepts_no_newline_no_content(subs):
 
     reparsed_subs = srt.parse(stripped_srt_blocks)
     subs_eq(reparsed_subs, subs)
+
+
+@given(st.lists(subtitles()))
+def test_compose_and_parse_strict_crlf(input_subs):
+    composed_raw = srt.compose(input_subs, reindex=False)
+    composed = composed_raw.replace('\n', '\r\n')
+    reparsed_subs = list(srt.parse(composed))
+
+    for sub in reparsed_subs:
+        sub.content = sub.content.replace('\r\n', '\n')
+
+    subs_eq(reparsed_subs, input_subs)
+
+
+@given(st.lists(subtitles()), st.one_of(st.just('\n'), st.just('\r\n')))
+def test_compose_and_parse_strict_custom_eol(input_subs, eol):
+    composed = srt.compose(input_subs, reindex=False, eol=eol)
+    reparsed_subs = srt.parse(composed)
+    subs_eq(reparsed_subs, input_subs)
