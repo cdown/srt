@@ -47,3 +47,19 @@ Compose an SRT from Python objects
     we dig a tunnel under the city and release it into the wild.
     <BLANKLINE>
     <BLANKLINE>
+
+Newlines
+--------
+
+srt accepts ``\r\n`` line endings, but converts them to ``\n`` internally. One
+reason for this is because it's impossible for srt to know whether you're using
+universal newlines, and even if you're not, whether you're going to write in
+text mode or binary mode.
+
+As such, if you want output with a line ending *other* than ``\n``, it's your
+responsibility to do something like this (the default ``eol`` is ``\n`` for
+these reasons).
+
+.. code:: python
+
+    srt.compose(subs, eol=os.linesep)
