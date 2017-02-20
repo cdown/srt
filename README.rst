@@ -82,7 +82,7 @@ non-Chinese lines:
 
 These tools are easy to chain together, for example, say you have one subtitle
 with Chinese and English, and other with French, but you want Chinese and
-French only. Oh, and the Chinese one is 5 seconds ahead of where it should be.
+French only. Oh, and the Chinese one is 5 seconds later than it should be.
 That's easy enough to sort out:
 
 .. code::
