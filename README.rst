@@ -70,11 +70,6 @@ non-Chinese lines:
     Yet, these precious waters are rich with surprise.
     可是这些珍贵的淡水中却充满了惊奇
 
-    3
-    00:00:57,908 --> 00:01:03,414
-    All life on land is ultimately dependent on fresh water.
-    所有陆地生命归根结底都依赖於淡水
-
     $ srt lines-matching -m hanzidentifier -f hanzidentifier.has_chinese -i pe.srt
     1
     00:00:33,843 --> 00:00:38,097
@@ -84,9 +79,17 @@ non-Chinese lines:
     00:00:40,641 --> 00:00:44,687
     可是这些珍贵的淡水中却充满了惊奇
 
-    3
-    00:00:57,908 --> 00:01:03,414
-    所有陆地生命归根结底都依赖於淡水
+
+These tools are easy to chain together, for example, say you have one subtitle
+with Chinese and English, and other with French, but you want Chinese and
+French only. Oh, and the Chinese one is 5 seconds ahead of where it should be.
+That's easy enough to sort out:
+
+.. code::
+
+   $ srt lines-matching -m hanzidentifier -f hanzidentifier.has_chinese -i chs+eng.srt |
+   >     srt fixed-timeshift --seconds -5 |
+   >     srt mux --input - --input fra.srt
 
 See the srt_tools/ directory for more information.
 
