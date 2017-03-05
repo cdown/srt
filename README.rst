@@ -26,7 +26,7 @@ the library`_.
 Why choose this library?
 ------------------------
 
-- Extremely lightweight, excluding docstrings/comments/etc around 200 SLOC
+- Extremely lightweight, `~150 lines of code`_ excluding docstrings
 - High quality test suite using Hypothesis_
 - `100% test coverage`_ (including branches)
 - `Well documented API`_, at both a high and low level
@@ -46,6 +46,7 @@ Why choose this library?
 .. _`100% test coverage`: https://coveralls.io/github/cdown/srt?branch=develop
 .. _`Well documented API`: http://srt.readthedocs.org/en/latest/index.html
 .. _`Released into the public domain`: https://cr.yp.to/publicdomain.html
+.. _`~150 lines of code`: https://paste.pound-python.org/raw/3WgFQIvkVVvBZvQI3nm4/
 
 Usage
 -----
