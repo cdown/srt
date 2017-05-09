@@ -38,7 +38,7 @@ Why choose this library?
 - `Released into the public domain`_
 - Real world tested — used in production to process thousands of SRT files
   every day
-- Portable -- runs on Linux, OSX, and Windows
+- Portable — runs on Linux, OSX, and Windows
 
 
 .. _quickstart: http://srt.readthedocs.org/en/latest/quickstart.html
