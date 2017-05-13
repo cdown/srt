@@ -95,10 +95,9 @@ class Subtitle(object):
         return vars(self) == vars(other)
 
     def __lt__(self, other):
-        if self.start < other.start:
-            return True
-        else:
-            return self.start == other.start and self.end < other.end
+        return self.start < other.start or (
+            self.start == other.start and self.end < other.end
+        )
 
     def __repr__(self):
         # Python 2/3 cross compatibility
