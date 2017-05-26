@@ -18,8 +18,6 @@ DASH_STREAM_MAP = {
     'output': sys.stdout.buffer,
 }
 
-DEFAULT_ENCODING = 'utf8'
-
 log = logging.getLogger(__name__)
 
 
@@ -83,16 +81,14 @@ def basic_parser(multi_input=False, no_output=False):
     # explicitly specified for -e warnings
     parser.add_argument(
         '--encoding', '-e',
-        help='the encoding to read/write files in (default: utf8)'
+        help='the encoding to read/write files in (default: system set)'
     )
     return parser
 
 
 def set_basic_args(args):
-    encoding_explicitly_specified = True
-    if args.encoding is None:
-        args.encoding = DEFAULT_ENCODING
-        encoding_explicitly_specified = False
+    if not args.encoding:
+        args.encoding = sys.getdefaultencoding()
 
     # TODO: dedupe some of this
     for stream_name in ('input', 'output'):
@@ -104,12 +100,8 @@ def set_basic_args(args):
             # For example, in the case of no_output
             continue
 
-        if encoding_explicitly_specified:
-            r_enc = codecs.getreader(args.encoding)
-            w_enc = codecs.getwriter(args.encoding)
-        else:
-            r_enc = noop
-            w_enc = noop
+        r_enc = codecs.getreader(args.encoding)
+        w_enc = codecs.getwriter(args.encoding)
 
         log.debug('Got %r as stream', stream)
         if stream in DASH_STREAM_MAP.values():
