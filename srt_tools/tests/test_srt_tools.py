@@ -83,6 +83,13 @@ def assert_supports_all_io_methods(cmd, exclude_output=False,
                     ),
                     shell=True,
                 )
+                run_srt_util(
+                    '%s < %s > %s' % (
+                        cmd_string + ' -e gb2312', quote(in_file),
+                        quote(out_file),
+                    ),
+                    shell=True, encoding='gb2312'
+                )
         assert_true(len(set(outputs)) == 1, repr(outputs))
     finally:
         os.remove(out_file)

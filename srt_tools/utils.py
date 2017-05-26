@@ -94,10 +94,10 @@ def basic_parser(multi_input=False, no_output=False):
 
 
 def set_basic_args(args):
-    encoding_explicitly_specified = False
+    encoding_explicitly_specified = True
     if args.encoding is None:
         args.encoding = DEFAULT_ENCODING
-        encoding_explicitly_specified = True
+        encoding_explicitly_specified = False
 
     # TODO: dedupe some of this
     for stream_name in ('input', 'output'):
@@ -121,6 +121,8 @@ def set_basic_args(args):
             log.debug('%s in DASH_STREAM_MAP', stream_name)
             if stream is args.input:
                 args.input = srt.parse(r_enc(args.input).read())
+            elif stream is args.output:
+                args.output = w_enc(args.output)
         else:
             log.debug('%s not in DASH_STREAM_MAP', stream_name)
             if stream is args.input:
@@ -129,7 +131,7 @@ def set_basic_args(args):
                         if input_fn in DASH_STREAM_MAP.values():
                             if stream is args.input:
                                 args.input[i] = srt.parse(
-                                    w_enc(input_fn).read()
+                                    r_enc(input_fn).read()
                                 )
                         else:
                             f = _open(input_fn, 'r', encoding=args.encoding)
