@@ -22,11 +22,6 @@ DEFAULT_ENCODING = 'utf8'
 
 log = logging.getLogger(__name__)
 
-STREAM_ENC_MSG = (
-    '-e/--encoding has no effect on %s, you need to use --input or --output '
-    'with a real file'
-)
-
 
 def noop(stream):
     '''
