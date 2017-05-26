@@ -28,6 +28,14 @@ STREAM_ENC_MSG = (
 )
 
 
+def noop(stream):
+    '''
+    Used when we didn't explicitly specify a stream to avoid using
+    codecs.get{reader,writer}
+    '''
+    return stream
+
+
 def dash_to_stream(arg, arg_type):
     if arg == '-':
         return DASH_STREAM_MAP[arg_type]
@@ -86,8 +94,10 @@ def basic_parser(multi_input=False, no_output=False):
 
 
 def set_basic_args(args):
+    encoding_explicitly_specified = False
     if args.encoding is None:
         args.encoding = DEFAULT_ENCODING
+        encoding_explicitly_specified = True
 
     # TODO: dedupe some of this
     for stream_name in ('input', 'output'):
@@ -99,8 +109,12 @@ def set_basic_args(args):
             # For example, in the case of no_output
             continue
 
-        r_enc = codecs.getreader(args.encoding)
-        w_enc = codecs.getwriter(args.encoding)
+        if encoding_explicitly_specified:
+            r_enc = codecs.getreader(args.encoding)
+            w_enc = codecs.getwriter(args.encoding)
+        else:
+            r_enc = noop
+            w_enc = noop
 
         log.debug('Got %r as stream', stream)
         if stream in DASH_STREAM_MAP.values():
