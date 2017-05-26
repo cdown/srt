@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
+import codecs
 import srt
 import logging
 import sys
@@ -13,8 +14,8 @@ else:
     _open = open
 
 DASH_STREAM_MAP = {
-    'input': sys.stdin,
-    'output': sys.stdout,
+    'input': sys.stdin.buffer,
+    'output': sys.stdout.buffer,
 }
 
 DEFAULT_ENCODING = 'utf8'
@@ -50,7 +51,7 @@ def basic_parser(multi_input=False, no_output=False):
     else:
         parser.add_argument(
             '--input', '-i', metavar='FILE',
-            default=sys.stdin,
+            default=sys.stdin.buffer,
             type=lambda arg: dash_to_stream(arg, 'input'),
             help='the file to process (default: stdin)',
         )
@@ -58,7 +59,7 @@ def basic_parser(multi_input=False, no_output=False):
     if not no_output:
         parser.add_argument(
             '--output', '-o', metavar='FILE',
-            default=sys.stdout,
+            default=sys.stdout.buffer,
             type=lambda arg: dash_to_stream(arg, 'output'),
             help='the file to write to (default: stdout)',
         )
@@ -85,10 +86,8 @@ def basic_parser(multi_input=False, no_output=False):
 
 
 def set_basic_args(args):
-    encoding_explicitly_specified = True
     if args.encoding is None:
         args.encoding = DEFAULT_ENCODING
-        encoding_explicitly_specified = False
 
     # TODO: dedupe some of this
     for stream_name in ('input', 'output'):
@@ -100,23 +99,24 @@ def set_basic_args(args):
             # For example, in the case of no_output
             continue
 
+        r_enc = codecs.getreader(args.encoding)
+        w_enc = codecs.getwriter(args.encoding)
+
         log.debug('Got %r as stream', stream)
         if stream in DASH_STREAM_MAP.values():
             log.debug('%s in DASH_STREAM_MAP', stream_name)
             if stream is args.input:
-                args.input = srt.parse(args.input.read())
-            if encoding_explicitly_specified:
-                log.warning(STREAM_ENC_MSG, stream.name)
+                args.input = srt.parse(r_enc(args.input).read())
         else:
             log.debug('%s not in DASH_STREAM_MAP', stream_name)
             if stream is args.input:
                 if isinstance(args.input, collections.MutableSequence):
                     for i, input_fn in enumerate(args.input):
                         if input_fn in DASH_STREAM_MAP.values():
-                            if encoding_explicitly_specified:
-                                log.warning(STREAM_ENC_MSG, input_fn.name)
                             if stream is args.input:
-                                args.input[i] = srt.parse(input_fn.read())
+                                args.input[i] = srt.parse(
+                                    w_enc(input_fn).read()
+                                )
                         else:
                             f = _open(input_fn, 'r', encoding=args.encoding)
                             with f:
