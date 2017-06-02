@@ -4,7 +4,7 @@ import os
 import subprocess
 import tempfile
 from nose.tools import assert_true
-from nose_parameterized import parameterized
+from parameterized import parameterized
 
 try:
     from shlex import quote
