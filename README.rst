@@ -26,18 +26,19 @@ the library`_.
 Why choose this library?
 ------------------------
 
-- Extremely lightweight, excluding docstrings/comments/etc around 200 SLOC
+- Extremely lightweight, `~150 lines of code`_ excluding docstrings
 - High quality test suite using Hypothesis_
 - `100% test coverage`_ (including branches)
 - `Well documented API`_, at both a high and low level
 - Native support for Python 2 and 3
+- Full support for `PyPy`_
 - No dependencies outside of the standard library
 - Tolerant of many common errors found in real-world SRT files
 - Completely Unicode compliant
 - `Released into the public domain`_
 - Real world tested — used in production to process thousands of SRT files
   every day
-- Portable -- runs on Linux, OSX, and Windows
+- Portable — runs on Linux, OSX, and Windows
 
 
 .. _quickstart: http://srt.readthedocs.org/en/latest/quickstart.html
@@ -46,6 +47,8 @@ Why choose this library?
 .. _`100% test coverage`: https://coveralls.io/github/cdown/srt?branch=develop
 .. _`Well documented API`: http://srt.readthedocs.org/en/latest/index.html
 .. _`Released into the public domain`: https://cr.yp.to/publicdomain.html
+.. _`~150 lines of code`: https://paste.pound-python.org/raw/3WgFQIvkVVvBZvQI3nm4/
+.. _PyPy: http://pypy.org/
 
 Usage
 -----
@@ -67,13 +70,8 @@ non-Chinese lines:
 
     2
     00:00:40,641 --> 00:00:44,687
-    Yet, these previous waters are rich with surprise.
+    Yet, these precious waters are rich with surprise.
     可是这些珍贵的淡水中却充满了惊奇
-
-    3
-    00:00:57,908 --> 00:01:03,414
-    All life on land is ultimately dependent on fresh water.
-    所有陆地生命归根结底都依赖於淡水
 
     $ srt lines-matching -m hanzidentifier -f hanzidentifier.has_chinese -i pe.srt
     1
@@ -84,9 +82,17 @@ non-Chinese lines:
     00:00:40,641 --> 00:00:44,687
     可是这些珍贵的淡水中却充满了惊奇
 
-    3
-    00:00:57,908 --> 00:01:03,414
-    所有陆地生命归根结底都依赖於淡水
+
+These tools are easy to chain together, for example, say you have one subtitle
+with Chinese and English, and other with French, but you want Chinese and
+French only. Oh, and the Chinese one is 5 seconds later than it should be.
+That's easy enough to sort out:
+
+.. code::
+
+   $ srt lines-matching -m hanzidentifier -f hanzidentifier.has_chinese -i chs+eng.srt |
+   >     srt fixed-timeshift --seconds -5 |
+   >     srt mux --input - --input fra.srt
 
 See the srt_tools/ directory for more information.
 
@@ -151,8 +157,7 @@ Testing
 
 .. code::
 
-   pip install tox
-   tox -e quick
+   tox
 
 .. _Tox: https://tox.readthedocs.org
 .. _`Detailed API documentation`: http://srt.readthedocs.org/en/latest/api.html

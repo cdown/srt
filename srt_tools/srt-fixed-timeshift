@@ -37,7 +37,7 @@ def main():
 
     try:
         args.output.write(output)
-    except UnicodeEncodeError:  # Python 2 fallback
+    except (UnicodeEncodeError, TypeError):  # Python 2 fallback
         args.output.write(output.encode(args.encoding))
 
 

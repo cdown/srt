@@ -40,8 +40,11 @@ Utilities
   display (note: it does not clear them from the screen afterwards). If you
   need to fast-forward to some point, you can combine it with
   *fixed-timeshift*.
-- *strip-html* strips HTML formatting from subtitle content. This is especially
-  prevalant in `SSA/ASS`_ subtitles that have been directly converted to SRT.
+- *process* allows processing text freely. It takes a function, similarly to
+  *lines-matching*, and changes SRT content into the return value. For example,
+  you can strip HTML with ``srt process -m re -f 'lambda sub:
+  re.sub("<[^<]+?>", "", sub)'``. HTML-like syntax is especially prevalant in
+  `SSA/ASS`_ subtitles that have been directly converted to SRT.
 
 .. _mux: https://en.wikipedia.org/wiki/Multiplexing
 .. _`SSA/ASS`: https://en.wikipedia.org/wiki/SubStation_Alpha

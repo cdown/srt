@@ -4,7 +4,7 @@ import os
 import subprocess
 import tempfile
 from nose.tools import assert_true
-from nose_parameterized import parameterized
+from parameterized import parameterized
 
 try:
     from shlex import quote
@@ -83,6 +83,13 @@ def assert_supports_all_io_methods(cmd, exclude_output=False,
                     ),
                     shell=True,
                 )
+                run_srt_util(
+                    '%s < %s > %s' % (
+                        cmd_string + ' -e gb2312', quote(in_file),
+                        quote(out_file),
+                    ),
+                    shell=True, encoding='gb2312'
+                )
         assert_true(len(set(outputs)) == 1, repr(outputs))
     finally:
         os.remove(out_file)
@@ -99,8 +106,8 @@ def assert_supports_all_io_methods(cmd, exclude_output=False,
         '--t2', '00:00:04,000',
     ], False),
     (['srt-lines-matching', '-f', 'lambda x: True'], False),
+    (['srt-process', '-f', 'lambda x: x'], False),
     (['srt-mux'], False, True),
-    (['srt-strip-html'], False),
 
     # Need to sort out time/thread issues
     # (('srt-play'), True),
