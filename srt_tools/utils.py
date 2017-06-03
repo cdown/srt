@@ -13,9 +13,12 @@ if sys.version_info < (3,):
 else:
     _open = open
 
+STDIN_BYTESTREAM = getattr(sys.stdin, 'buffer', sys.stdin)
+STDOUT_BYTESTREAM = getattr(sys.stdout, 'buffer', sys.stdout)
+
 DASH_STREAM_MAP = {
-    'input': sys.stdin.buffer,
-    'output': sys.stdout.buffer,
+    'input': STDIN_BYTESTREAM,
+    'output': STDOUT_BYTESTREAM,
 }
 
 log = logging.getLogger(__name__)
@@ -52,7 +55,7 @@ def basic_parser(multi_input=False, no_output=False):
     else:
         parser.add_argument(
             '--input', '-i', metavar='FILE',
-            default=sys.stdin.buffer,
+            default=STDIN_BYTESTREAM,
             type=lambda arg: dash_to_stream(arg, 'input'),
             help='the file to process (default: stdin)',
         )
@@ -60,7 +63,7 @@ def basic_parser(multi_input=False, no_output=False):
     if not no_output:
         parser.add_argument(
             '--output', '-o', metavar='FILE',
-            default=sys.stdout.buffer,
+            default=STDOUT_BYTESTREAM,
             type=lambda arg: dash_to_stream(arg, 'output'),
             help='the file to write to (default: stdout)',
         )
