@@ -36,7 +36,7 @@ def show_help():
 
 
 def main():
-    if len(sys.argv) < 2 or (len(sys.argv) > 1 and sys.argv[1] == '--help'):
+    if len(sys.argv) < 2 or sys.argv[1].startswith('-'):
         show_help()
         sys.exit(0)
 
