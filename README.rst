@@ -39,7 +39,8 @@ Why choose this library?
 - Real world tested — used in production to process thousands of SRT files
   every day
 - Portable — runs on Linux, OSX, and Windows
-
+- Tools included — contains lightweight tools to perform generic tasks with the
+  library
 
 .. _quickstart: http://srt.readthedocs.org/en/latest/quickstart.html
 .. _`SRT files`: https://en.wikipedia.org/wiki/SubRip#SubRip_text_file_format
