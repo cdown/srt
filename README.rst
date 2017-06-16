@@ -30,6 +30,7 @@ Why choose this library?
 - High quality test suite using Hypothesis_
 - `100% test coverage`_ (including branches)
 - `Well documented API`_, at both a high and low level
+- `~30% faster than pysrt on typical workloads`
 - Native support for Python 2 and 3
 - Full support for `PyPy`_
 - No dependencies outside of the standard library
@@ -50,6 +51,7 @@ Why choose this library?
 .. _`Released into the public domain`: https://cr.yp.to/publicdomain.html
 .. _`~150 lines of code`: https://paste.pound-python.org/raw/3WgFQIvkVVvBZvQI3nm4/
 .. _PyPy: http://pypy.org/
+.. _`~30% faster than pysrt on typical workloads`: https://paste.pound-python.org/raw/YKz5YfqQZY992af24I8R/
 
 Usage
 -----
