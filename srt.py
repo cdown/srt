@@ -48,7 +48,6 @@ SRT_REGEX = re.compile(
     ),
     re.DOTALL,
 )
-TS_REGEX = re.compile(r'\d+')
 TS_LEN = 12
 STANDARD_TS_COLON_OFFSET = 2
 
@@ -216,6 +215,10 @@ def srt_timestamp_to_timedelta(ts):
             )
         )
 
+    # Doing this instead of splitting based on the delimiter using re.split
+    # with a compiled regex or str.split is ~15% performance improvement during
+    # parsing. We need to look from the end because the number of hours may be
+    # >2 digits.
     hrs, mins, secs, msecs = (
         int(x) for x in [ts[:-10], ts[-9:-7], ts[-6:-4], ts[-3:]]
     )
