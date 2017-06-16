@@ -187,6 +187,11 @@ def timedelta_to_srt_timestamp(timedelta_timestamp):
         >>> delta = datetime.timedelta(hours=1, minutes=23, seconds=4)
         >>> timedelta_to_srt_timestamp(delta)
         '01:23:04,000'
+
+    :param datetime.timedelta timedelta_timestamp: A datetime to convert to an
+                                                   SRT timestamp
+    :returns: The timestamp in SRT format
+    :rtype: str
     '''
 
     hrs, secs_remainder = divmod(timedelta_timestamp.seconds, SECONDS_IN_HOUR)
@@ -207,6 +212,10 @@ def srt_timestamp_to_timedelta(ts):
 
         >>> srt_timestamp_to_timedelta('01:23:04,000')
         datetime.timedelta(0, 4984)
+
+    :param str ts: A timestamp in SRT format
+    :returns: The timestamp as a :py:class:`~datetime.timedelta`
+    :rtype: datetime.timedelta
     '''
     if len(ts) < TS_LEN:
         raise ValueError(
@@ -248,6 +257,8 @@ def sort_and_reindex(subtitles, start_index=1, in_place=False):
     :param int start_index: The index to start from
     :param bool in_place: Whether to modify subs in-place for performance
                           (version <=1.0.0 behaviour)
+    :returns: The sorted subtitles
+    :rtype: Generator[:py:class:`Subtitle`]
     '''
     skipped_subs = 0
     for sub_num, subtitle in enumerate(sorted(subtitles), start=start_index):
