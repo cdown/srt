@@ -48,6 +48,9 @@ SRT_REGEX = re.compile(
     ),
     re.DOTALL,
 )
+TS_REGEX = re.compile(r'\d+')
+TS_LEN = 12
+STANDARD_TS_COLON_OFFSET = 2
 
 ZERO_TIMEDELTA = timedelta(0)
 
@@ -194,19 +197,27 @@ def timedelta_to_srt_timestamp(timedelta_timestamp):
     return '%02d:%02d:%02d,%03d' % (hrs, mins, secs, msecs)
 
 
-def srt_timestamp_to_timedelta(srt_timestamp):
+def srt_timestamp_to_timedelta(ts):
     r'''
     Convert an SRT timestamp to a :py:class:`~datetime.timedelta`.
+
+    This function is *extremely* hot during parsing, so please keep perf in
+    mind.
 
     .. doctest::
 
         >>> srt_timestamp_to_timedelta('01:23:04,000')
         datetime.timedelta(0, 4984)
     '''
-    # "." is not technically a legal separator, but some subtitle editors use
-    # it to delimit msecs, and some players accept it.
+    if len(ts) < TS_LEN:
+        raise ValueError(
+            'Expected timestamp length >= {}, but got {} (value: {})'.format(
+                len(ts), TS_LEN, ts,
+            )
+        )
+
     hrs, mins, secs, msecs = (
-        int(x) for x in re.split(RGX_TIMESTAMP_MAGNITUDE_DELIM, srt_timestamp)
+        int(x) for x in [ts[:-10], ts[-9:-7], ts[-6:-4], ts[-3:]]
     )
     return timedelta(hours=hrs, minutes=mins, seconds=secs, milliseconds=msecs)
 
