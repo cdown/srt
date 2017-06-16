@@ -423,3 +423,10 @@ def test_compose_and_parse_strict_custom_eol(input_subs, eol):
     composed = srt.compose(input_subs, reindex=False, eol=eol)
     reparsed_subs = srt.parse(composed)
     subs_eq(reparsed_subs, input_subs)
+
+
+@given(timedeltas())
+def test_srt_timestamp_to_timedelta_too_short_raises(ts):
+    srt_ts = srt.timedelta_to_srt_timestamp(ts)[:-1]
+    with assert_raises(ValueError):
+        srt.srt_timestamp_to_timedelta(srt_ts)
