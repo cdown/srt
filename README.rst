@@ -30,7 +30,7 @@ Why choose this library?
 - High quality test suite using Hypothesis_
 - `100% test coverage`_ (including branches)
 - `Well documented API`_, at both a high and low level
-- `~30% faster than pysrt on typical workloads`
+- `~30% faster than pysrt on typical workloads`_
 - Native support for Python 2 and 3
 - Full support for `PyPy`_
 - No dependencies outside of the standard library
