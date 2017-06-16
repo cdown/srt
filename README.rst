@@ -51,7 +51,7 @@ Why choose this library?
 .. _`Released into the public domain`: https://cr.yp.to/publicdomain.html
 .. _`~150 lines of code`: https://paste.pound-python.org/raw/3WgFQIvkVVvBZvQI3nm4/
 .. _PyPy: http://pypy.org/
-.. _`~30% faster than pysrt on typical workloads`: https://paste.pound-python.org/raw/YKz5YfqQZY992af24I8R/
+.. _`~30% faster than pysrt on typical workloads`: https://paste.pound-python.org/raw/8nQKbDW0ROWvS7bOeAb3/
 
 Usage
 -----
