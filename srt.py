@@ -258,7 +258,7 @@ def sort_and_reindex(subtitles, start_index=1, in_place=False):
     :param bool in_place: Whether to modify subs in-place for performance
                           (version <=1.0.0 behaviour)
     :returns: The sorted subtitles
-    :rtype: Generator[:py:class:`Subtitle`]
+    :rtype: :term:`generator` of :py:class:`Subtitle` objects
     '''
     skipped_subs = 0
     for sub_num, subtitle in enumerate(sorted(subtitles), start=start_index):
