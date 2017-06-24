@@ -48,6 +48,8 @@ SRT_REGEX = re.compile(
     ),
     re.DOTALL,
 )
+TS_LEN = 12
+STANDARD_TS_COLON_OFFSET = 2
 
 ZERO_TIMEDELTA = timedelta(0)
 
@@ -185,6 +187,11 @@ def timedelta_to_srt_timestamp(timedelta_timestamp):
         >>> delta = datetime.timedelta(hours=1, minutes=23, seconds=4)
         >>> timedelta_to_srt_timestamp(delta)
         '01:23:04,000'
+
+    :param datetime.timedelta timedelta_timestamp: A datetime to convert to an
+                                                   SRT timestamp
+    :returns: The timestamp in SRT format
+    :rtype: str
     '''
 
     hrs, secs_remainder = divmod(timedelta_timestamp.seconds, SECONDS_IN_HOUR)
@@ -194,19 +201,35 @@ def timedelta_to_srt_timestamp(timedelta_timestamp):
     return '%02d:%02d:%02d,%03d' % (hrs, mins, secs, msecs)
 
 
-def srt_timestamp_to_timedelta(srt_timestamp):
+def srt_timestamp_to_timedelta(ts):
     r'''
     Convert an SRT timestamp to a :py:class:`~datetime.timedelta`.
+
+    This function is *extremely* hot during parsing, so please keep perf in
+    mind.
 
     .. doctest::
 
         >>> srt_timestamp_to_timedelta('01:23:04,000')
         datetime.timedelta(0, 4984)
+
+    :param str ts: A timestamp in SRT format
+    :returns: The timestamp as a :py:class:`~datetime.timedelta`
+    :rtype: datetime.timedelta
     '''
-    # "." is not technically a legal separator, but some subtitle editors use
-    # it to delimit msecs, and some players accept it.
+    if len(ts) < TS_LEN:
+        raise ValueError(
+            'Expected timestamp length >= {}, but got {} (value: {})'.format(
+                len(ts), TS_LEN, ts,
+            )
+        )
+
+    # Doing this instead of splitting based on the delimiter using re.split
+    # with a compiled regex or str.split is ~15% performance improvement during
+    # parsing. We need to look from the end because the number of hours may be
+    # >2 digits.
     hrs, mins, secs, msecs = (
-        int(x) for x in re.split(RGX_TIMESTAMP_MAGNITUDE_DELIM, srt_timestamp)
+        int(x) for x in [ts[:-10], ts[-9:-7], ts[-6:-4], ts[-3:]]
     )
     return timedelta(hours=hrs, minutes=mins, seconds=secs, milliseconds=msecs)
 
@@ -234,6 +257,8 @@ def sort_and_reindex(subtitles, start_index=1, in_place=False):
     :param int start_index: The index to start from
     :param bool in_place: Whether to modify subs in-place for performance
                           (version <=1.0.0 behaviour)
+    :returns: The sorted subtitles
+    :rtype: :term:`generator` of :py:class:`Subtitle` objects
     '''
     skipped_subs = 0
     for sub_num, subtitle in enumerate(sorted(subtitles), start=start_index):
