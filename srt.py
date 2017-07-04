@@ -220,7 +220,7 @@ def srt_timestamp_to_timedelta(ts):
     if len(ts) < TS_LEN:
         raise ValueError(
             'Expected timestamp length >= {}, but got {} (value: {})'.format(
-                len(ts), TS_LEN, ts,
+                TS_LEN, len(ts), ts,
             )
         )
 
