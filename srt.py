@@ -22,7 +22,7 @@ RGX_CONTENT = r'.*?'
 RGX_POSSIBLE_CRLF = r'\r?\n'
 
 SRT_REGEX = re.compile(
-    r'({idx}){eof}({ts}) --> ({ts}) ?({proprietary}){eof}({content})'
+    r'({idx})\s*{eof}({ts}) --> ({ts}) ?({proprietary}){eof}({content})'
     # Many sub editors don't add a blank line to the end, and many editors and
     # players accept that. We allow it to be missing in input.
     #
@@ -34,12 +34,12 @@ SRT_REGEX = re.compile(
     # This means that when you are, say, only keeping chs, and the line only
     # contains english, you end up with not only no content, but also all of
     # the content lines are stripped instead of retaining a newline.
-    r'(?:{eof}|\Z)(?:{eof}|\Z|(?=(?:{idx}{eof}{ts})))'
+    r'(?:{eof}|\Z)(?:{eof}|\Z|(?=(?:{idx}\s*{eof}{ts})))'
     # Some SRT blocks, while this is technically invalid, have blank lines
     # inside the subtitle content. We look ahead a little to check that the
     # next lines look like an index and a timestamp as a best-effort
     # solution to work around these.
-    r'(?=(?:{idx}{eof}{ts}|\Z))'.format(
+    r'(?=(?:{idx}\s*{eof}{ts}|\Z))'.format(
         idx=RGX_INDEX,
         ts=RGX_TIMESTAMP,
         proprietary=RGX_PROPRIETARY,

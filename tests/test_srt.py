@@ -430,3 +430,16 @@ def test_srt_timestamp_to_timedelta_too_short_raises(ts):
     srt_ts = srt.timedelta_to_srt_timestamp(ts)[:-1]
     with assert_raises(ValueError):
         srt.srt_timestamp_to_timedelta(srt_ts)
+
+
+@given(st.lists(subtitles()))
+def test_can_parse_index_trailing_ws(input_subs):
+    out = ''
+
+    for sub in input_subs:
+        lines = sub.to_srt().split('\n')
+        lines[0] = lines[0] + '   '  # trailing ws on index
+        out += '\n'.join(lines)
+
+    reparsed_subs = srt.parse(out)
+    subs_eq(reparsed_subs, input_subs)
