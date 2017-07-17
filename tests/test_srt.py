@@ -3,6 +3,7 @@
 from __future__ import unicode_literals
 from datetime import timedelta
 import functools
+import string
 
 from hypothesis import given
 import hypothesis.strategies as st
@@ -432,13 +433,13 @@ def test_srt_timestamp_to_timedelta_too_short_raises(ts):
         srt.srt_timestamp_to_timedelta(srt_ts)
 
 
-@given(st.lists(subtitles()))
-def test_can_parse_index_trailing_ws(input_subs):
+@given(st.lists(subtitles()), st.lists(st.sampled_from(string.whitespace)))
+def test_can_parse_index_trailing_ws(input_subs, whitespace):
     out = ''
 
     for sub in input_subs:
         lines = sub.to_srt().split('\n')
-        lines[0] = lines[0] + '   '  # trailing ws on index
+        lines[0] = lines[0] + ''.join(whitespace)
         out += '\n'.join(lines)
 
     reparsed_subs = srt.parse(out)
