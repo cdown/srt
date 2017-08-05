@@ -78,8 +78,12 @@ def timedeltas(min_value=0, max_value=TIMEDELTA_MAX_DAYS):
 def subtitles(strict=True):
     '''A Hypothesis strategy to generate Subtitle objects.'''
     # max_value settings are just to avoid overflowing TIMEDELTA_MAX_DAYS by
-    # using arbitrary low enough numbers
-    timestamp_strategy = timedeltas(min_value=0, max_value=999999)
+    # using arbitrary low enough numbers.
+    #
+    # We also skip subs with start time >= end time, so we split them into two
+    # groups to avoid overlap.
+    start_timestamp_strategy = timedeltas(min_value=0, max_value=500000)
+    end_timestamp_strategy = timedeltas(min_value=500001, max_value=999999)
 
     # If we want to test \r, we'll test it by ourselves. It makes testing
     # harder without because we don't get the same outputs as inputs on Unix.
@@ -94,8 +98,8 @@ def subtitles(strict=True):
     subtitle_strategy = st.builds(
         srt.Subtitle,
         index=st.integers(min_value=0),
-        start=timestamp_strategy,
-        end=timestamp_strategy,
+        start=start_timestamp_strategy,
+        end=end_timestamp_strategy,
         proprietary=proprietary_strategy,
         content=content_strategy,
     )
@@ -255,8 +259,10 @@ def test_subs_starts_before_zero_removed(positive_subs, negative_subs,
 @given(st.lists(subtitles(), min_size=1), st.integers(min_value=0))
 def test_sort_and_reindex(input_subs, start_index):
     for sub in input_subs:
-        # Pin all subs to same end time so that start time is compared only
-        sub.end = timedelta(1)
+        # Pin all subs to same end time so that start time is compared only,
+        # must be guaranteed to be < sub.start, see how
+        # start_timestamp_strategy is done
+        sub.end = timedelta(500001)
 
     reindexed_subs = list(
         srt.sort_and_reindex(
