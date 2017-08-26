@@ -22,7 +22,7 @@ RGX_CONTENT = r'.*?'
 RGX_POSSIBLE_CRLF = r'\r?\n'
 
 SRT_REGEX = re.compile(
-    r'({idx}){eof}({ts}) --> ({ts}) ?({proprietary}){eof}({content})'
+    r'({idx})\s*{eof}({ts}) --> ({ts}) ?({proprietary}){eof}({content})'
     # Many sub editors don't add a blank line to the end, and many editors and
     # players accept that. We allow it to be missing in input.
     #
@@ -34,12 +34,12 @@ SRT_REGEX = re.compile(
     # This means that when you are, say, only keeping chs, and the line only
     # contains english, you end up with not only no content, but also all of
     # the content lines are stripped instead of retaining a newline.
-    r'(?:{eof}|\Z)(?:{eof}|\Z|(?=(?:{idx}{eof}{ts})))'
+    r'(?:{eof}|\Z)(?:{eof}|\Z|(?=(?:{idx}\s*{eof}{ts})))'
     # Some SRT blocks, while this is technically invalid, have blank lines
     # inside the subtitle content. We look ahead a little to check that the
     # next lines look like an index and a timestamp as a best-effort
     # solution to work around these.
-    r'(?=(?:{idx}{eof}{ts}|\Z))'.format(
+    r'(?=(?:{idx}\s*{eof}{ts}|\Z))'.format(
         idx=RGX_INDEX,
         ts=RGX_TIMESTAMP,
         proprietary=RGX_PROPRIETARY,
@@ -57,9 +57,7 @@ ZERO_TIMEDELTA = timedelta(0)
 SUBTITLE_SKIP_CONDITIONS = (
     ('No content', lambda sub: not sub.content.strip()),
     ('Start time < 0 seconds', lambda sub: sub.start < ZERO_TIMEDELTA),
-)
-SUBTITLE_WARN_CONDITIONS = (
-    ('Subtitle start time > end time', lambda sub: sub.start > sub.end),
+    ('Subtitle start time >= end time', lambda sub: sub.start >= sub.end),
 )
 
 SECONDS_IN_HOUR = 3600
@@ -123,12 +121,6 @@ class Subtitle(object):
                   SRT formatted subtitle block
         :rtype: str
         '''
-        for warning_msg, check_func in SUBTITLE_WARN_CONDITIONS:
-            if check_func(self):
-                log.warning(
-                    'Subtitle at index %d: %s', self.index, warning_msg,
-                )
-
         output_content = self.content
         output_proprietary = self.proprietary
 
@@ -220,7 +212,7 @@ def srt_timestamp_to_timedelta(ts):
     if len(ts) < TS_LEN:
         raise ValueError(
             'Expected timestamp length >= {}, but got {} (value: {})'.format(
-                len(ts), TS_LEN, ts,
+                TS_LEN, len(ts), ts,
             )
         )
 

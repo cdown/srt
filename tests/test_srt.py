@@ -3,6 +3,7 @@
 from __future__ import unicode_literals
 from datetime import timedelta
 import functools
+import string
 
 from hypothesis import given
 import hypothesis.strategies as st
@@ -77,8 +78,12 @@ def timedeltas(min_value=0, max_value=TIMEDELTA_MAX_DAYS):
 def subtitles(strict=True):
     '''A Hypothesis strategy to generate Subtitle objects.'''
     # max_value settings are just to avoid overflowing TIMEDELTA_MAX_DAYS by
-    # using arbitrary low enough numbers
-    timestamp_strategy = timedeltas(min_value=0, max_value=999999)
+    # using arbitrary low enough numbers.
+    #
+    # We also skip subs with start time >= end time, so we split them into two
+    # groups to avoid overlap.
+    start_timestamp_strategy = timedeltas(min_value=0, max_value=500000)
+    end_timestamp_strategy = timedeltas(min_value=500001, max_value=999999)
 
     # If we want to test \r, we'll test it by ourselves. It makes testing
     # harder without because we don't get the same outputs as inputs on Unix.
@@ -93,8 +98,8 @@ def subtitles(strict=True):
     subtitle_strategy = st.builds(
         srt.Subtitle,
         index=st.integers(min_value=0),
-        start=timestamp_strategy,
-        end=timestamp_strategy,
+        start=start_timestamp_strategy,
+        end=end_timestamp_strategy,
         proprietary=proprietary_strategy,
         content=content_strategy,
     )
@@ -254,8 +259,10 @@ def test_subs_starts_before_zero_removed(positive_subs, negative_subs,
 @given(st.lists(subtitles(), min_size=1), st.integers(min_value=0))
 def test_sort_and_reindex(input_subs, start_index):
     for sub in input_subs:
-        # Pin all subs to same end time so that start time is compared only
-        sub.end = timedelta(1)
+        # Pin all subs to same end time so that start time is compared only,
+        # must be guaranteed to be < sub.start, see how
+        # start_timestamp_strategy is done
+        sub.end = timedelta(500001)
 
     reindexed_subs = list(
         srt.sort_and_reindex(
@@ -430,3 +437,28 @@ def test_srt_timestamp_to_timedelta_too_short_raises(ts):
     srt_ts = srt.timedelta_to_srt_timestamp(ts)[:-1]
     with assert_raises(ValueError):
         srt.srt_timestamp_to_timedelta(srt_ts)
+
+
+@given(st.lists(subtitles()), st.lists(st.sampled_from(string.whitespace)))
+def test_can_parse_index_trailing_ws(input_subs, whitespace):
+    out = ''
+
+    for sub in input_subs:
+        lines = sub.to_srt().split('\n')
+        lines[0] = lines[0] + ''.join(whitespace)
+        out += '\n'.join(lines)
+
+    reparsed_subs = srt.parse(out)
+    subs_eq(reparsed_subs, input_subs)
+
+@given(st.lists(subtitles()), st.lists(st.just('0')))
+def test_can_parse_index_leading_zeroes(input_subs, zeroes):
+    out = ''
+
+    for sub in input_subs:
+        lines = sub.to_srt().split('\n')
+        lines[0] = ''.join(zeroes) + lines[0]
+        out += '\n'.join(lines)
+
+    reparsed_subs = srt.parse(out)
+    subs_eq(reparsed_subs, input_subs)
