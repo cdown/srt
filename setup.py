@@ -13,7 +13,7 @@ with codecs.open('README.rst', encoding='utf8') as readme_f:
 
 setup(
     name='srt',
-    version='1.5.0',
+    version='1.6.0',
     description='A tiny library for parsing, modifying, and composing SRT '
                 'files.',
     long_description=README,
