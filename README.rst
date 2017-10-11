@@ -27,6 +27,7 @@ Why choose this library?
 ------------------------
 
 - Extremely lightweight, `~150 lines of code`_ excluding docstrings
+- Simple, intuitive API
 - High quality test suite using Hypothesis_
 - `100% test coverage`_ (including branches)
 - `Well documented API`_, at both a high and low level
