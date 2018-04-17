@@ -13,7 +13,18 @@ python:
   - '3.7-dev'
   - 'nightly'
 
-install: pip install tox
+before_install: |
+  if [ "$TRAVIS_OS_NAME" == "osx" ]; then
+    brew update
+    brew upgrade python3
+    python3 --version
+  fi
+install: |
+  if [ "$TRAVIS_OS_NAME" == "osx" ]; then
+    pip3 install tox
+  else
+    pip install tox
+  fi
 
 script:
   - 'tox'
@@ -34,7 +45,7 @@ matrix:
     # run them all with one instance of tox
     - os: osx
       language: generic
-      env: TOXENV=py27,py33,py34,py35,py36
+      env: TOXENV=py27,py34,py35,py36
 
 # This is required to enable container based Travis CI infrastructure.
 # See http://docs.travis-ci.com/user/migrating-from-legacy/
