@@ -12,6 +12,17 @@ You can call ``srt`` directly to see a list of all available utilities.
 
     srt [utility-name] [args ...]
 
+Arbitrary things can be done with *srt process* and *srt lines-matching*, for
+example:
+
+.. code::
+
+    # Strip HTML
+    srt process -m re -f 'lambda sub: re.sub("<[^<]+?>", "", sub)'
+
+    # Only keep Chinese subtitles
+    srt lines-matching -m hanzidentifier -f hanzidentifier.has_chinese
+
 Utilities
 ---------
 
