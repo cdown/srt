@@ -23,7 +23,7 @@ RGX_CONTENT = r'.*?'
 RGX_POSSIBLE_CRLF = r'\r?\n'
 
 SRT_REGEX = re.compile(
-    r'({idx})\s*{eof}({ts}) --> ({ts}) ?({proprietary}){eof}({content})'
+    r'({idx})\s*{eof}({ts}) -[ -]> ({ts}) ?({proprietary}){eof}({content})'
     # Many sub editors don't add a blank line to the end, and many editors and
     # players accept that. We allow it to be missing in input.
     #
