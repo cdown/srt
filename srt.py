@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# coding=utf8
 
 '''A tiny library for parsing, modifying, and composing SRT files.'''
 
@@ -14,7 +15,7 @@ log = logging.getLogger(__name__)
 # "." is not technically valid as a delimiter, but many editors create SRT
 # files with this delimiter for whatever reason. Many editors and players
 # accept it, so we do too.
-RGX_TIMESTAMP_MAGNITUDE_DELIM = r'[,.:]'
+RGX_TIMESTAMP_MAGNITUDE_DELIM = r'[,.:，．。：]'
 RGX_TIMESTAMP = RGX_TIMESTAMP_MAGNITUDE_DELIM.join([r'\d+'] * 4)
 RGX_INDEX = r'\d+'
 RGX_PROPRIETARY = r'[^\r\n]*'

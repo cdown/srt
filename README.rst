@@ -36,6 +36,7 @@ Why choose this library?
 - Full support for `PyPy`_
 - No dependencies outside of the standard library
 - Tolerant of many common errors found in real-world SRT files
+- Support for Asian-style SRT formats (ie. "fullwidth" SRT format)
 - Completely Unicode compliant
 - `Released into the public domain`_
 - Real world tested — used in production to process thousands of SRT files

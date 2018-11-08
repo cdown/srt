@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# coding=utf8
 
 from __future__ import unicode_literals
 from datetime import timedelta
@@ -389,6 +390,23 @@ def test_parser_can_parse_with_dot_msec_delimiter(subs):
 
     composed_with_dots = ''.join(dot_srt_blocks)
     reparsed_subs = srt.parse(composed_with_dots)
+    subs_eq(reparsed_subs, subs)
+
+
+@given(st.lists(subtitles()))
+def test_parser_can_parse_with_fullwidth_delimiter(subs):
+    original_srt_blocks = [sub.to_srt() for sub in subs]
+    dot_srt_blocks = []
+
+    for srt_block in original_srt_blocks:
+        srt_lines = srt_block.split('\n')
+        dot_timestamp = \
+            srt_lines[1].replace(',', '，', 1).replace(':', '：', 1)
+        srt_lines[1] = dot_timestamp
+        dot_srt_blocks.append('\n'.join(srt_lines))
+
+    composed_with_fullwidth = ''.join(dot_srt_blocks)
+    reparsed_subs = srt.parse(composed_with_fullwidth)
     subs_eq(reparsed_subs, subs)
 
 
