@@ -29,9 +29,9 @@ matrix:
   fast_finish: true
   include:
     # One-off runs
-    - python: '3.6'
+    - python: '3.7'
       env: TOXENV=coverage
-    - python: '3.5'  # 3.6 after https://github.com/PyCQA/pylint/issues/1113
+    - python: '3.7'
       env: TOXENV=pylint
 
     # OSX -- takes a while to start up on Travis, so once we get a worker just
