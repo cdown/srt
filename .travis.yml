@@ -6,6 +6,7 @@ python:
   - '3.4'
   - '3.5'
   - '3.6'
+  - '3.7'
   - 'pypy'
 
   # Allowed to fail
@@ -44,7 +45,7 @@ matrix:
     # run them all with one instance of tox
     - os: osx
       language: generic
-      env: TOXENV=py27,py34,py35,py36
+      env: TOXENV=py27,py34,py35,py36,py37
 
 # This is required to enable container based Travis CI infrastructure.
 # See http://docs.travis-ci.com/user/migrating-from-legacy/
