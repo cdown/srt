@@ -188,6 +188,11 @@ def test_subtitle_from_scratch_equality(subtitle):
     eq(sub_1, sub_2)
     eq(hash(sub_1), hash(sub_2))
 
+@given(st.lists(subtitles()))
+def test_parsing_spaced_arrow(subs):
+    spaced_block = srt.compose(subs, reindex=False, strict=False).replace("-->", "- >")
+    reparsed_subtitles = srt.parse(spaced_block)
+    subs_eq(reparsed_subtitles, subs)
 
 @given(st.lists(subtitles()))
 def test_parsing_content_with_blank_lines(subs):
