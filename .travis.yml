@@ -8,7 +8,6 @@ python:
   - '3.5'
   - '3.6'
   - '3.7'
-  - 'pypy'
 
 before_install: |
   if [ "$TRAVIS_OS_NAME" == "osx" ]; then
