@@ -8,8 +8,14 @@ import string
 
 from hypothesis import given
 import hypothesis.strategies as st
-from nose.tools import (eq_ as eq, assert_not_equal as neq, assert_raises,
-                        assert_false, assert_true, assert_in)
+from nose.tools import (
+    eq_ as eq,
+    assert_not_equal as neq,
+    assert_raises,
+    assert_false,
+    assert_true,
+    assert_in,
+)
 
 import srt
 
@@ -22,35 +28,34 @@ except ImportError:  # Python 2 fallback
 HOURS_IN_DAY = 24
 TIMEDELTA_MAX_DAYS = 999999999
 CONTENTLESS_SUB = functools.partial(
-    srt.Subtitle, index=1,
-    start=timedelta(seconds=1), end=timedelta(seconds=2),
+    srt.Subtitle, index=1, start=timedelta(seconds=1), end=timedelta(seconds=2)
 )
 
 
 def is_strictly_legal_content(content):
-    '''
+    """
     Filter out things that would violate strict mode. Illegal content
     includes:
 
     - A content section that starts or ends with a newline
     - A content section that contains blank lines
-    '''
+    """
 
-    if content.strip('\r\n') != content:
+    if content.strip("\r\n") != content:
         return False
     elif not content.strip():
         return False
-    elif '\n\n' in content:
+    elif "\n\n" in content:
         return False
     else:
         return True
 
 
 def subs_eq(got, expected, any_order=False):
-    '''
+    """
     Compare Subtitle objects using vars() so that differences are easy to
     identify.
-    '''
+    """
     got_vars = [vars(sub) for sub in got]
     expected_vars = [vars(sub) for sub in expected]
     if any_order:
@@ -60,24 +65,26 @@ def subs_eq(got, expected, any_order=False):
 
 
 def timedeltas(min_value=0, max_value=TIMEDELTA_MAX_DAYS):
-    '''
+    """
     A Hypothesis strategy to generate timedeltas.
 
     Right now {min,max}_value are shoved into multiple fields in timedelta(),
     which is not very customisable, but it's good enough for our current test
     purposes. If you need more precise control, you may need to add more
     parameters to this function to be able to customise more freely.
-    '''
+    """
     time_unit_strategy = st.integers(min_value=min_value, max_value=max_value)
     timestamp_strategy = st.builds(
-        timedelta, hours=time_unit_strategy, minutes=time_unit_strategy,
+        timedelta,
+        hours=time_unit_strategy,
+        minutes=time_unit_strategy,
         seconds=time_unit_strategy,
     )
     return timestamp_strategy
 
 
 def subtitles(strict=True):
-    '''A Hypothesis strategy to generate Subtitle objects.'''
+    """A Hypothesis strategy to generate Subtitle objects."""
     # max_value settings are just to avoid overflowing TIMEDELTA_MAX_DAYS by
     # using arbitrary low enough numbers.
     #
@@ -88,9 +95,9 @@ def subtitles(strict=True):
 
     # If we want to test \r, we'll test it by ourselves. It makes testing
     # harder without because we don't get the same outputs as inputs on Unix.
-    content_strategy = st.text(min_size=1).filter(lambda x: '\r' not in x)
+    content_strategy = st.text(min_size=1).filter(lambda x: "\r" not in x)
     proprietary_strategy = st.text().filter(
-        lambda x: all(eol not in x for eol in '\r\n')
+        lambda x: all(eol not in x for eol in "\r\n")
     )
 
     if strict:
@@ -117,10 +124,10 @@ def test_compose_and_parse_strict(input_subs):
 
 @given(st.lists(subtitles()))
 def test_can_compose_without_ending_blank_line(input_subs):
-    '''
+    """
     Many sub editors don't add a blank line to the end, and many editors accept
     it. We should just accept this too in input.
-    '''
+    """
     composed = srt.compose(input_subs, reindex=False)
     composed_without_ending_blank = composed[:-1]
     reparsed_subs = srt.parse(composed_without_ending_blank)
@@ -130,14 +137,14 @@ def test_can_compose_without_ending_blank_line(input_subs):
 @given(st.lists(subtitles()))
 def test_can_compose_without_eol_at_all(input_subs):
     composed = srt.compose(input_subs, reindex=False)
-    composed_without_ending_blank = composed.rstrip('\r\n')
+    composed_without_ending_blank = composed.rstrip("\r\n")
     reparsed_subs = srt.parse(composed_without_ending_blank)
     subs_eq(reparsed_subs, input_subs)
 
 
 @given(st.text().filter(is_strictly_legal_content))
 def test_compose_and_parse_strict_mode(content):
-    content = '\n' + content + '\n\n' + content + '\n'
+    content = "\n" + content + "\n\n" + content + "\n"
     sub = CONTENTLESS_SUB(content=content)
 
     parsed_strict = list(srt.parse(sub.to_srt()))[0]
@@ -145,19 +152,19 @@ def test_compose_and_parse_strict_mode(content):
 
     # Strict mode should remove blank lines in content, leading, and trailing
     # newlines.
-    assert_false(parsed_strict.content.startswith('\n'))
-    assert_false(parsed_strict.content.endswith('\n'))
-    assert_false('\n\n' in parsed_strict.content)
+    assert_false(parsed_strict.content.startswith("\n"))
+    assert_false(parsed_strict.content.endswith("\n"))
+    assert_false("\n\n" in parsed_strict.content)
 
     # When strict mode is false, no processing should be applied to the
     # content (other than \r\n becoming \n).
-    eq(parsed_unstrict.content, sub.content.replace('\r\n', '\n'))
+    eq(parsed_unstrict.content, sub.content.replace("\r\n", "\n"))
 
 
 @given(st.integers(min_value=1, max_value=TIMEDELTA_MAX_DAYS))
 def test_timedelta_to_srt_timestamp_can_go_over_24_hours(days):
     srt_timestamp = srt.timedelta_to_srt_timestamp(timedelta(days=days))
-    srt_timestamp_hours = int(srt_timestamp.split(':')[0])
+    srt_timestamp_hours = int(srt_timestamp.split(":")[0])
     eq(srt_timestamp_hours, days * HOURS_IN_DAY)
 
 
@@ -188,41 +195,36 @@ def test_subtitle_from_scratch_equality(subtitle):
     eq(sub_1, sub_2)
     eq(hash(sub_1), hash(sub_2))
 
+
 @given(st.lists(subtitles()))
 def test_parsing_spaced_arrow(subs):
     spaced_block = srt.compose(subs, reindex=False, strict=False).replace("-->", "- >")
     reparsed_subtitles = srt.parse(spaced_block)
     subs_eq(reparsed_subtitles, subs)
 
+
 @given(st.lists(subtitles()))
 def test_parsing_content_with_blank_lines(subs):
     for subtitle in subs:
         # We stuff a blank line in the middle so as to trigger the "special"
         # content parsing for erroneous SRT files that have blank lines.
-        subtitle.content = subtitle.content + '\n\n' + subtitle.content
+        subtitle.content = subtitle.content + "\n\n" + subtitle.content
 
-    reparsed_subtitles = srt.parse(srt.compose(
-        subs, reindex=False, strict=False,
-    ))
+    reparsed_subtitles = srt.parse(srt.compose(subs, reindex=False, strict=False))
     subs_eq(reparsed_subtitles, subs)
 
 
 @given(st.lists(subtitles()))
 def test_parsing_no_content(subs):
     for subtitle in subs:
-        subtitle.content = ''
+        subtitle.content = ""
 
-    reparsed_subtitles = srt.parse(srt.compose(
-        subs, reindex=False, strict=False,
-    ))
+    reparsed_subtitles = srt.parse(srt.compose(subs, reindex=False, strict=False))
     subs_eq(reparsed_subtitles, subs)
 
 
-@given(
-    st.lists(subtitles()), st.lists(subtitles()), st.text(alphabet='\n\r\t '),
-)
-def test_subs_missing_content_removed(content_subs, contentless_subs,
-                                      contentless_text):
+@given(st.lists(subtitles()), st.lists(subtitles()), st.text(alphabet="\n\r\t "))
+def test_subs_missing_content_removed(content_subs, contentless_subs, contentless_text):
     for sub in contentless_subs:
         sub.content = contentless_text
 
@@ -238,19 +240,16 @@ def test_subs_missing_content_removed(content_subs, contentless_subs,
     default_start_index = 1
     eq(
         [sub.index for sub in composed_subs],
-        list(range(
-            default_start_index, default_start_index + len(composed_subs),
-        ))
-
+        list(range(default_start_index, default_start_index + len(composed_subs))),
     )
 
 
 @given(
-    st.lists(subtitles()), st.lists(subtitles()),
+    st.lists(subtitles()),
+    st.lists(subtitles()),
     timedeltas(min_value=-999, max_value=-1),
 )
-def test_subs_starts_before_zero_removed(positive_subs, negative_subs,
-                                         negative_td):
+def test_subs_starts_before_zero_removed(positive_subs, negative_subs, negative_td):
     for sub in negative_subs:
         sub.start = negative_td
         sub.end = negative_td  # Just to avoid tripping any start >= end errors
@@ -271,15 +270,13 @@ def test_sort_and_reindex(input_subs, start_index):
         sub.end = timedelta(500001)
 
     reindexed_subs = list(
-        srt.sort_and_reindex(
-            input_subs, start_index=start_index, in_place=True,
-        ),
+        srt.sort_and_reindex(input_subs, start_index=start_index, in_place=True)
     )
 
     # The subtitles should be reindexed starting at start_index
     eq(
         [sub.index for sub in reindexed_subs],
-        list(range(start_index, start_index + len(input_subs)))
+        list(range(start_index, start_index + len(input_subs))),
     )
 
     # The subtitles should be sorted by start time
@@ -311,14 +308,10 @@ def test_sort_and_reindex_not_in_place_matches(input_subs, start_index):
     ip_ids = [id(sub) for sub in in_place_subs]
 
     not_in_place_output = list(
-        srt.sort_and_reindex(
-            not_in_place_subs, start_index=start_index,
-        ),
+        srt.sort_and_reindex(not_in_place_subs, start_index=start_index)
     )
     in_place_output = list(
-        srt.sort_and_reindex(
-            in_place_subs, start_index=start_index, in_place=True
-        ),
+        srt.sort_and_reindex(in_place_subs, start_index=start_index, in_place=True)
     )
 
     # The results in each case should be the same
@@ -332,8 +325,10 @@ def test_sort_and_reindex_not_in_place_matches(input_subs, start_index):
 
 
 @given(
-    st.lists(subtitles(), min_size=1), st.integers(min_value=0),
-    st.text(min_size=1), timedeltas(),
+    st.lists(subtitles(), min_size=1),
+    st.integers(min_value=0),
+    st.text(min_size=1),
+    timedeltas(),
 )
 def test_parser_noncontiguous(subs, fake_idx, garbage, fake_timedelta):
     composed = srt.compose(subs)
@@ -344,9 +339,7 @@ def test_parser_noncontiguous(subs, fake_idx, garbage, fake_timedelta):
     # SRT block.
     srt_timestamp = srt.timedelta_to_srt_timestamp(fake_timedelta)
     composed = composed.replace(
-        '\n\n', '\n\n%d\n%s %s' % (
-            fake_idx, srt_timestamp, garbage,
-        )
+        "\n\n", "\n\n%d\n%s %s" % (fake_idx, srt_timestamp, garbage)
     )
 
     with assert_raises(srt.SRTParseError):
@@ -354,29 +347,27 @@ def test_parser_noncontiguous(subs, fake_idx, garbage, fake_timedelta):
 
 
 @given(
-    st.lists(subtitles(), min_size=1), st.integers(min_value=0),
-    st.text(min_size=1), timedeltas(),
+    st.lists(subtitles(), min_size=1),
+    st.integers(min_value=0),
+    st.text(min_size=1),
+    timedeltas(),
 )
-def test_parser_didnt_match_to_end_raises(subs, fake_idx, garbage,
-                                          fake_timedelta):
+def test_parser_didnt_match_to_end_raises(subs, fake_idx, garbage, fake_timedelta):
     srt_blocks = [sub.to_srt() for sub in subs]
     srt_timestamp = srt.timedelta_to_srt_timestamp(fake_timedelta)
-    garbage = '\n\n%d\n%s %s' % (fake_idx, srt_timestamp, garbage)
+    garbage = "\n\n%d\n%s %s" % (fake_idx, srt_timestamp, garbage)
     srt_blocks.append(garbage)
-    composed = ''.join(srt_blocks)
+    composed = "".join(srt_blocks)
 
     with assert_raises(srt.SRTParseError) as thrown_exc:
         list(srt.parse(composed))
 
     # Since we will consume as many \n as needed until we meet the lookahead
     # assertion, leading newlines in `garbage` will be stripped.
-    garbage_stripped = garbage.lstrip('\n')
+    garbage_stripped = garbage.lstrip("\n")
 
     eq(garbage_stripped, thrown_exc.exception.unmatched_content)
-    eq(
-        len(composed) - len(garbage_stripped),
-        thrown_exc.exception.expected_start,
-    )
+    eq(len(composed) - len(garbage_stripped), thrown_exc.exception.expected_start)
     eq(len(composed), thrown_exc.exception.actual_start)
 
 
@@ -386,14 +377,14 @@ def test_parser_can_parse_with_dot_msec_delimiter(subs):
     dot_srt_blocks = []
 
     for srt_block in original_srt_blocks:
-        srt_lines = srt_block.split('\n')
+        srt_lines = srt_block.split("\n")
         # We should only do the first two, as it might also be in the
         # proprietary metadata, causing this test to fail.
-        dot_timestamp = srt_lines[1].replace(',', '.', 2)
+        dot_timestamp = srt_lines[1].replace(",", ".", 2)
         srt_lines[1] = dot_timestamp
-        dot_srt_blocks.append('\n'.join(srt_lines))
+        dot_srt_blocks.append("\n".join(srt_lines))
 
-    composed_with_dots = ''.join(dot_srt_blocks)
+    composed_with_dots = "".join(dot_srt_blocks)
     reparsed_subs = srt.parse(composed_with_dots)
     subs_eq(reparsed_subs, subs)
 
@@ -404,13 +395,12 @@ def test_parser_can_parse_with_fullwidth_delimiter(subs):
     dot_srt_blocks = []
 
     for srt_block in original_srt_blocks:
-        srt_lines = srt_block.split('\n')
-        dot_timestamp = \
-            srt_lines[1].replace(',', '，', 1).replace(':', '：', 1)
+        srt_lines = srt_block.split("\n")
+        dot_timestamp = srt_lines[1].replace(",", "，", 1).replace(":", "：", 1)
         srt_lines[1] = dot_timestamp
-        dot_srt_blocks.append('\n'.join(srt_lines))
+        dot_srt_blocks.append("\n".join(srt_lines))
 
-    composed_with_fullwidth = ''.join(dot_srt_blocks)
+    composed_with_fullwidth = "".join(dot_srt_blocks)
     reparsed_subs = srt.parse(composed_with_fullwidth)
     subs_eq(reparsed_subs, subs)
 
@@ -419,7 +409,7 @@ def test_parser_can_parse_with_fullwidth_delimiter(subs):
 def test_repr_doesnt_crash(sub):
     # Not much we can do here, but we should make sure __repr__ doesn't crash
     # or anything and it does at least vaguely look like what we want
-    assert_in('Subtitle', repr(sub))
+    assert_in("Subtitle", repr(sub))
     assert_in(str(sub.index), repr(sub))
 
 
@@ -427,10 +417,10 @@ def test_repr_doesnt_crash(sub):
 def test_parser_accepts_no_newline_no_content(subs):
     for sub in subs:
         # Limit size so we know how many lines to remove
-        sub.content = ''
+        sub.content = ""
 
     # Remove the last \n so that there is only one
-    stripped_srt_blocks = ''.join(sub.to_srt()[:-1] for sub in subs)
+    stripped_srt_blocks = "".join(sub.to_srt()[:-1] for sub in subs)
 
     reparsed_subs = srt.parse(stripped_srt_blocks)
     subs_eq(reparsed_subs, subs)
@@ -439,16 +429,16 @@ def test_parser_accepts_no_newline_no_content(subs):
 @given(st.lists(subtitles()))
 def test_compose_and_parse_strict_crlf(input_subs):
     composed_raw = srt.compose(input_subs, reindex=False)
-    composed = composed_raw.replace('\n', '\r\n')
+    composed = composed_raw.replace("\n", "\r\n")
     reparsed_subs = list(srt.parse(composed))
 
     for sub in reparsed_subs:
-        sub.content = sub.content.replace('\r\n', '\n')
+        sub.content = sub.content.replace("\r\n", "\n")
 
     subs_eq(reparsed_subs, input_subs)
 
 
-@given(st.lists(subtitles()), st.one_of(st.just('\n'), st.just('\r\n')))
+@given(st.lists(subtitles()), st.one_of(st.just("\n"), st.just("\r\n")))
 def test_compose_and_parse_strict_custom_eol(input_subs, eol):
     composed = srt.compose(input_subs, reindex=False, eol=eol)
     reparsed_subs = srt.parse(composed)
@@ -464,24 +454,25 @@ def test_srt_timestamp_to_timedelta_too_short_raises(ts):
 
 @given(st.lists(subtitles()), st.lists(st.sampled_from(string.whitespace)))
 def test_can_parse_index_trailing_ws(input_subs, whitespace):
-    out = ''
+    out = ""
 
     for sub in input_subs:
-        lines = sub.to_srt().split('\n')
-        lines[0] = lines[0] + ''.join(whitespace)
-        out += '\n'.join(lines)
+        lines = sub.to_srt().split("\n")
+        lines[0] = lines[0] + "".join(whitespace)
+        out += "\n".join(lines)
 
     reparsed_subs = srt.parse(out)
     subs_eq(reparsed_subs, input_subs)
 
-@given(st.lists(subtitles()), st.lists(st.just('0')))
+
+@given(st.lists(subtitles()), st.lists(st.just("0")))
 def test_can_parse_index_leading_zeroes(input_subs, zeroes):
-    out = ''
+    out = ""
 
     for sub in input_subs:
-        lines = sub.to_srt().split('\n')
-        lines[0] = ''.join(zeroes) + lines[0]
-        out += '\n'.join(lines)
+        lines = sub.to_srt().split("\n")
+        lines[0] = "".join(zeroes) + lines[0]
+        out += "\n".join(lines)
 
     reparsed_subs = srt.parse(out)
     subs_eq(reparsed_subs, input_subs)

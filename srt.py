@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding=utf8
 
-'''A tiny library for parsing, modifying, and composing SRT files.'''
+"""A tiny library for parsing, modifying, and composing SRT files."""
 
 from __future__ import unicode_literals
 import functools
@@ -15,15 +15,15 @@ log = logging.getLogger(__name__)
 # "." is not technically valid as a delimiter, but many editors create SRT
 # files with this delimiter for whatever reason. Many editors and players
 # accept it, so we do too.
-RGX_TIMESTAMP_MAGNITUDE_DELIM = r'[,.:，．。：]'
-RGX_TIMESTAMP = RGX_TIMESTAMP_MAGNITUDE_DELIM.join([r'\d+'] * 4)
-RGX_INDEX = r'\d+'
-RGX_PROPRIETARY = r'[^\r\n]*'
-RGX_CONTENT = r'.*?'
-RGX_POSSIBLE_CRLF = r'\r?\n'
+RGX_TIMESTAMP_MAGNITUDE_DELIM = r"[,.:，．。：]"
+RGX_TIMESTAMP = RGX_TIMESTAMP_MAGNITUDE_DELIM.join([r"\d+"] * 4)
+RGX_INDEX = r"\d+"
+RGX_PROPRIETARY = r"[^\r\n]*"
+RGX_CONTENT = r".*?"
+RGX_POSSIBLE_CRLF = r"\r?\n"
 
 SRT_REGEX = re.compile(
-    r'({idx})\s*{eof}({ts}) +-[ -]> +({ts}) ?({proprietary}){eof}({content})'
+    r"({idx})\s*{eof}({ts}) +-[ -]> +({ts}) ?({proprietary}){eof}({content})"
     # Many sub editors don't add a blank line to the end, and many editors and
     # players accept that. We allow it to be missing in input.
     #
@@ -35,12 +35,12 @@ SRT_REGEX = re.compile(
     # This means that when you are, say, only keeping chs, and the line only
     # contains english, you end up with not only no content, but also all of
     # the content lines are stripped instead of retaining a newline.
-    r'(?:{eof}|\Z)(?:{eof}|\Z|(?=(?:{idx}\s*{eof}{ts})))'
+    r"(?:{eof}|\Z)(?:{eof}|\Z|(?=(?:{idx}\s*{eof}{ts})))"
     # Some SRT blocks, while this is technically invalid, have blank lines
     # inside the subtitle content. We look ahead a little to check that the
     # next lines look like an index and a timestamp as a best-effort
     # solution to work around these.
-    r'(?=(?:{idx}\s*{eof}{ts}|\Z))'.format(
+    r"(?=(?:{idx}\s*{eof}{ts}|\Z))".format(
         idx=RGX_INDEX,
         ts=RGX_TIMESTAMP,
         proprietary=RGX_PROPRIETARY,
@@ -56,9 +56,9 @@ ZERO_TIMEDELTA = timedelta(0)
 
 # Warning message if truthy return -> Function taking a Subtitle, skip if True
 SUBTITLE_SKIP_CONDITIONS = (
-    ('No content', lambda sub: not sub.content.strip()),
-    ('Start time < 0 seconds', lambda sub: sub.start < ZERO_TIMEDELTA),
-    ('Subtitle start time >= end time', lambda sub: sub.start >= sub.end),
+    ("No content", lambda sub: not sub.content.strip()),
+    ("Start time < 0 seconds", lambda sub: sub.start < ZERO_TIMEDELTA),
+    ("Subtitle start time >= end time", lambda sub: sub.start >= sub.end),
 )
 
 SECONDS_IN_HOUR = 3600
@@ -69,7 +69,7 @@ MICROSECONDS_IN_MILLISECOND = 1000
 
 @functools.total_ordering
 class Subtitle(object):
-    r'''
+    r"""
     The metadata relating to a single subtitle. Subtitles are sorted by start
     time by default.
 
@@ -80,9 +80,9 @@ class Subtitle(object):
     :type end: :py:class:`datetime.timedelta`
     :param str proprietary: Proprietary metadata for this subtitle
     :param str content: The subtitle content
-    '''
+    """
 
-    def __init__(self, index, start, end, content, proprietary=''):
+    def __init__(self, index, start, end, content, proprietary=""):
         self.index = index
         self.start = start
         self.end = end
@@ -102,16 +102,12 @@ class Subtitle(object):
 
     def __repr__(self):
         # Python 2/3 cross compatibility
-        var_items = getattr(
-            vars(self), 'iteritems', getattr(vars(self), 'items')
-        )
-        item_list = ', '.join(
-            '%s=%r' % (k, v) for k, v in var_items()
-        )
+        var_items = getattr(vars(self), "iteritems", getattr(vars(self), "items"))
+        item_list = ", ".join("%s=%r" % (k, v) for k, v in var_items())
         return "%s(%s)" % (type(self).__name__, item_list)
 
     def to_srt(self, strict=True, eol=None):
-        r'''
+        r"""
         Convert the current :py:class:`Subtitle` to an SRT block.
 
         :param bool strict: If disabled, will allow blank lines in the content
@@ -121,33 +117,36 @@ class Subtitle(object):
         :returns: The metadata of the current :py:class:`Subtitle` object as an
                   SRT formatted subtitle block
         :rtype: str
-        '''
+        """
         output_content = self.content
         output_proprietary = self.proprietary
 
         if output_proprietary:
             # output_proprietary is output directly next to the timestamp, so
             # we need to add the space as a field delimiter.
-            output_proprietary = ' ' + output_proprietary
+            output_proprietary = " " + output_proprietary
 
         if strict:
             output_content = make_legal_content(output_content)
 
         if eol is not None:
-            output_content = output_content.replace('\n', eol)
+            output_content = output_content.replace("\n", eol)
         else:
-            eol = '\n'
+            eol = "\n"
 
-        template = '{idx}{eol}{start} --> {end}{prop}{eol}{content}{eol}{eol}'
+        template = "{idx}{eol}{start} --> {end}{prop}{eol}{content}{eol}{eol}"
         return template.format(
-            idx=self.index, start=timedelta_to_srt_timestamp(self.start),
-            end=timedelta_to_srt_timestamp(self.end), prop=output_proprietary,
-            content=output_content, eol=eol,
+            idx=self.index,
+            start=timedelta_to_srt_timestamp(self.start),
+            end=timedelta_to_srt_timestamp(self.end),
+            prop=output_proprietary,
+            content=output_content,
+            eol=eol,
         )
 
 
 def make_legal_content(content):
-    r'''
+    r"""
     Remove illegal content from a content block. Illegal content includes:
 
     * Blank lines
@@ -161,17 +160,17 @@ def make_legal_content(content):
     :param str content: The content to make legal
     :returns: The legalised content
     :rtype: srt
-    '''
+    """
     # We can't use content.splitlines() here since it does all sorts of stuff
     # that we don't want with \x1{c..e}, etc
-    legal_content = '\n'.join(line for line in content.split('\n') if line)
+    legal_content = "\n".join(line for line in content.split("\n") if line)
     if legal_content != content:
-        log.warning('Legalised content %r to %r', content, legal_content)
+        log.warning("Legalised content %r to %r", content, legal_content)
     return legal_content
 
 
 def timedelta_to_srt_timestamp(timedelta_timestamp):
-    r'''
+    r"""
     Convert a :py:class:`~datetime.timedelta` to an SRT timestamp.
 
     .. doctest::
@@ -185,17 +184,17 @@ def timedelta_to_srt_timestamp(timedelta_timestamp):
                                                    SRT timestamp
     :returns: The timestamp in SRT format
     :rtype: str
-    '''
+    """
 
     hrs, secs_remainder = divmod(timedelta_timestamp.seconds, SECONDS_IN_HOUR)
     hrs += timedelta_timestamp.days * HOURS_IN_DAY
     mins, secs = divmod(secs_remainder, SECONDS_IN_MINUTE)
     msecs = timedelta_timestamp.microseconds // MICROSECONDS_IN_MILLISECOND
-    return '%02d:%02d:%02d,%03d' % (hrs, mins, secs, msecs)
+    return "%02d:%02d:%02d,%03d" % (hrs, mins, secs, msecs)
 
 
 def srt_timestamp_to_timedelta(ts):
-    r'''
+    r"""
     Convert an SRT timestamp to a :py:class:`~datetime.timedelta`.
 
     This function is *extremely* hot during parsing, so please keep perf in
@@ -209,11 +208,11 @@ def srt_timestamp_to_timedelta(ts):
     :param str ts: A timestamp in SRT format
     :returns: The timestamp as a :py:class:`~datetime.timedelta`
     :rtype: datetime.timedelta
-    '''
+    """
     if len(ts) < TS_LEN:
         raise ValueError(
-            'Expected timestamp length >= {}, but got {} (value: {})'.format(
-                TS_LEN, len(ts), ts,
+            "Expected timestamp length >= {}, but got {} (value: {})".format(
+                TS_LEN, len(ts), ts
             )
         )
 
@@ -221,14 +220,12 @@ def srt_timestamp_to_timedelta(ts):
     # with a compiled regex or str.split is ~15% performance improvement during
     # parsing. We need to look from the end because the number of hours may be
     # >2 digits.
-    hrs, mins, secs, msecs = (
-        int(x) for x in [ts[:-10], ts[-9:-7], ts[-6:-4], ts[-3:]]
-    )
+    hrs, mins, secs, msecs = (int(x) for x in [ts[:-10], ts[-9:-7], ts[-6:-4], ts[-3:]])
     return timedelta(hours=hrs, minutes=mins, seconds=secs, milliseconds=msecs)
 
 
 def sort_and_reindex(subtitles, start_index=1, in_place=False):
-    '''
+    """
     Reorder subtitles to be sorted by start time order, and rewrite the indexes
     to be in that same order. This ensures that the SRT file will play in an
     expected fashion after, for example, times were changed in some subtitles
@@ -252,7 +249,7 @@ def sort_and_reindex(subtitles, start_index=1, in_place=False):
                           (version <=1.0.0 behaviour)
     :returns: The sorted subtitles
     :rtype: :term:`generator` of :py:class:`Subtitle` objects
-    '''
+    """
     skipped_subs = 0
     for sub_num, subtitle in enumerate(sorted(subtitles), start=start_index):
         if not in_place:
@@ -261,10 +258,7 @@ def sort_and_reindex(subtitles, start_index=1, in_place=False):
         try:
             _should_skip_sub(subtitle)
         except _ShouldSkipException as thrown_exc:
-            log.warning(
-                'Skipped subtitle at index %d: %s',
-                subtitle.index, thrown_exc,
-            )
+            log.warning("Skipped subtitle at index %d: %s", subtitle.index, thrown_exc)
             skipped_subs += 1
             continue
 
@@ -274,13 +268,13 @@ def sort_and_reindex(subtitles, start_index=1, in_place=False):
 
 
 def _should_skip_sub(subtitle):
-    '''
+    """
     Check if a subtitle should be skipped based on the rules in
     SUBTITLE_SKIP_CONDITIONS.
 
     :param subtitle: A :py:class:`Subtitle` to check whether to skip
     :raises _ShouldSkipException: If the subtitle should be skipped
-    '''
+    """
     for warning_msg, sub_skipper in SUBTITLE_SKIP_CONDITIONS:
         if sub_skipper(subtitle):
             raise _ShouldSkipException(warning_msg)
@@ -324,9 +318,11 @@ def parse(srt):
 
         raw_index, raw_start, raw_end, proprietary, content = match.groups()
         yield Subtitle(
-            index=int(raw_index), start=srt_timestamp_to_timedelta(raw_start),
+            index=int(raw_index),
+            start=srt_timestamp_to_timedelta(raw_start),
             end=srt_timestamp_to_timedelta(raw_end),
-            content=content.replace('\r\n', '\n'), proprietary=proprietary,
+            content=content.replace("\r\n", "\n"),
+            proprietary=proprietary,
         )
 
         expected_start = match.end()
@@ -335,7 +331,7 @@ def parse(srt):
 
 
 def _raise_if_not_contiguous(srt, expected_start, actual_start):
-    '''
+    """
     Raise :py:class:`SRTParseError` with diagnostic info if expected_start does
     not equal actual_start.
 
@@ -345,14 +341,14 @@ def _raise_if_not_contiguous(srt, expected_start, actual_start):
     :param int actual_start: The actual start, as from this iteration's
                              match.start()
     :raises SRTParseError: If the matches are not contiguous
-    '''
+    """
     if expected_start != actual_start:
         unmatched_content = srt[expected_start:actual_start]
         raise SRTParseError(expected_start, actual_start, unmatched_content)
 
 
 def compose(subtitles, reindex=True, start_index=1, strict=True, eol=None):
-    r'''
+    r"""
     Convert an iterator of :py:class:`Subtitle` objects to a string of joined
     SRT blocks.
 
@@ -377,30 +373,28 @@ def compose(subtitles, reindex=True, start_index=1, strict=True, eol=None):
     :returns: A single SRT formatted string, with each input
               :py:class:`Subtitle` represented as an SRT block
     :rtype: str
-    '''
+    """
     if reindex:
         subtitles = sort_and_reindex(subtitles, start_index=start_index)
 
-    return ''.join(
-        subtitle.to_srt(strict=strict, eol=eol) for subtitle in subtitles
-    )
+    return "".join(subtitle.to_srt(strict=strict, eol=eol) for subtitle in subtitles)
 
 
 class SRTParseError(Exception):
-    '''
+    """
     Raised when part of an SRT block could not be parsed.
 
     :param int expected_start: The expected contiguous start index
     :param int actual_start: The actual non-contiguous start index
     :param str unmatched_content: The content between the expected start index
                                   and the actual start index
-    '''
+    """
+
     def __init__(self, expected_start, actual_start, unmatched_content):
         message = (
-            'Expected contiguous start of match or end of input at char %d, '
-            'but started at char %d (unmatched content: %r)' % (
-                expected_start, actual_start, unmatched_content
-            )
+            "Expected contiguous start of match or end of input at char %d, "
+            "but started at char %d (unmatched content: %r)"
+            % (expected_start, actual_start, unmatched_content)
         )
         super(SRTParseError, self).__init__(message)
 
@@ -410,6 +404,6 @@ class SRTParseError(Exception):
 
 
 class _ShouldSkipException(Exception):
-    '''
+    """
     Raised when a subtitle should be skipped.
-    '''
+    """
