@@ -1,4 +1,4 @@
 [MESSAGES CONTROL]
 # import-error and no-name-in-module are false positives for six.moves, pylint
 # really hates that. If it's really broken, we'll pick it up in tests.
-disable=locally-disabled,import-error,no-name-in-module,invalid-name,missing-docstring,wrong-import-order,too-many-arguments,too-few-public-methods
+disable=locally-disabled,import-error,no-name-in-module,invalid-name,missing-docstring,wrong-import-order,too-many-arguments,too-few-public-methods,useless-object-inheritance

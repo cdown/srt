@@ -16,9 +16,9 @@
   :target: https://libraries.io/github/cdown/srt
   :alt: Dependencies
 
-srt is a tiny Python library for parsing, modifying, and composing `SRT
-files`_. Take a look at the quickstart_ for a basic overview of the library.
-`Detailed API documentation`_ is also available.
+srt is a tiny but featureful Python library for parsing, modifying, and
+composing `SRT files`_. Take a look at the quickstart_ for a basic overview of
+the library. `Detailed API documentation`_ is also available.
 
 Want to see some examples of its use? Take a look at the `tools shipped with
 the library`_.
@@ -27,6 +27,7 @@ Why choose this library?
 ------------------------
 
 - Extremely lightweight, `~150 lines of code`_ excluding docstrings
+- Simple, intuitive API
 - High quality test suite using Hypothesis_
 - `100% test coverage`_ (including branches)
 - `Well documented API`_, at both a high and low level
@@ -35,6 +36,7 @@ Why choose this library?
 - Full support for `PyPy`_
 - No dependencies outside of the standard library
 - Tolerant of many common errors found in real-world SRT files
+- Support for Asian-style SRT formats (ie. "fullwidth" SRT format)
 - Completely Unicode compliant
 - `Released into the public domain`_
 - Real world tested — used in production to process thousands of SRT files
