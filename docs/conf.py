@@ -6,7 +6,7 @@ sys.path.insert(0, os.path.abspath(".."))
 
 extensions = ["sphinx.ext.autodoc", "sphinx.ext.intersphinx", "sphinx.ext.doctest"]
 
-copyright = "2015, Chris Down"
+copyright = "Chris Down"
 exclude_patterns = ["_build"]
 master_doc = "index"
 project = "srt"
@@ -14,7 +14,7 @@ pygments_style = "sphinx"
 source_suffix = ".rst"
 templates_path = ["_templates"]
 
-version = "1.6.0"
+version = "1.7.0"
 release = version
 
 html_static_path = ["_static"]
