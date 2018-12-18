@@ -10,7 +10,7 @@ log = logging.getLogger(__name__)
 def strip_to_matching_lines_only(subtitles, imports, func_str):
     for import_name in imports:
         real_import = importlib.import_module(import_name)
-        globals()[import_name] = real_import
+        locals()[import_name] = real_import
 
     func = eval(func_str)  # pylint: disable-msg=eval-used
 

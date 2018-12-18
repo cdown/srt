@@ -14,7 +14,7 @@ pygments_style = "sphinx"
 source_suffix = ".rst"
 templates_path = ["_templates"]
 
-version = "1.7.0"
+version = "1.8.0"
 release = version
 
 html_static_path = ["_static"]

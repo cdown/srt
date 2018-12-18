@@ -99,6 +99,12 @@ def basic_parser(multi_input=False, no_output=False):
 def set_basic_args(args):
     if not args.encoding:
         args.encoding = sys.getdefaultencoding()
+        if args.encoding == "utf-8":
+            # I there's no BOM, utf-8-sig will still work, and it will stop
+            # people complaining about "srt.SRTParseError: Expected contiguous
+            # start of match or end of input at char 0, but started at char 1
+            # (unmatched content: '\ufeff')"
+            args.encoding = "utf-8-sig"
 
     # TODO: dedupe some of this
     for stream_name in ("input", "output"):
