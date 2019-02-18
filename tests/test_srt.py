@@ -7,7 +7,7 @@ import functools
 import string
 from io import StringIO
 
-from hypothesis import given
+from hypothesis import given, settings, HealthCheck
 import hypothesis.strategies as st
 from nose.tools import (
     eq_ as eq,
@@ -25,6 +25,10 @@ try:
 except ImportError:  # Python 2 fallback
     from nose.tools import assert_items_equal as assert_count_equal
 
+settings.register_profile(
+    "base", settings(suppress_health_check=[HealthCheck.too_slow])
+)
+settings.load_profile("base")
 
 HOURS_IN_DAY = 24
 TIMEDELTA_MAX_DAYS = 999999999
