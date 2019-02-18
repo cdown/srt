@@ -203,9 +203,6 @@ def srt_timestamp_to_timedelta(ts):
     r"""
     Convert an SRT timestamp to a :py:class:`~datetime.timedelta`.
 
-    This function is *extremely* hot during parsing, so please keep perf in
-    mind.
-
     .. doctest::
 
         >>> srt_timestamp_to_timedelta('01:23:04,000')
@@ -215,6 +212,10 @@ def srt_timestamp_to_timedelta(ts):
     :returns: The timestamp as a :py:class:`~datetime.timedelta`
     :rtype: datetime.timedelta
     """
+
+    # This function is *extremely* hot during parsing, so please keep perf in
+    # mind.
+
     if len(ts) < TS_LEN:
         raise ValueError(
             "Expected timestamp length >= {}, but got {} (value: {})".format(
