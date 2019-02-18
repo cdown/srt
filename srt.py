@@ -313,7 +313,7 @@ def parse(srt):
 
     :param srt: Subtitles in SRT format
     :type srt: str or a file-like object
-    :returns: The subtitles contained in the SRT file as py:class:`Subtitle`
+    :returns: The subtitles contained in the SRT file as :py:class:`Subtitle`
               objects
     :rtype: :term:`generator` of :py:class:`Subtitle` objects
     '''
