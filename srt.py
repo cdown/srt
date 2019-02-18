@@ -8,6 +8,7 @@ import functools
 import re
 from datetime import timedelta
 import logging
+import io
 
 
 log = logging.getLogger(__name__)
@@ -65,6 +66,12 @@ SECONDS_IN_HOUR = 3600
 SECONDS_IN_MINUTE = 60
 HOURS_IN_DAY = 24
 MICROSECONDS_IN_MILLISECOND = 1000
+
+FILE_TYPES = [io.IOBase]
+try:
+    FILE_TYPES.append(file)
+except NameError:  # `file` doesn't exist in Python 3
+    pass
 
 
 @functools.total_ordering
@@ -304,13 +311,19 @@ def parse(srt):
         >>> list(subs)  # doctest: +ELLIPSIS
         [Subtitle(...index=422...), Subtitle(...index=423...)]
 
-    :param str srt: Subtitles in SRT format
+    :param srt: Subtitles in SRT format
+    :type srt: str or a file-like object
     :returns: The subtitles contained in the SRT file as py:class:`Subtitle`
               objects
     :rtype: :term:`generator` of :py:class:`Subtitle` objects
     '''
 
     expected_start = 0
+
+    # Transparently read files -- the whole thing is needed for regex's
+    # finditer
+    if isinstance(srt, io.IOBase):
+        srt = srt.read()
 
     for match in SRT_REGEX.finditer(srt):
         actual_start = match.start()

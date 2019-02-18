@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 from datetime import timedelta
 import functools
 import string
+from io import StringIO
 
 from hypothesis import given
 import hypothesis.strategies as st
@@ -113,6 +114,13 @@ def subtitles(strict=True):
     )
 
     return subtitle_strategy
+
+
+@given(st.lists(subtitles()))
+def test_compose_and_parse_from_file(input_subs):
+    srt_file = StringIO(srt.compose(input_subs, reindex=False))
+    reparsed_subs = srt.parse(srt_file)
+    subs_eq(reparsed_subs, input_subs)
 
 
 @given(st.lists(subtitles()))
