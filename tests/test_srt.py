@@ -5,8 +5,9 @@ from __future__ import unicode_literals
 from datetime import timedelta
 import functools
 import string
+from io import StringIO
 
-from hypothesis import given
+from hypothesis import given, settings, HealthCheck
 import hypothesis.strategies as st
 from nose.tools import (
     eq_ as eq,
@@ -24,6 +25,10 @@ try:
 except ImportError:  # Python 2 fallback
     from nose.tools import assert_items_equal as assert_count_equal
 
+settings.register_profile(
+    "base", settings(suppress_health_check=[HealthCheck.too_slow])
+)
+settings.load_profile("base")
 
 HOURS_IN_DAY = 24
 TIMEDELTA_MAX_DAYS = 999999999
@@ -113,6 +118,13 @@ def subtitles(strict=True):
     )
 
     return subtitle_strategy
+
+
+@given(st.lists(subtitles()))
+def test_compose_and_parse_from_file(input_subs):
+    srt_file = StringIO(srt.compose(input_subs, reindex=False))
+    reparsed_subs = srt.parse(srt_file)
+    subs_eq(reparsed_subs, input_subs)
 
 
 @given(st.lists(subtitles()))
