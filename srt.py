@@ -382,7 +382,7 @@ def compose(subtitles, reindex=True, start_index=1, strict=True, eol=None):
     :param int start_index: If reindexing, the index to start reindexing from
     :param bool strict: Whether to enable strict mode, see
                         :py:func:`Subtitle.to_srt` for more information
-    :param str eol: The end of line string to use (default "\n")
+    :param str eol: The end of line string to use (default "\\n")
     :returns: A single SRT formatted string, with each input
               :py:class:`Subtitle` represented as an SRT block
     :rtype: str
