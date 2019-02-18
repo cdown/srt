@@ -67,11 +67,10 @@ SECONDS_IN_MINUTE = 60
 HOURS_IN_DAY = 24
 MICROSECONDS_IN_MILLISECOND = 1000
 
-FILE_TYPES = [io.IOBase]
 try:
-    FILE_TYPES.append(file)
+    FILE_TYPES = (file, io.IOBase)
 except NameError:  # `file` doesn't exist in Python 3
-    pass
+    FILE_TYPES = (io.IOBase,)
 
 
 @functools.total_ordering
@@ -322,7 +321,7 @@ def parse(srt):
 
     # Transparently read files -- the whole thing is needed for regex's
     # finditer
-    if isinstance(srt, io.IOBase):
+    if isinstance(srt, FILE_TYPES):
         srt = srt.read()
 
     for match in SRT_REGEX.finditer(srt):
