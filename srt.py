@@ -68,7 +68,7 @@ HOURS_IN_DAY = 24
 MICROSECONDS_IN_MILLISECOND = 1000
 
 try:
-    FILE_TYPES = (file, io.IOBase)
+    FILE_TYPES = (file, io.IOBase)  # pytype: disable=name-error
 except NameError:  # `file` doesn't exist in Python 3
     FILE_TYPES = (io.IOBase,)
 
@@ -343,6 +343,12 @@ def parse(srt):
         _raise_if_not_contiguous(srt, expected_start, actual_start)
 
         raw_index, raw_start, raw_end, proprietary, content = match.groups()
+
+        # pytype sees that this is Optional[str] and thus complains that they
+        # can be None, but they can't realistically be None, since we're using
+        # finditer and all match groups are mandatory in the regex.
+        content = content.replace("\r\n", "\n")  # pytype: disable=attribute-error
+
         yield Subtitle(
             index=int(raw_index),
             start=srt_timestamp_to_timedelta(raw_start),
