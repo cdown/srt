@@ -2,12 +2,11 @@ dist: xenial
 language: python
 cache: pip
 
+# Drop once EOL: https://devguide.python.org/#status-of-python-branches
 python:
   - '2.7'
-  - '3.4'
   - '3.5'
   - '3.6'
-  - '3.7'
 
 before_install: |
   if [ "$TRAVIS_OS_NAME" == "osx" ]; then
@@ -21,29 +20,17 @@ install: |
   else
     pip install tox
   fi
-
 script:
   - 'tox'
 
 matrix:
-  fast_finish: true
   include:
-    # One-off runs
+    # "coverage" toxenv runs tests, so no need to run TOXENV=py37
     - python: '3.7'
-      env: TOXENV=coverage
-    - python: '3.7'
-      env: TOXENV=pylint
+      env: TOXENV=black,pylint,pytype,bandit,coverage
 
     # OSX -- takes a while to start up on Travis, so once we get a worker just
     # run them all with one instance of tox
     - os: osx
       language: generic
-      env: TOXENV=py27,py34,py35,py36,py37
-
-  allow_failures:
-    - python: '3.7'
-      env: TOXENV=coverage
-
-# This is required to enable container based Travis CI infrastructure.
-# See http://docs.travis-ci.com/user/migrating-from-legacy/
-sudo: false
+      env: TOXENV=py27,py35,py36,py37
