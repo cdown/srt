@@ -82,7 +82,7 @@ def basic_parser(multi_input=False, no_output=False):
         action="store_const",
         dest="log_level",
         const=logging.DEBUG,
-        default=logging.WARNING,
+        default=logging.INFO,
         help="enable debug logging",
     )
 
