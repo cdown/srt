@@ -55,7 +55,7 @@ STANDARD_TS_COLON_OFFSET = 2
 
 ZERO_TIMEDELTA = timedelta(0)
 
-# Warning message if truthy return -> Function taking a Subtitle, skip if True
+# Info message if truthy return -> Function taking a Subtitle, skip if True
 SUBTITLE_SKIP_CONDITIONS = (
     ("No content", lambda sub: not sub.content.strip()),
     ("Start time < 0 seconds", lambda sub: sub.start < ZERO_TIMEDELTA),
@@ -68,7 +68,7 @@ HOURS_IN_DAY = 24
 MICROSECONDS_IN_MILLISECOND = 1000
 
 try:
-    FILE_TYPES = (file, io.IOBase)
+    FILE_TYPES = (file, io.IOBase)  # pytype: disable=name-error
 except NameError:  # `file` doesn't exist in Python 3
     FILE_TYPES = (io.IOBase,)
 
@@ -171,7 +171,7 @@ def make_legal_content(content):
     # that we don't want with \x1{c..e}, etc
     legal_content = "\n".join(line for line in content.split("\n") if line)
     if legal_content != content:
-        log.warning("Legalised content %r to %r", content, legal_content)
+        log.info("Legalised content %r to %r", content, legal_content)
     return legal_content
 
 
@@ -203,9 +203,6 @@ def srt_timestamp_to_timedelta(ts):
     r"""
     Convert an SRT timestamp to a :py:class:`~datetime.timedelta`.
 
-    This function is *extremely* hot during parsing, so please keep perf in
-    mind.
-
     .. doctest::
 
         >>> srt_timestamp_to_timedelta('01:23:04,000')
@@ -215,6 +212,10 @@ def srt_timestamp_to_timedelta(ts):
     :returns: The timestamp as a :py:class:`~datetime.timedelta`
     :rtype: datetime.timedelta
     """
+
+    # This function is *extremely* hot during parsing, so please keep perf in
+    # mind.
+
     if len(ts) < TS_LEN:
         raise ValueError(
             "Expected timestamp length >= {}, but got {} (value: {})".format(
@@ -230,12 +231,20 @@ def srt_timestamp_to_timedelta(ts):
     return timedelta(hours=hrs, minutes=mins, seconds=secs, milliseconds=msecs)
 
 
-def sort_and_reindex(subtitles, start_index=1, in_place=False):
+def sort_and_reindex(subtitles, start_index=1, in_place=False, skip=True):
     """
     Reorder subtitles to be sorted by start time order, and rewrite the indexes
     to be in that same order. This ensures that the SRT file will play in an
     expected fashion after, for example, times were changed in some subtitles
     and they may need to be resorted.
+
+    If skip=True, subtitles will also be skipped if they are considered not to
+    be useful. Currently, the conditions to be considered "not useful" are as
+    follows:
+
+    - Content is empty, or only whitespace
+    - The start time is negative
+    - The start time is equal to or later than the end time
 
     .. doctest::
 
@@ -253,6 +262,8 @@ def sort_and_reindex(subtitles, start_index=1, in_place=False):
     :param int start_index: The index to start from
     :param bool in_place: Whether to modify subs in-place for performance
                           (version <=1.0.0 behaviour)
+    :param bool skip: Whether to skip subtitles considered not useful (see
+                      above for rules)
     :returns: The sorted subtitles
     :rtype: :term:`generator` of :py:class:`Subtitle` objects
     """
@@ -261,12 +272,13 @@ def sort_and_reindex(subtitles, start_index=1, in_place=False):
         if not in_place:
             subtitle = Subtitle(**vars(subtitle))
 
-        try:
-            _should_skip_sub(subtitle)
-        except _ShouldSkipException as thrown_exc:
-            log.warning("Skipped subtitle at index %d: %s", subtitle.index, thrown_exc)
-            skipped_subs += 1
-            continue
+        if skip:
+            try:
+                _should_skip_sub(subtitle)
+            except _ShouldSkipException as thrown_exc:
+                log.info("Skipped subtitle at index %d: %s", subtitle.index, thrown_exc)
+                skipped_subs += 1
+                continue
 
         subtitle.index = sub_num - skipped_subs
 
@@ -281,9 +293,9 @@ def _should_skip_sub(subtitle):
     :param subtitle: A :py:class:`Subtitle` to check whether to skip
     :raises _ShouldSkipException: If the subtitle should be skipped
     """
-    for warning_msg, sub_skipper in SUBTITLE_SKIP_CONDITIONS:
+    for info_msg, sub_skipper in SUBTITLE_SKIP_CONDITIONS:
         if sub_skipper(subtitle):
-            raise _ShouldSkipException(warning_msg)
+            raise _ShouldSkipException(info_msg)
 
 
 def parse(srt):
@@ -312,7 +324,7 @@ def parse(srt):
 
     :param srt: Subtitles in SRT format
     :type srt: str or a file-like object
-    :returns: The subtitles contained in the SRT file as py:class:`Subtitle`
+    :returns: The subtitles contained in the SRT file as :py:class:`Subtitle`
               objects
     :rtype: :term:`generator` of :py:class:`Subtitle` objects
     '''
@@ -329,6 +341,12 @@ def parse(srt):
         _raise_if_not_contiguous(srt, expected_start, actual_start)
 
         raw_index, raw_start, raw_end, proprietary, content = match.groups()
+
+        # pytype sees that this is Optional[str] and thus complains that they
+        # can be None, but they can't realistically be None, since we're using
+        # finditer and all match groups are mandatory in the regex.
+        content = content.replace("\r\n", "\n")  # pytype: disable=attribute-error
+
         yield Subtitle(
             index=int(raw_index),
             start=srt_timestamp_to_timedelta(raw_start),
@@ -381,7 +399,7 @@ def compose(subtitles, reindex=True, start_index=1, strict=True, eol=None):
     :param int start_index: If reindexing, the index to start reindexing from
     :param bool strict: Whether to enable strict mode, see
                         :py:func:`Subtitle.to_srt` for more information
-    :param str eol: The end of line string to use (default "\n")
+    :param str eol: The end of line string to use (default "\\n")
     :returns: A single SRT formatted string, with each input
               :py:class:`Subtitle` represented as an SRT block
     :rtype: str

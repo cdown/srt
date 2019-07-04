@@ -296,6 +296,20 @@ def test_sort_and_reindex(input_subs, start_index):
     eq(reindexed_subs, expected_sorting)
 
 
+@given(st.lists(subtitles()))
+def test_sort_and_reindex_no_skip(input_subs):
+    # end time > start time should not trigger a skip if skip=False
+    for sub in input_subs:
+        old_start = sub.start
+        sub.start = sub.end
+        sub.end = old_start
+
+    reindexed_subs = list(srt.sort_and_reindex(input_subs, skip=False))
+
+    # Nothing should have been skipped
+    eq(len(reindexed_subs), len(input_subs))
+
+
 @given(st.lists(subtitles(), min_size=1))
 def test_sort_and_reindex_same_start_time_uses_end(input_subs):
     for sub in input_subs:
