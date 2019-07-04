@@ -55,7 +55,7 @@ STANDARD_TS_COLON_OFFSET = 2
 
 ZERO_TIMEDELTA = timedelta(0)
 
-# Warning message if truthy return -> Function taking a Subtitle, skip if True
+# Info message if truthy return -> Function taking a Subtitle, skip if True
 SUBTITLE_SKIP_CONDITIONS = (
     ("No content", lambda sub: not sub.content.strip()),
     ("Start time < 0 seconds", lambda sub: sub.start < ZERO_TIMEDELTA),
@@ -171,7 +171,7 @@ def make_legal_content(content):
     # that we don't want with \x1{c..e}, etc
     legal_content = "\n".join(line for line in content.split("\n") if line)
     if legal_content != content:
-        log.warning("Legalised content %r to %r", content, legal_content)
+        log.info("Legalised content %r to %r", content, legal_content)
     return legal_content
 
 
@@ -276,9 +276,7 @@ def sort_and_reindex(subtitles, start_index=1, in_place=False, skip=True):
             try:
                 _should_skip_sub(subtitle)
             except _ShouldSkipException as thrown_exc:
-                log.warning(
-                    "Skipped subtitle at index %d: %s", subtitle.index, thrown_exc
-                )
+                log.info("Skipped subtitle at index %d: %s", subtitle.index, thrown_exc)
                 skipped_subs += 1
                 continue
 
@@ -295,9 +293,9 @@ def _should_skip_sub(subtitle):
     :param subtitle: A :py:class:`Subtitle` to check whether to skip
     :raises _ShouldSkipException: If the subtitle should be skipped
     """
-    for warning_msg, sub_skipper in SUBTITLE_SKIP_CONDITIONS:
+    for info_msg, sub_skipper in SUBTITLE_SKIP_CONDITIONS:
         if sub_skipper(subtitle):
-            raise _ShouldSkipException(warning_msg)
+            raise _ShouldSkipException(info_msg)
 
 
 def parse(srt):
