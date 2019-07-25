@@ -24,7 +24,7 @@ RGX_CONTENT = r".*?"
 RGX_POSSIBLE_CRLF = r"\r?\n"
 
 SRT_REGEX = re.compile(
-    r"({idx})\s*{eof}({ts}) +-[ -]> +({ts}) ?({proprietary}){eof}({content})"
+    r"\s*({idx})\s*{eof}({ts}) +-[ -]> +({ts}) ?({proprietary}){eof}({content})"
     # Many sub editors don't add a blank line to the end, and many editors and
     # players accept that. We allow it to be missing in input.
     #
@@ -374,6 +374,12 @@ def _raise_if_not_contiguous(srt, expected_start, actual_start):
     """
     if expected_start != actual_start:
         unmatched_content = srt[expected_start:actual_start]
+
+        if expected_start == 0 and unmatched_content.isspace():
+            # #50: Leading whitespace has nowhere to be captured like in an
+            # intermediate subtitle
+            return
+
         raise SRTParseError(expected_start, actual_start, unmatched_content)
 
 
