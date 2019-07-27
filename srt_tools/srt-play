@@ -13,15 +13,13 @@ output_lock = Lock()
 
 def print_sub(sub, encoding):
     log.debug('Timer woke up to print %s', sub.content)
-    output_lock.acquire()
 
-    try:
-        sys.stdout.write(sub.content + '\n\n')
-    except UnicodeEncodeError:  # Python 2 fallback
-        sys.stdout.write(sub.content.encode(encoding) + '\n\n')
-    sys.stdout.flush()
-
-    output_lock.release()
+    with output_lock:
+        try:
+            sys.stdout.write(sub.content + '\n\n')
+        except UnicodeEncodeError:  # Python 2 fallback
+            sys.stdout.write(sub.content.encode(encoding) + '\n\n')
+        sys.stdout.flush()
 
 
 def schedule(subs, encoding):
