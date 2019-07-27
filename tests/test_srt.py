@@ -7,7 +7,7 @@ import functools
 import string
 from io import StringIO
 
-from hypothesis import given, settings, HealthCheck
+from hypothesis import given, settings, HealthCheck, assume
 import hypothesis.strategies as st
 from nose.tools import (
     eq_ as eq,
@@ -215,6 +215,13 @@ def test_parsing_spaced_arrow(subs):
     subs_eq(reparsed_subtitles, subs)
 
 
+@given(st.text(string.whitespace), st.lists(subtitles()))
+def test_parsing_leading_whitespace(ws, subs):
+    prews_block = ws + srt.compose(subs, reindex=False, strict=False)
+    reparsed_subtitles = srt.parse(prews_block)
+    subs_eq(reparsed_subtitles, subs)
+
+
 @given(st.lists(subtitles()))
 def test_parsing_content_with_blank_lines(subs):
     for subtitle in subs:
@@ -367,6 +374,23 @@ def test_parser_noncontiguous(subs, fake_idx, garbage, fake_timedelta):
     composed = composed.replace(
         "\n\n", "\n\n%d\n%s %s" % (fake_idx, srt_timestamp, garbage)
     )
+
+    with assert_raises(srt.SRTParseError):
+        list(srt.parse(composed))
+
+
+@given(st.lists(subtitles()), st.text(min_size=1))
+def test_parser_noncontiguous_leading(subs, garbage):
+    # Issue #50 permits leading whitespace, see test_parsing_leading_whitespace
+    assume(not garbage.isspace())
+
+    # It also shouldn't just be a number, because then we'd confuse it with our
+    # index...
+    assume(not garbage[-1].isdigit())
+
+    # Put some garbage at the beginning that should trigger our noncontiguity
+    # checks
+    composed = garbage + srt.compose(subs)
 
     with assert_raises(srt.SRTParseError):
         list(srt.parse(composed))

@@ -86,20 +86,13 @@ def basic_parser(multi_input=False, no_output=False):
         help="enable debug logging",
     )
 
-    # Can't set default= here because we need to know whether this was
-    # explicitly specified for -e warnings
     parser.add_argument(
-        "--encoding",
-        "-e",
-        help="the encoding to read/write files in (default: system set)",
+        "--encoding", "-e", help="the encoding to read/write files in (default: utf8)"
     )
     return parser
 
 
 def set_basic_args(args):
-    if not args.encoding:
-        args.encoding = sys.getdefaultencoding()
-
     # TODO: dedupe some of this
     for stream_name in ("input", "output"):
         log.debug('Processing stream "%s"', stream_name)
@@ -110,8 +103,15 @@ def set_basic_args(args):
             # For example, in the case of no_output
             continue
 
-        r_enc = codecs.getreader(args.encoding)
-        w_enc = codecs.getwriter(args.encoding)
+        # We don't use system default encoding, because usually one runs this
+        # on files they got from elsewhere. As such, be opinionated that these
+        # files are probably UTF-8. Looking for the BOM on reading allows us to
+        # be more liberal with what we accept, without adding BOMs on write.
+        read_encoding = args.encoding or "utf-8-sig"
+        write_encoding = args.encoding or "utf-8"
+
+        r_enc = codecs.getreader(read_encoding)
+        w_enc = codecs.getwriter(write_encoding)
 
         log.debug("Got %r as stream", stream)
         if stream in DASH_STREAM_MAP.values():
@@ -129,15 +129,15 @@ def set_basic_args(args):
                             if stream is args.input:
                                 args.input[i] = srt.parse(r_enc(input_fn).read())
                         else:
-                            f = _open(input_fn, "r", encoding=args.encoding)
+                            f = _open(input_fn, "r", encoding=read_encoding)
                             with f:
                                 args.input[i] = srt.parse(f.read())
                 else:
-                    f = _open(stream, "r", encoding=args.encoding)
+                    f = _open(stream, "r", encoding=read_encoding)
                     with f:
                         args.input = srt.parse(f.read())
             else:
-                args.output = _open(args.output, "w", encoding=args.encoding)
+                args.output = _open(args.output, "w", encoding=write_encoding)
 
 
 def compose_suggest_on_fail(subs, strict=True):

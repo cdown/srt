@@ -20,7 +20,7 @@ if os.name == "nt":
     quote = lambda x: windows_crappy_quote(x)
 
 
-def run_srt_util(cmd, shell=False, encoding="ascii"):
+def run_srt_util(cmd, shell=False, encoding="utf-8-sig"):
     extra_env = {}
 
     if os.name == "nt":
