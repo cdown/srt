@@ -8,30 +8,33 @@ import operator
 
 log = logging.getLogger(__name__)
 
+
 def parse_args():
     parser = srt_tools.utils.basic_parser(multi_input=True)
     parser.add_argument(
-        '--ms', metavar='MILLISECONDS',
+        "--ms",
+        metavar="MILLISECONDS",
         default=datetime.timedelta(milliseconds=600),
         type=lambda ms: datetime.timedelta(milliseconds=int(ms)),
-        help='if subs being muxed are within this number of milliseconds '
-             'of each other, they will get merged (default: 600)',
+        help="if subs being muxed are within this number of milliseconds "
+        "of each other, they will get merged (default: 600)",
     )
     parser.add_argument(
-        '--width',
-        default=5, type=int,
-        help='the number of subs to consider merging (default: %(default)s)',
+        "--width",
+        default=5,
+        type=int,
+        help="the number of subs to consider merging (default: %(default)s)",
     )
     return parser.parse_args()
 
 
 def merge_subs(subs, acceptable_diff, attr, width):
-    '''
+    """
     Merge subs with similar start/end times together. This prevents the
     subtitles jumping around the screen.
 
     The merge is done in-place.
-    '''
+    """
     sorted_subs = sorted(subs, key=operator.attrgetter(attr))
 
     for subs in srt_tools.utils.sliding_window(sorted_subs, width=width):
@@ -44,7 +47,9 @@ def merge_subs(subs, acceptable_diff, attr, width):
             if current_comp + acceptable_diff > future_comp:
                 log.debug(
                     "Merging %d's %s time into %d",
-                    future_sub.index, attr, current_sub.index,
+                    future_sub.index,
+                    attr,
+                    current_sub.index,
                 )
                 setattr(future_sub, attr, current_comp)
             else:
@@ -63,12 +68,10 @@ def main():
     for subs in args.input:
         muxed_subs.extend(subs)
 
-    merge_subs(muxed_subs, args.ms, 'start', args.width)
-    merge_subs(muxed_subs, args.ms, 'end', args.width)
+    merge_subs(muxed_subs, args.ms, "start", args.width)
+    merge_subs(muxed_subs, args.ms, "end", args.width)
 
-    output = srt_tools.utils.compose_suggest_on_fail(
-        muxed_subs, strict=args.strict,
-    )
+    output = srt_tools.utils.compose_suggest_on_fail(muxed_subs, strict=args.strict)
 
     try:
         args.output.write(output)
@@ -76,5 +79,5 @@ def main():
         args.output.write(output.encode(args.encoding))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

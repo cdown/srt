@@ -12,24 +12,24 @@ output_lock = Lock()
 
 
 def print_sub(sub, encoding):
-    log.debug('Timer woke up to print %s', sub.content)
+    log.debug("Timer woke up to print %s", sub.content)
 
     with output_lock:
         try:
-            sys.stdout.write(sub.content + '\n\n')
+            sys.stdout.write(sub.content + "\n\n")
         except UnicodeEncodeError:  # Python 2 fallback
-            sys.stdout.write(sub.content.encode(encoding) + '\n\n')
+            sys.stdout.write(sub.content.encode(encoding) + "\n\n")
         sys.stdout.flush()
 
 
 def schedule(subs, encoding):
     timers = set()
-    log.debug('Scheduling subtitles')
+    log.debug("Scheduling subtitles")
 
     for sub in subs:
         secs = sub.start.total_seconds()
         cur_timer = Timer(secs, print_sub, [sub, encoding])
-        cur_timer.name = '%s:%s' % (sub.index, secs)
+        cur_timer.name = "%s:%s" % (sub.index, secs)
         cur_timer.daemon = True
         log.debug('Adding "%s" to schedule queue', cur_timer.name)
         timers.add(cur_timer)
@@ -49,5 +49,5 @@ def main():
     schedule(args.input, args.encoding)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

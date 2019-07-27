@@ -22,14 +22,14 @@ def strip_to_matching_lines_only(subtitles, imports, func_str):
 def parse_args():
     parser = srt_tools.utils.basic_parser()
     parser.add_argument(
-        '-f', '--func',
-        help='a function to use to process lines',
-        required=True,
+        "-f", "--func", help="a function to use to process lines", required=True
     )
     parser.add_argument(
-        '-m', '--module',
-        help='modules to import in the function context',
-        action='append', default=[],
+        "-m",
+        "--module",
+        help="modules to import in the function context",
+        action="append",
+        default=[],
     )
     return parser.parse_args()
 
@@ -38,12 +38,8 @@ def main():
     args = parse_args()
     logging.basicConfig(level=args.log_level)
     srt_tools.utils.set_basic_args(args)
-    processed_subs = strip_to_matching_lines_only(
-        args.input, args.module, args.func,
-    )
-    output = srt_tools.utils.compose_suggest_on_fail(
-        processed_subs, strict=args.strict,
-    )
+    processed_subs = strip_to_matching_lines_only(args.input, args.module, args.func)
+    output = srt_tools.utils.compose_suggest_on_fail(processed_subs, strict=args.strict)
 
     try:
         args.output.write(output)
@@ -51,5 +47,5 @@ def main():
         args.output.write(output.encode(args.encoding))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
