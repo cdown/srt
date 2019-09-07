@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import srt_tools.utils
-import srt
 import logging
 
 log = logging.getLogger(__name__)

@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import srt
 import datetime
 import srt_tools.utils
 import logging
