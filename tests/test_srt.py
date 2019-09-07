@@ -128,6 +128,13 @@ def test_compose_and_parse_from_file(input_subs):
 
 
 @given(st.lists(subtitles()))
+def test_compose_and_parse_from_file_bom(input_subs):
+    srt_file = StringIO("\ufeff" + srt.compose(input_subs, reindex=False))
+    reparsed_subs = srt.parse(srt_file)
+    subs_eq(reparsed_subs, input_subs)
+
+
+@given(st.lists(subtitles()))
 def test_compose_and_parse_strict(input_subs):
     composed = srt.compose(input_subs, reindex=False)
     reparsed_subs = srt.parse(composed)

@@ -375,7 +375,9 @@ def _raise_if_not_contiguous(srt, expected_start, actual_start):
     if expected_start != actual_start:
         unmatched_content = srt[expected_start:actual_start]
 
-        if expected_start == 0 and unmatched_content.isspace():
+        if expected_start == 0 and (
+            unmatched_content.isspace() or unmatched_content == "\ufeff"
+        ):
             # #50: Leading whitespace has nowhere to be captured like in an
             # intermediate subtitle
             return
