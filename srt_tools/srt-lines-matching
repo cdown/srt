@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import importlib
-import srt
 import srt_tools.utils
 import logging
 
@@ -23,11 +22,10 @@ def strip_to_matching_lines_only(subtitles, imports, func_str, invert, per_sub):
     for subtitle in subtitles:
         if per_sub:
             if not func(subtitle.content):
-                subtitle.content = ''
+                subtitle.content = ""
         else:
-            subtitle.content = '\n'.join(
-                line for line in subtitle.content.splitlines()
-                if func(line)
+            subtitle.content = "\n".join(
+                line for line in subtitle.content.splitlines() if func(line)
             )
 
         yield subtitle
@@ -36,24 +34,26 @@ def strip_to_matching_lines_only(subtitles, imports, func_str, invert, per_sub):
 def parse_args():
     parser = srt_tools.utils.basic_parser()
     parser.add_argument(
-        '-f', '--func',
-        help='a function to use to match lines',
-        required=True,
+        "-f", "--func", help="a function to use to match lines", required=True
     )
     parser.add_argument(
-        '-m', '--module',
-        help='modules to import in the function context',
-        action='append', default=[],
+        "-m",
+        "--module",
+        help="modules to import in the function context",
+        action="append",
+        default=[],
     )
     parser.add_argument(
-        '-s', '--per-subtitle',
-        help='match the content of each subtitle, not each line',
-        action='store_true',
+        "-s",
+        "--per-subtitle",
+        help="match the content of each subtitle, not each line",
+        action="store_true",
     )
     parser.add_argument(
-        '-v', '--invert',
-        help='invert matching -- only match lines returning False',
-        action='store_true',
+        "-v",
+        "--invert",
+        help="invert matching -- only match lines returning False",
+        action="store_true",
     )
     return parser.parse_args()
 
@@ -63,10 +63,10 @@ def main():
     logging.basicConfig(level=args.log_level)
     srt_tools.utils.set_basic_args(args)
     matching_subtitles_only = strip_to_matching_lines_only(
-        args.input, args.module, args.func, args.invert, args.per_subtitle,
+        args.input, args.module, args.func, args.invert, args.per_subtitle
     )
     output = srt_tools.utils.compose_suggest_on_fail(
-        matching_subtitles_only, strict=args.strict,
+        matching_subtitles_only, strict=args.strict
     )
 
     try:
@@ -75,5 +75,5 @@ def main():
         args.output.write(output.encode(args.encoding))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -1,2 +1,2 @@
 [MESSAGES CONTROL]
-disable=invalid-name,missing-docstring,too-many-arguments,useless-object-inheritance
+disable=invalid-name,missing-docstring,too-many-arguments,useless-object-inheritance,bad-continuation

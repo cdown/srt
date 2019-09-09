@@ -11,47 +11,46 @@ log = logging.getLogger(__name__)
 
 
 def timedelta_to_milliseconds(delta):
-    return delta.days * 86400000 + \
-           delta.seconds * 1000 + \
-           delta.microseconds / 1000
+    return delta.days * 86400000 + delta.seconds * 1000 + delta.microseconds / 1000
+
 
 def parse_args():
     def srt_timestamp_to_milliseconds(parser, arg):
         try:
             delta = srt.srt_timestamp_to_timedelta(arg)
         except ValueError:
-            parser.error('not a valid SRT timestamp: %s' % arg)
+            parser.error("not a valid SRT timestamp: %s" % arg)
         else:
             return timedelta_to_milliseconds(delta)
 
     parser = srt_tools.utils.basic_parser()
     parser.add_argument(
-        '--from-start',
-        '--f1',
+        "--from-start",
+        "--f1",
         type=lambda arg: srt_timestamp_to_milliseconds(parser, arg),
         required=True,
-        help='the first desynchronised timestamp',
+        help="the first desynchronised timestamp",
     )
     parser.add_argument(
-        '--to-start',
-        '--t1',
+        "--to-start",
+        "--t1",
         type=lambda arg: srt_timestamp_to_milliseconds(parser, arg),
         required=True,
-        help='the first synchronised timestamp',
+        help="the first synchronised timestamp",
     )
     parser.add_argument(
-        '--from-end',
-        '--f2',
+        "--from-end",
+        "--f2",
         type=lambda arg: srt_timestamp_to_milliseconds(parser, arg),
         required=True,
-        help='the second desynchronised timestamp',
+        help="the second desynchronised timestamp",
     )
     parser.add_argument(
-        '--to-end',
-        '--t2',
+        "--to-end",
+        "--t2",
         type=lambda arg: srt_timestamp_to_milliseconds(parser, arg),
         required=True,
-        help='the second synchronised timestamp',
+        help="the second synchronised timestamp",
     )
     return parser.parse_args()
 
@@ -84,14 +83,11 @@ def main():
     args = parse_args()
     logging.basicConfig(level=args.log_level)
     angular, linear = calc_correction(
-        args.to_start, args.to_end,
-        args.from_start, args.from_end,
+        args.to_start, args.to_end, args.from_start, args.from_end
     )
     srt_tools.utils.set_basic_args(args)
     corrected_subs = linear_correct_subs(args.input, angular, linear)
-    output = srt_tools.utils.compose_suggest_on_fail(
-        corrected_subs, strict=args.strict,
-    )
+    output = srt_tools.utils.compose_suggest_on_fail(corrected_subs, strict=args.strict)
 
     try:
         args.output.write(output)
@@ -99,5 +95,5 @@ def main():
         args.output.write(output.encode(args.encoding))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

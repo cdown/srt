@@ -9,7 +9,7 @@ import itertools
 import collections
 
 if sys.version_info < (3,):
-    from codecs import open as _open
+    _open = codecs.open
 else:
     _open = open
 
