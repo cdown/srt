@@ -35,7 +35,7 @@ def dash_to_stream(arg, arg_type):
     return arg
 
 
-def basic_parser(multi_input=False, no_output=False, examples=None):
+def basic_parser(description=None, multi_input=False, no_output=False, examples=None):
     example_lines = []
 
     if examples is not None:
@@ -46,7 +46,7 @@ def basic_parser(multi_input=False, no_output=False, examples=None):
             example_lines.append("    $ {}\n".format(code))
 
     parser = argparse.ArgumentParser(
-        description=__doc__,
+        description=description,
         epilog="\n".join(example_lines),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
