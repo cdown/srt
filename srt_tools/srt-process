@@ -20,7 +20,11 @@ def strip_to_matching_lines_only(subtitles, imports, func_str):
 
 
 def parse_args():
-    parser = srt_tools.utils.basic_parser()
+    examples = {
+        "Strip HTML-like symbols from a subtitle": """srt process -m re -f 'lambda sub: re.sub("<[^<]+?>", "", sub)'"""
+    }
+
+    parser = srt_tools.utils.basic_parser(examples=examples)
     parser.add_argument(
         "-f", "--func", help="a function to use to process lines", required=True
     )

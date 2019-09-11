@@ -32,7 +32,11 @@ def strip_to_matching_lines_only(subtitles, imports, func_str, invert, per_sub):
 
 
 def parse_args():
-    parser = srt_tools.utils.basic_parser()
+    examples = {
+        "Only include Chinese lines": "srt lines-matching -m hanzidentifier -f hanzidentifier.has_chinese",
+        "Exclude all lines which only contain numbers": "srt lines-matching -v -f 'lambda x: x.isdigit()'",
+    }
+    parser = srt_tools.utils.basic_parser(examples=examples)
     parser.add_argument(
         "-f", "--func", help="a function to use to match lines", required=True
     )

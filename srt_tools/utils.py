@@ -35,8 +35,21 @@ def dash_to_stream(arg, arg_type):
     return arg
 
 
-def basic_parser(multi_input=False, no_output=False):
-    parser = argparse.ArgumentParser(description=__doc__)
+def basic_parser(multi_input=False, no_output=False, examples=None):
+    example_lines = []
+
+    if examples is not None:
+        example_lines.append("examples:")
+
+        for desc, code in examples.items():
+            example_lines.append("  {}".format(desc))
+            example_lines.append("    $ {}\n".format(code))
+
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        epilog="\n".join(example_lines),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
 
     # Cannot use argparse.FileType as we need to know the encoding from the
     # args
