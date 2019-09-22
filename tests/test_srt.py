@@ -88,6 +88,49 @@ def timedeltas(min_value=0, max_value=TIMEDELTA_MAX_DAYS):
     return timestamp_strategy
 
 
+def equivalent_timestamps(min_value=0, max_value=TIMEDELTA_MAX_DAYS):
+    def string_timestamp(hours, minutes, seconds, msecs, paddings):
+        hours, minutes, seconds, msecs = map(
+            lambda v_and_p: "0" * v_and_p[1] + str(v_and_p[0]),
+            zip((hours, minutes, seconds, msecs), paddings),
+        )
+        return "{}:{}:{},{}".format(hours, minutes, seconds, msecs)
+
+    def ts_field_value():
+        return st.integers(min_value=min_value, max_value=max_value)
+
+    def zero_padding():
+        return st.integers(min_value=0, max_value=2)
+
+    @st.composite
+    def maybe_off_by_one_fields(draw):
+        field = draw(ts_field_value())
+        field_maybe_plus_one = draw(st.integers(min_value=field, max_value=field + 1))
+        return field_maybe_plus_one, field
+
+    def get_equiv_timestamps(h, m, s, ms2, ts1paddings, ts2paddings):
+        h2, h1 = h
+        m2, m1 = m
+        s2, s1 = s
+        ms1 = (
+            (h2 - h1) * 60 * 60 * 1000 + (m2 - m1) * 60 * 1000 + (s2 - s1) * 1000 + ms2
+        )
+        return (
+            string_timestamp(h2, m2, s2, ms2, ts2paddings),
+            string_timestamp(h1, m1, s1, ms1, ts1paddings),
+        )
+
+    return st.builds(
+        get_equiv_timestamps,
+        maybe_off_by_one_fields(),
+        maybe_off_by_one_fields(),
+        maybe_off_by_one_fields(),
+        ts_field_value(),
+        st.tuples(*[zero_padding() for _ in range(4)]),
+        st.tuples(*[zero_padding() for _ in range(4)]),
+    )
+
+
 def subtitles(strict=True):
     """A Hypothesis strategy to generate Subtitle objects."""
     # max_value settings are just to avoid overflowing TIMEDELTA_MAX_DAYS by
@@ -502,11 +545,18 @@ def test_compose_and_parse_strict_custom_eol(input_subs, eol):
     subs_eq(reparsed_subs, input_subs)
 
 
+@given(equivalent_timestamps())
+def test_equal_timestamps_despite_different_fields_parsed_as_equal(timestamps):
+    ts1, ts2 = timestamps
+    eq(srt.srt_timestamp_to_timedelta(ts1), srt.srt_timestamp_to_timedelta(ts2))
+
+
 @given(timedeltas())
-def test_srt_timestamp_to_timedelta_too_short_raises(ts):
-    srt_ts = srt.timedelta_to_srt_timestamp(ts)[:-1]
-    with assert_raises(ValueError):
-        srt.srt_timestamp_to_timedelta(srt_ts)
+def test_bad_timestamp_format_raises(ts):
+    ts = srt.timedelta_to_srt_timestamp(ts)
+    ts = ts.replace(":", "t", 1)
+    with assert_raises(srt.TimestampParseError):
+        srt.srt_timestamp_to_timedelta(ts)
 
 
 @given(st.lists(subtitles()), st.lists(st.sampled_from(string.whitespace)))

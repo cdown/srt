@@ -11,18 +11,27 @@ import logging
 import io
 
 
+class TimestampParseError(ValueError):
+    pass
+
+
 log = logging.getLogger(__name__)
 
 # "." is not technically valid as a delimiter, but many editors create SRT
 # files with this delimiter for whatever reason. Many editors and players
 # accept it, so we do too.
 RGX_TIMESTAMP_MAGNITUDE_DELIM = r"[,.:，．。：]"
-RGX_TIMESTAMP = RGX_TIMESTAMP_MAGNITUDE_DELIM.join([r"\d+"] * 4)
+RGX_TIMESTAMP_FIELD = r"\d+"
+RGX_TIMESTAMP = RGX_TIMESTAMP_MAGNITUDE_DELIM.join([RGX_TIMESTAMP_FIELD] * 4)
+RGX_TIMESTAMP_PARSEABLE = r"^{}$".format(
+    RGX_TIMESTAMP_MAGNITUDE_DELIM.join(["(" + RGX_TIMESTAMP_FIELD + ")"] * 4)
+)
 RGX_INDEX = r"\d+"
 RGX_PROPRIETARY = r"[^\r\n]*"
 RGX_CONTENT = r".*?"
 RGX_POSSIBLE_CRLF = r"\r?\n"
 
+TS_REGEX = re.compile(RGX_TIMESTAMP_PARSEABLE)
 SRT_REGEX = re.compile(
     r"\s*({idx})\s*{eof}({ts}) +-[ -]> +({ts}) ?({proprietary}){eof}({content})"
     # Many sub editors don't add a blank line to the end, and many editors and
@@ -50,7 +59,6 @@ SRT_REGEX = re.compile(
     ),
     re.DOTALL,
 )
-TS_LEN = 12
 STANDARD_TS_COLON_OFFSET = 2
 
 ZERO_TIMEDELTA = timedelta(0)
@@ -213,21 +221,10 @@ def srt_timestamp_to_timedelta(ts):
     :rtype: datetime.timedelta
     """
 
-    # This function is *extremely* hot during parsing, so please keep perf in
-    # mind.
-
-    if len(ts) < TS_LEN:
-        raise ValueError(
-            "Expected timestamp length >= {}, but got {} (value: {})".format(
-                TS_LEN, len(ts), ts
-            )
-        )
-
-    # Doing this instead of splitting based on the delimiter using re.split
-    # with a compiled regex or str.split is ~15% performance improvement during
-    # parsing. We need to look from the end because the number of hours may be
-    # >2 digits.
-    hrs, mins, secs, msecs = (int(x) for x in [ts[:-10], ts[-9:-7], ts[-6:-4], ts[-3:]])
+    match = TS_REGEX.match(ts)
+    if match is None:
+        raise TimestampParseError("Got unparseable timestamp: {}".format(ts))
+    hrs, mins, secs, msecs = map(int, match.groups())
     return timedelta(hours=hrs, minutes=mins, seconds=secs, milliseconds=msecs)
 
 
