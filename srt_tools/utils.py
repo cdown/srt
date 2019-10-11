@@ -35,7 +35,13 @@ def dash_to_stream(arg, arg_type):
     return arg
 
 
-def basic_parser(description=None, multi_input=False, no_output=False, examples=None):
+def basic_parser(
+    description=None,
+    multi_input=False,
+    no_output=False,
+    examples=None,
+    hide_no_strict=False,
+):
     example_lines = []
 
     if examples is not None:
@@ -84,12 +90,11 @@ def basic_parser(description=None, multi_input=False, no_output=False, examples=
             help="the file to write to (default: stdout)",
         )
 
-    parser.add_argument(
-        "--no-strict",
-        action="store_false",
-        dest="strict",
-        help="allow blank lines in output, your media player may explode",
-    )
+    shelp = ("allow blank lines in output, your media player may explode",)
+    if hide_no_strict:
+        shelp = argparse.SUPPRESS
+
+    parser.add_argument("--no-strict", action="store_false", dest="strict", help=shelp)
     parser.add_argument(
         "--debug",
         action="store_const",

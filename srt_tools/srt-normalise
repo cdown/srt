@@ -12,7 +12,7 @@ def main():
     examples = {"Normalise a subtitle": "srt normalise -i bad.srt -o good.srt"}
 
     args = srt_tools.utils.basic_parser(
-        description=__doc__, examples=examples
+        description=__doc__, examples=examples, hide_no_strict=True
     ).parse_args()
     logging.basicConfig(level=args.log_level)
     srt_tools.utils.set_basic_args(args)
