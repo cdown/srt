@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+"""Process subtitle text content using arbitrary Python code."""
+
 import importlib
 import srt_tools.utils
 import logging
@@ -24,7 +26,7 @@ def parse_args():
         "Strip HTML-like symbols from a subtitle": """srt process -m re -f 'lambda sub: re.sub("<[^<]+?>", "", sub)'"""
     }
 
-    parser = srt_tools.utils.basic_parser(examples=examples)
+    parser = srt_tools.utils.basic_parser(description=__doc__, examples=examples)
     parser.add_argument(
         "-f", "--func", help="a function to use to process lines", required=True
     )
