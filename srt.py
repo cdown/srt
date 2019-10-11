@@ -11,10 +11,6 @@ import logging
 import io
 
 
-class TimestampParseError(ValueError):
-    pass
-
-
 log = logging.getLogger(__name__)
 
 # "." is not technically valid as a delimiter, but many editors create SRT
@@ -219,11 +215,12 @@ def srt_timestamp_to_timedelta(ts):
     :param str ts: A timestamp in SRT format
     :returns: The timestamp as a :py:class:`~datetime.timedelta`
     :rtype: datetime.timedelta
+    :raises TimestampParseError: If the timestamp is not parseable
     """
 
     match = TS_REGEX.match(ts)
     if match is None:
-        raise TimestampParseError("Got unparseable timestamp: {}".format(ts))
+        raise TimestampParseError("Unparseable timestamp: {}".format(ts))
     hrs, mins, secs, msecs = map(int, match.groups())
     return timedelta(hours=hrs, minutes=mins, seconds=secs, milliseconds=msecs)
 
@@ -436,6 +433,12 @@ class SRTParseError(Exception):
         self.expected_start = expected_start
         self.actual_start = actual_start
         self.unmatched_content = unmatched_content
+
+
+class TimestampParseError(ValueError):
+    """
+    Raised when an SRT timestamp could not be parsed.
+    """
 
 
 class _ShouldSkipException(Exception):
