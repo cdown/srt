@@ -23,13 +23,13 @@ def parse_args():
         default=datetime.timedelta(milliseconds=600),
         type=lambda ms: datetime.timedelta(milliseconds=int(ms)),
         help="if subs being muxed are within this number of milliseconds "
-        "of each other, they will get merged (default: 600)",
+        "of each other, they will have their times matched (default: 600)",
     )
     parser.add_argument(
         "--width",
         default=5,
         type=int,
-        help="the number of subs to consider merging (default: %(default)s)",
+        help="how many subs to consider for time matching at once (default: %(default)s)",
     )
     return parser.parse_args()
 
