@@ -26,11 +26,6 @@ example:
 Utilities
 ---------
 
-- *fix-subtitle-indexing* fixes subtitle indexing. Some badly formed SRT files
-  will have indexes that occur in a different order than the starting
-  timestamps for the subtitles they are associated with. This makes some media
-  players unable to display those subtitles, and they are subsequently lost
-  into the ether.
 - *fixed-timeshift* does fixed time correction. For example, if you have a
   movie that is consistently out of sync by two seconds, you can run this tool
   to shift the entire subtitle two seconds ahead or behind.
@@ -47,6 +42,9 @@ Utilities
   subtitle file that contains both, this tool can do that for you. It also
   supports clamping subtitles starting or ending at similar times to the same
   time to avoid subtitles jumping around the screen.
+- *normalise* standardises and cleans up SRT files. For example, it removes
+  spurious newlines, normalises timestamps, and fixes subtitle indexing to a
+  format that all media players should accept, with no noncompliant data.
 - *play* plays subtitles in the terminal at the time they are scheduled to
   display (note: it does not clear them from the screen afterwards). If you
   need to fast-forward to some point, you can combine it with

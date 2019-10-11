@@ -22,7 +22,7 @@ setup(
     py_modules=["srt", "srt_tools.utils"],
     scripts=[
         "srt_tools/srt",
-        "srt_tools/srt-fix-subtitle-indexing",
+        "srt_tools/srt-normalise",
         "srt_tools/srt-fixed-timeshift",
         "srt_tools/srt-linear-timeshift",
         "srt_tools/srt-lines-matching",
