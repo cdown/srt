@@ -55,7 +55,6 @@ SRT_REGEX = re.compile(
     ),
     re.DOTALL,
 )
-STANDARD_TS_COLON_OFFSET = 2
 
 ZERO_TIMEDELTA = timedelta(0)
 
