@@ -90,7 +90,7 @@ def basic_parser(
             help="the file to write to (default: stdout)",
         )
 
-    shelp = ("allow blank lines in output, your media player may explode",)
+    shelp = "allow blank lines in output, your media player may explode"
     if hide_no_strict:
         shelp = argparse.SUPPRESS
 
