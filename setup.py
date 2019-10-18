@@ -13,8 +13,8 @@ with codecs.open("README.rst", encoding="utf8") as readme_f:
 
 setup(
     name="srt",
-    version="2.1.0",
-    description="A tiny library for parsing, modifying, and composing SRT " "files.",
+    version="3.0.0",
+    description="A tiny library for parsing, modifying, and composing SRT files.",
     long_description=README,
     author="Chris Down",
     author_email="chris@chrisdown.name",
@@ -22,7 +22,7 @@ setup(
     py_modules=["srt", "srt_tools.utils"],
     scripts=[
         "srt_tools/srt",
-        "srt_tools/srt-fix-subtitle-indexing",
+        "srt_tools/srt-normalise",
         "srt_tools/srt-fixed-timeshift",
         "srt_tools/srt-linear-timeshift",
         "srt_tools/srt-lines-matching",
@@ -40,7 +40,6 @@ setup(
         "Programming Language :: Python :: 2",
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",

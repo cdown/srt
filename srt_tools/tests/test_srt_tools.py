@@ -92,7 +92,7 @@ def assert_supports_all_io_methods(cmd, exclude_output=False, exclude_stdin=Fals
 
 @parameterized(
     [
-        (["srt-fix-subtitle-indexing"], False),
+        (["srt-normalise"], False),
         (["srt-fixed-timeshift", "--seconds", "5"], False),
         (
             [

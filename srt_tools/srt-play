@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+"""Play subtitles with correct timing to stdout."""
+
 from __future__ import print_function
 import logging
 from threading import Timer, Lock
@@ -43,7 +45,11 @@ def schedule(subs, encoding):
 
 
 def main():
-    args = srt_tools.utils.basic_parser(no_output=True).parse_args()
+    examples = {"Play a subtitle": "srt play -i foo.srt"}
+
+    args = srt_tools.utils.basic_parser(
+        description=__doc__, examples=examples, no_output=True
+    ).parse_args()
     logging.basicConfig(level=args.log_level)
     srt_tools.utils.set_basic_args(args)
     schedule(args.input, args.encoding)

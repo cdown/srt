@@ -1,2 +1,2 @@
-nose
-hypothesis
+nose>=1,<2
+hypothesis>=4,<5
