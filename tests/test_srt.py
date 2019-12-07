@@ -273,6 +273,15 @@ def test_parsing_leading_whitespace(ws, subs):
 
 
 @given(st.lists(subtitles()))
+def test_parsing_negative_index(subs):
+    for sub in subs:
+        sub.index *= -1
+    prews_block = srt.compose(subs, reindex=False, strict=False)
+    reparsed_subtitles = srt.parse(prews_block)
+    subs_eq(reparsed_subtitles, subs)
+
+
+@given(st.lists(subtitles()))
 def test_parsing_content_with_blank_lines(subs):
     for subtitle in subs:
         # We stuff a blank line in the middle so as to trigger the "special"
@@ -433,6 +442,9 @@ def test_parser_noncontiguous(subs, fake_idx, garbage, fake_timedelta):
 def test_parser_noncontiguous_leading(subs, garbage):
     # Issue #50 permits leading whitespace, see test_parsing_leading_whitespace
     assume(not garbage.isspace())
+
+    # Issue #56 permits negative indexes, see test_parsing_negative_index
+    assume(garbage != "-")
 
     # It also shouldn't just be a number, because then we'd confuse it with our
     # index...
