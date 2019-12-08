@@ -7,6 +7,7 @@ python:
   - '2.7'
   - '3.5'
   - '3.6'
+  - '3.7'
 
 before_install: |
   if [ "$TRAVIS_OS_NAME" == "osx" ]; then
@@ -24,7 +25,13 @@ script:
 
 matrix:
   include:
-    # "coverage" toxenv runs tests, so no need to run TOXENV=py37
+    # Run long Hypothesis tests for release
+    - if: branch =~ ^release/.*$
+      python: '3.8'
+      env: TOXENV=system-release
+
+    # "coverage" toxenv runs tests, so no need to run TOXENV=py38
+    # TODO: pytype doesn't yet support 3.8, upgrade when it does
     - python: '3.7'
       env: TOXENV=black,pylint,pytype,bandit,coverage
 
@@ -32,10 +39,4 @@ matrix:
     # run them all with one instance of tox
     - os: osx
       language: generic
-
-jobs:
-  include:
-    # Run long Hypothesis tests for release
-    - if: branch =~ ^release/.*$
-      python: '3.7'
-      env: TOXENV=system-release
+      env: TOXENV=system
