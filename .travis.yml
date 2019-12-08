@@ -32,7 +32,6 @@ matrix:
     # run them all with one instance of tox
     - os: osx
       language: generic
-      env: TOXENV=py27,py35,py36,py37
 
 jobs:
   include:
