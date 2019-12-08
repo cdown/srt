@@ -444,7 +444,7 @@ def test_parser_noncontiguous_leading(subs, garbage):
     assume(not garbage.isspace())
 
     # Issue #56 permits negative indexes, see test_parsing_negative_index
-    assume(garbage != "-")
+    assume(garbage[-1] != "-")
 
     # It also shouldn't just be a number, because then we'd confuse it with our
     # index...
