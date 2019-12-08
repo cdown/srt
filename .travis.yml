@@ -33,3 +33,10 @@ matrix:
     - os: osx
       language: generic
       env: TOXENV=py27,py35,py36,py37
+
+jobs:
+  include:
+    # Run long Hypothesis tests for release
+    - if: branch =~ ^release/.*$
+      python: '3.7'
+      env: TOXENV=system-release

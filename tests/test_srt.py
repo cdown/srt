@@ -4,6 +4,7 @@
 from __future__ import unicode_literals
 from datetime import timedelta
 import functools
+import os
 import string
 from io import StringIO
 
@@ -25,10 +26,15 @@ try:
 except ImportError:  # Python 2 fallback
     from nose.tools import assert_items_equal as assert_count_equal
 
+SUPPRESSED_CHECKS = [HealthCheck.too_slow]
+
 settings.register_profile(
-    "base", settings(suppress_health_check=[HealthCheck.too_slow])
+    "base", settings(suppress_health_check=SUPPRESSED_CHECKS),
 )
-settings.load_profile("base")
+settings.register_profile(
+    "release", settings(max_examples=1000, suppress_health_check=SUPPRESSED_CHECKS),
+)
+settings.load_profile(os.getenv("HYPOTHESIS_PROFILE", "base"))
 
 HOURS_IN_DAY = 24
 TIMEDELTA_MAX_DAYS = 999999999
