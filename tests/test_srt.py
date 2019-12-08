@@ -4,6 +4,7 @@
 from __future__ import unicode_literals
 from datetime import timedelta
 import functools
+import os
 import string
 from io import StringIO
 
@@ -25,10 +26,15 @@ try:
 except ImportError:  # Python 2 fallback
     from nose.tools import assert_items_equal as assert_count_equal
 
+SUPPRESSED_CHECKS = [HealthCheck.too_slow]
+
 settings.register_profile(
-    "base", settings(suppress_health_check=[HealthCheck.too_slow])
+    "base", settings(suppress_health_check=SUPPRESSED_CHECKS),
 )
-settings.load_profile("base")
+settings.register_profile(
+    "release", settings(max_examples=1000, suppress_health_check=SUPPRESSED_CHECKS),
+)
+settings.load_profile(os.getenv("HYPOTHESIS_PROFILE", "base"))
 
 HOURS_IN_DAY = 24
 TIMEDELTA_MAX_DAYS = 999999999
@@ -273,6 +279,15 @@ def test_parsing_leading_whitespace(ws, subs):
 
 
 @given(st.lists(subtitles()))
+def test_parsing_negative_index(subs):
+    for sub in subs:
+        sub.index *= -1
+    prews_block = srt.compose(subs, reindex=False, strict=False)
+    reparsed_subtitles = srt.parse(prews_block)
+    subs_eq(reparsed_subtitles, subs)
+
+
+@given(st.lists(subtitles()))
 def test_parsing_content_with_blank_lines(subs):
     for subtitle in subs:
         # We stuff a blank line in the middle so as to trigger the "special"
@@ -433,6 +448,9 @@ def test_parser_noncontiguous(subs, fake_idx, garbage, fake_timedelta):
 def test_parser_noncontiguous_leading(subs, garbage):
     # Issue #50 permits leading whitespace, see test_parsing_leading_whitespace
     assume(not garbage.isspace())
+
+    # Issue #56 permits negative indexes, see test_parsing_negative_index
+    assume(garbage[-1] != "-")
 
     # It also shouldn't just be a number, because then we'd confuse it with our
     # index...
