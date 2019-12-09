@@ -25,8 +25,8 @@ script:
 
 matrix:
   include:
-    # Run long Hypothesis tests for release
-    - if: branch =~ ^release/.*$
+    # Run long Hypothesis tests for release/cron
+    - if: branch =~ ^release/.*$ or type = cron
       python: '3.8'
       env: TOXENV=system-release
 
