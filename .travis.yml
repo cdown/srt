@@ -40,3 +40,9 @@ matrix:
     - os: osx
       language: generic
       env: TOXENV=system
+
+    - python: pypy
+      env: TOXENV=pypy
+
+    - python: pypy3
+      env: TOXENV=pypy3
