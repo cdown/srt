@@ -111,6 +111,7 @@ def assert_supports_all_io_methods(cmd, exclude_output=False, exclude_stdin=Fals
         (["srt-lines-matching", "-f", "lambda x: True"], False),
         (["srt-process", "-f", "lambda x: x"], False),
         (["srt-mux"], False, True),
+        (["srt-mux", "-t"], False, True),
         # Need to sort out time/thread issues
         # (('srt-play'), True),
     ]

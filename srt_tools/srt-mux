@@ -9,10 +9,14 @@ import operator
 
 log = logging.getLogger(__name__)
 
+TOP = r"{\an8}"
+BOTTOM = r"{\an2}"
+
 
 def parse_args():
     examples = {
-        "Merge English and Chinese subtitles": "srt mux -i eng.srt -i chs.srt -o both.srt"
+        "Merge English and Chinese subtitles": "srt mux -i eng.srt -i chs.srt -o both.srt",
+        "Merge subtitles, with one on top and one at the bottom": "srt mux -t -i eng.srt -i chs.srt -o both.srt",
     }
     parser = srt_tools.utils.basic_parser(
         description=__doc__, examples=examples, multi_input=True
@@ -30,6 +34,12 @@ def parse_args():
         default=5,
         type=int,
         help="how many subs to consider for time matching at once (default: %(default)s)",
+    )
+    parser.add_argument(
+        "-t",
+        "--top-and-bottom",
+        action="store_true",
+        help="use SSA-style tags to place files at the top and bottom, respectively. Turns off time matching",
     )
     return parser.parse_args()
 
@@ -71,11 +81,18 @@ def main():
     srt_tools.utils.set_basic_args(args)
 
     muxed_subs = []
-    for subs in args.input:
-        muxed_subs.extend(subs)
+    for idx, subs in enumerate(args.input):
+        for sub in subs:
+            if args.top_and_bottom:
+                if idx % 2 == 0:
+                    sub.content = TOP + sub.content
+                else:
+                    sub.content = BOTTOM + sub.content
+            muxed_subs.append(sub)
 
-    merge_subs(muxed_subs, args.ms, "start", args.width)
-    merge_subs(muxed_subs, args.ms, "end", args.width)
+    if not args.top_and_bottom:
+        merge_subs(muxed_subs, args.ms, "start", args.width)
+        merge_subs(muxed_subs, args.ms, "end", args.width)
 
     output = srt_tools.utils.compose_suggest_on_fail(muxed_subs, strict=args.strict)
 
