@@ -41,6 +41,11 @@ def parse_args():
         action="store_true",
         help="use SSA-style tags to place files at the top and bottom, respectively. Turns off time matching",
     )
+    parser.add_argument(
+        "--no-time-matching",
+        action="store_true",
+        help="don't try to do time matching for close subtitles (see --ms)",
+    )
     return parser.parse_args()
 
 
@@ -90,7 +95,7 @@ def main():
                     sub.content = BOTTOM + sub.content
             muxed_subs.append(sub)
 
-    if not args.top_and_bottom:
+    if args.no_time_matching or not args.top_and_bottom:
         merge_subs(muxed_subs, args.ms, "start", args.width)
         merge_subs(muxed_subs, args.ms, "end", args.width)
 
