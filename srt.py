@@ -335,7 +335,7 @@ def parse(srt):
             index=int(raw_index),
             start=srt_timestamp_to_timedelta(raw_start),
             end=srt_timestamp_to_timedelta(raw_end),
-            content=content.replace("\r\n", "\n"),
+            content=content,
             proprietary=proprietary,
         )
 
