@@ -71,6 +71,11 @@ def assert_supports_all_io_methods(cmd, exclude_output=False, exclude_stdin=Fals
                     encoding="gb2312",
                 )
         assert len(set(outputs)) == 1, repr(outputs)
+
+        if os.name == "nt":
+            assert "\r\n" in outputs[0]
+        else:
+            assert "\r\n" not in outputs[0]
     finally:
         os.remove(out_file)
 

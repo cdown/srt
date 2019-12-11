@@ -7,6 +7,7 @@ import logging
 import sys
 import itertools
 import collections
+import os
 
 STDIN_BYTESTREAM = getattr(sys.stdin, "buffer", sys.stdin)
 STDOUT_BYTESTREAM = getattr(sys.stdout, "buffer", sys.stdout)
@@ -127,11 +128,16 @@ def set_basic_args(args):
         w_enc = codecs.getwriter(write_encoding)
 
         log.debug("Got %r as stream", stream)
+        # We don't use encoding= option to open because we want to have the
+        # same universal newlines behaviour as STD{IN,OUT}_BYTESTREAM
         if stream in DASH_STREAM_MAP.values():
             log.debug("%s in DASH_STREAM_MAP", stream_name)
             if stream is args.input:
                 args.input = srt.parse(r_enc(args.input).read())
             elif stream is args.output:
+                # Since args.output is not in text mode (since we didn't
+                # earlier know the encoding), we have no universal newline
+                # support and need to do it ourselves
                 args.output = w_enc(args.output)
         else:
             log.debug("%s not in DASH_STREAM_MAP", stream_name)
@@ -142,20 +148,20 @@ def set_basic_args(args):
                             if stream is args.input:
                                 args.input[i] = srt.parse(r_enc(input_fn).read())
                         else:
-                            f = open(input_fn, "r", encoding=read_encoding)
+                            f = r_enc(open(input_fn, "rb"))
                             with f:
                                 args.input[i] = srt.parse(f.read())
                 else:
-                    f = open(stream, "r", encoding=read_encoding)
+                    f = r_enc(open(stream, "rb"))
                     with f:
                         args.input = srt.parse(f.read())
             else:
-                args.output = open(args.output, "w", encoding=write_encoding)
+                args.output = w_enc(open(args.output, "wb"))
 
 
 def compose_suggest_on_fail(subs, strict=True):
     try:
-        return srt.compose(subs, strict=strict)
+        return srt.compose(subs, strict=strict, eol=os.linesep)
     except srt.SRTParseError as thrown_exc:
         log.fatal(
             "Parsing failed, maybe you need to pass a different encoding "
