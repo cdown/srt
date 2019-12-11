@@ -1,48 +1,59 @@
 dist: xenial
 language: python
 cache: pip
+install: pip install --upgrade tox
+script: tox
 
 # Drop once EOL: https://devguide.python.org/#status-of-python-branches
-python:
-  - '2.7'
-  - '3.5'
-  - '3.6'
-  - '3.7'
-
-before_install: |
-  if [ "$TRAVIS_OS_NAME" == "osx" ]; then
-    brew install python3
-    python3 --version
-  fi
-install: |
-  if [ "$TRAVIS_OS_NAME" == "osx" ]; then
-    pip3 install tox
-  else
-    pip install tox
-  fi
-script:
-  - 'tox'
-
-matrix:
+jobs:
   include:
+    ## Linux
+
+    # CPython (in official virtualenv)
+    - python: '2.7'
+    - python: '3.5'
+    - python: '3.6'
+    - python: '3.7'
+
+    # PyPy (in official virtualenv)
+    - python: pypy
+      env: TOXENV=pypy
+    - python: pypy3
+      env: TOXENV=pypy3
+
+    # Correctness tests. "coverage" toxenv runs tests, so no need to run
+    # TOXENV=py38.
+    #
+    # TODO: pytype doesn't yet support 3.8, upgrade when it does
+
+    - python: '3.7'
+      env: TOXENV=black,pylint,pytype,bandit,coverage
+
+    ## OSX
+
+    # CPython (in virtualenv, since it's not officially supported)
+    - os: osx
+      language: sh
+      env:
+        - TOXENV=py3  # Whatever one you happen to get...
+        - HOMEBREW_NO_INSTALL_CLEANUP=1
+        - HOMEBREW_NO_ANALYTICS=1
+      before_cache:
+        - rm -f "$HOME/Library/Caches/pip/log/debug.log"
+      cache:
+        directories:
+          - "$HOME/Library/Caches/pip"
+      addons:
+        homebrew:
+          packages: python3
+      before_install:
+        - python3 -m pip install --upgrade virtualenv
+        - virtualenv -p python3 --system-site-packages "$HOME/venv"
+        - source "$HOME/venv/bin/activate"
+
+    ## Special jobs
+
     # Run long Hypothesis tests for release/cron
     - if: branch =~ ^release/.*$ or type = cron
       python: '3.8'
       env: TOXENV=system-release
-
-    # "coverage" toxenv runs tests, so no need to run TOXENV=py38
-    # TODO: pytype doesn't yet support 3.8, upgrade when it does
-    - python: '3.7'
-      env: TOXENV=black,pylint,pytype,bandit,coverage
-
-    # OSX -- takes a while to start up on Travis, so once we get a worker just
-    # run them all with one instance of tox
-    - os: osx
-      language: generic
-      env: TOXENV=system
-
-    - python: pypy
-      env: TOXENV=pypy
-
-    - python: pypy3
-      env: TOXENV=pypy3
