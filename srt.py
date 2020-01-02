@@ -9,7 +9,7 @@ import logging
 import io
 
 
-log = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 # "." is not technically valid as a delimiter, but many editors create SRT
 # files with this delimiter for whatever reason. Many editors and players
@@ -71,7 +71,7 @@ FILE_TYPES = (io.IOBase,)
 
 
 @functools.total_ordering
-class Subtitle(object):
+class Subtitle:
     r"""
     The metadata relating to a single subtitle. Subtitles are sorted by start
     time by default.
@@ -85,6 +85,7 @@ class Subtitle(object):
     :param str content: The subtitle content
     """
 
+    # pylint: disable=R0913
     def __init__(self, index, start, end, content, proprietary=""):
         self.index = index
         self.start = start
@@ -166,7 +167,7 @@ def make_legal_content(content):
     # that we don't want with \x1{c..e}, etc
     legal_content = "\n".join(line for line in content.split("\n") if line)
     if legal_content != content:
-        log.info("Legalised content %r to %r", content, legal_content)
+        LOG.info("Legalised content %r to %r", content, legal_content)
     return legal_content
 
 
@@ -194,7 +195,7 @@ def timedelta_to_srt_timestamp(timedelta_timestamp):
     return "%02d:%02d:%02d,%03d" % (hrs, mins, secs, msecs)
 
 
-def srt_timestamp_to_timedelta(ts):
+def srt_timestamp_to_timedelta(timestamp):
     r"""
     Convert an SRT timestamp to a :py:class:`~datetime.timedelta`.
 
@@ -203,15 +204,15 @@ def srt_timestamp_to_timedelta(ts):
         >>> srt_timestamp_to_timedelta('01:23:04,000')
         datetime.timedelta(0, 4984)
 
-    :param str ts: A timestamp in SRT format
+    :param str timestamp: A timestamp in SRT format
     :returns: The timestamp as a :py:class:`~datetime.timedelta`
     :rtype: datetime.timedelta
     :raises TimestampParseError: If the timestamp is not parseable
     """
 
-    match = TS_REGEX.match(ts)
+    match = TS_REGEX.match(timestamp)
     if match is None:
-        raise TimestampParseError("Unparseable timestamp: {}".format(ts))
+        raise TimestampParseError("Unparseable timestamp: {}".format(timestamp))
     hrs, mins, secs, msecs = map(int, match.groups())
     return timedelta(hours=hrs, minutes=mins, seconds=secs, milliseconds=msecs)
 
@@ -261,7 +262,7 @@ def sort_and_reindex(subtitles, start_index=1, in_place=False, skip=True):
             try:
                 _should_skip_sub(subtitle)
             except _ShouldSkipException as thrown_exc:
-                log.info("Skipped subtitle at index %d: %s", subtitle.index, thrown_exc)
+                LOG.info("Skipped subtitle at index %d: %s", subtitle.index, thrown_exc)
                 skipped_subs += 1
                 continue
 
