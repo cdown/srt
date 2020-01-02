@@ -4,8 +4,6 @@ import os
 import subprocess
 import sys
 import tempfile
-from nose.tools import assert_true
-from parameterized import parameterized
 from shlex import quote
 
 
@@ -20,14 +18,7 @@ if os.name == "nt":
 def run_srt_util(cmd, shell=False, encoding="utf-8-sig"):
     extra_env = {}
 
-    if os.name == "nt":
-        # Comes from appveyor config
-        path_file = os.path.join(os.environ["TEMP"], "path")
-        with open(path_file, "r") as f:
-            new_path = f.read().strip().split("=", 1)[1]
-        extra_env = {"PATH": new_path}
-
-    env = {"PYTHONPATH": ".", "SystemRoot": "C:\Windows"}
+    env = {"PYTHONPATH": ".", "SystemRoot": r"C:\Windows"}
     env.update(extra_env)
 
     raw_out = subprocess.check_output(cmd, shell=shell, env=env)
@@ -79,13 +70,13 @@ def assert_supports_all_io_methods(cmd, exclude_output=False, exclude_stdin=Fals
                     shell=True,
                     encoding="gb2312",
                 )
-        assert_true(len(set(outputs)) == 1, repr(outputs))
+        assert len(set(outputs)) == 1, repr(outputs)
     finally:
         os.remove(out_file)
 
 
-@parameterized(
-    [
+def test_tools_support():
+    matrix = [
         (["srt-normalise"], False),
         (["srt-fixed-timeshift", "--seconds", "5"], False),
         (
@@ -109,6 +100,6 @@ def assert_supports_all_io_methods(cmd, exclude_output=False, exclude_stdin=Fals
         # Need to sort out time/thread issues
         # (('srt-play'), True),
     ]
-)
-def test_tools_support(args, exclude_output=False, exclude_stdin=False):
-    assert_supports_all_io_methods(args, exclude_output, exclude_stdin)
+
+    for args in matrix:
+        assert_supports_all_io_methods(*args)
