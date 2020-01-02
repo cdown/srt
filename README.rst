@@ -1,12 +1,8 @@
-|travis| |appveyor| |lgtm| |coveralls| |libraries|
+|travis| |lgtm| |coveralls| |libraries|
 
-.. |travis| image:: https://img.shields.io/travis/cdown/srt/develop.svg?label=linux%20%2B%20mac%20tests
+.. |travis| image:: https://img.shields.io/travis/cdown/srt/develop.svg?label=tests
   :target: https://travis-ci.org/cdown/srt
-  :alt: Linux and Mac tests
-
-.. |appveyor| image:: https://img.shields.io/appveyor/ci/cdown/srt/develop.svg?label=windows%20tests
-  :target: https://ci.appveyor.com/project/cdown/srt
-  :alt: Windows tests
+  :alt: Tests
 
 .. |lgtm| image:: https://img.shields.io/lgtm/grade/python/github/cdown/srt.svg?label=code%20quality
   :target: https://lgtm.com/projects/g/cdown/srt/overview/
