@@ -50,6 +50,18 @@ jobs:
         - virtualenv -p python3 --system-site-packages "$HOME/venv"
         - source "$HOME/venv/bin/activate"
 
+      ## Windows
+
+    - os: windows
+      language: shell
+      env:
+        - TOXENV=py38
+      before_install:
+        - choco install python --version 3.8.1
+        - python --version
+        - python -m pip install --upgrade pip
+      env: PATH=/c/Python38:/c/Python38/Scripts:$PATH
+
     ## Special jobs
 
     # Run long Hypothesis tests for release/cron
