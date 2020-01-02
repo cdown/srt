@@ -68,3 +68,7 @@ jobs:
     - if: branch =~ ^release/.*$ or type = cron
       python: '3.8'
       env: TOXENV=system-release
+
+notifications:
+  email:
+    - travis+srt@chrisdown.name
