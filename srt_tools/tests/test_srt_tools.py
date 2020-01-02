@@ -2,6 +2,7 @@
 
 import os
 import subprocess
+import sys
 import tempfile
 from nose.tools import assert_true
 from parameterized import parameterized
@@ -48,10 +49,7 @@ def windows_crappy_quote(data):
 
 def assert_supports_all_io_methods(cmd, exclude_output=False, exclude_stdin=False):
     cmd[0] = "srt_tools/" + cmd[0]
-
-    if os.name == "nt":
-        cmd.insert(0, "python")
-
+    cmd.insert(0, sys.executable)
     in_file = os.path.join(sample_dir, "ascii.srt")
     in_file_gb = os.path.join(sample_dir, "gb2312.srt")
     fd, out_file = tempfile.mkstemp()
