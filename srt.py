@@ -202,7 +202,7 @@ def srt_timestamp_to_timedelta(timestamp):
     .. doctest::
 
         >>> srt_timestamp_to_timedelta('01:23:04,000')
-        datetime.timedelta(0, 4984)
+        datetime.timedelta(seconds=4984)
 
     :param str timestamp: A timestamp in SRT format
     :returns: The timestamp as a :py:class:`~datetime.timedelta`
@@ -237,9 +237,10 @@ def sort_and_reindex(subtitles, start_index=1, in_place=False, skip=True):
         >>> from datetime import timedelta
         >>> one = timedelta(seconds=1)
         >>> two = timedelta(seconds=2)
+        >>> three = timedelta(seconds=3)
         >>> subs = [
-        ...     Subtitle(index=999, start=one, end=one, content='1'),
-        ...     Subtitle(index=0, start=two, end=two, content='2'),
+        ...     Subtitle(index=999, start=one, end=two, content='1'),
+        ...     Subtitle(index=0, start=two, end=three, content='2'),
         ... ]
         >>> list(sort_and_reindex(subs))  # doctest: +ELLIPSIS
         [Subtitle(...index=1...), Subtitle(...index=2...)]
@@ -378,13 +379,14 @@ def compose(subtitles, reindex=True, start_index=1, strict=True, eol=None):
     .. doctest::
 
         >>> from datetime import timedelta
-        >>> td = timedelta(seconds=1)
+        >>> start = timedelta(seconds=1)
+        >>> end = timedelta(seconds=2)
         >>> subs = [
-        ...     Subtitle(index=1, start=td, end=td, content='x'),
-        ...     Subtitle(index=2, start=td, end=td, content='y'),
+        ...     Subtitle(index=1, start=start, end=end, content='x'),
+        ...     Subtitle(index=2, start=start, end=end, content='y'),
         ... ]
         >>> compose(subs)  # doctest: +ELLIPSIS
-        '1\n00:00:01,000 --> 00:00:01,000\nx\n\n2\n00:00:01,000 --> ...'
+        '1\n00:00:01,000 --> 00:00:02,000\nx\n\n2\n00:00:01,000 --> ...'
 
     :param subtitles: The subtitles to convert to SRT blocks
     :type subtitles: :term:`iterator` of :py:class:`Subtitle` objects

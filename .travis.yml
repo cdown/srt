@@ -14,6 +14,7 @@ jobs:
     - python: '3.6'
     # 3.7 is below
     - python: '3.8'
+      env: TOXENV=doctest
 
     # PyPy (in official virtualenv)
     - python: pypy3
