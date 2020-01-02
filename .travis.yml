@@ -10,14 +10,12 @@ jobs:
     ## Linux
 
     # CPython (in official virtualenv)
-    - python: '2.7'
     - python: '3.5'
     - python: '3.6'
+    # 3.7 is below
     - python: '3.8'
 
     # PyPy (in official virtualenv)
-    - python: pypy
-      env: TOXENV=pypy
     - python: pypy3
       env: TOXENV=pypy3
 

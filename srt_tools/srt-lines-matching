@@ -74,11 +74,7 @@ def main():
     output = srt_tools.utils.compose_suggest_on_fail(
         matching_subtitles_only, strict=args.strict
     )
-
-    try:
-        args.output.write(output)
-    except (UnicodeEncodeError, TypeError):  # Python 2 fallback
-        args.output.write(output.encode(args.encoding))
+    args.output.write(output)
 
 
 if __name__ == "__main__":

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding=utf8
 
 from __future__ import unicode_literals
 from datetime import timedelta
@@ -17,14 +16,10 @@ from nose.tools import (
     assert_false,
     assert_true,
     assert_in,
+    assert_count_equal,
 )
 
 import srt
-
-try:
-    from nose.tools import assert_count_equal
-except ImportError:  # Python 2 fallback
-    from nose.tools import assert_items_equal as assert_count_equal
 
 SUPPRESSED_CHECKS = [HealthCheck.too_slow]
 

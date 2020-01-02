@@ -6,11 +6,7 @@ import sys
 import tempfile
 from nose.tools import assert_true
 from parameterized import parameterized
-
-try:
-    from shlex import quote
-except ImportError:  # <3.3 fallback
-    from shellescape import quote
+from shlex import quote
 
 
 sample_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "files")

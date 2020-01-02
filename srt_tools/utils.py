@@ -8,11 +8,6 @@ import sys
 import itertools
 import collections
 
-if sys.version_info < (3,):
-    _open = codecs.open
-else:
-    _open = open
-
 STDIN_BYTESTREAM = getattr(sys.stdin, "buffer", sys.stdin)
 STDOUT_BYTESTREAM = getattr(sys.stdout, "buffer", sys.stdout)
 
@@ -147,15 +142,15 @@ def set_basic_args(args):
                             if stream is args.input:
                                 args.input[i] = srt.parse(r_enc(input_fn).read())
                         else:
-                            f = _open(input_fn, "r", encoding=read_encoding)
+                            f = open(input_fn, "r", encoding=read_encoding)
                             with f:
                                 args.input[i] = srt.parse(f.read())
                 else:
-                    f = _open(stream, "r", encoding=read_encoding)
+                    f = open(stream, "r", encoding=read_encoding)
                     with f:
                         args.input = srt.parse(f.read())
             else:
-                args.output = _open(args.output, "w", encoding=write_encoding)
+                args.output = open(args.output, "w", encoding=write_encoding)
 
 
 def compose_suggest_on_fail(subs, strict=True):

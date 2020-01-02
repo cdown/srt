@@ -1,9 +1,7 @@
 #!/usr/bin/env python
-# coding=utf8
 
 """A tiny library for parsing, modifying, and composing SRT files."""
 
-from __future__ import unicode_literals
 import functools
 import re
 from datetime import timedelta
@@ -69,11 +67,7 @@ SECONDS_IN_HOUR = 3600
 SECONDS_IN_MINUTE = 60
 HOURS_IN_DAY = 24
 MICROSECONDS_IN_MILLISECOND = 1000
-
-try:
-    FILE_TYPES = (file, io.IOBase)  # pytype: disable=name-error
-except NameError:  # `file` doesn't exist in Python 3
-    FILE_TYPES = (io.IOBase,)
+FILE_TYPES = (io.IOBase,)
 
 
 @functools.total_ordering
@@ -110,9 +104,7 @@ class Subtitle(object):
         )
 
     def __repr__(self):
-        # Python 2/3 cross compatibility
-        var_items = getattr(vars(self), "iteritems", getattr(vars(self), "items"))
-        item_list = ", ".join("%s=%r" % (k, v) for k, v in var_items())
+        item_list = ", ".join("%s=%r" % (k, v) for k, v in vars(self).items())
         return "%s(%s)" % (type(self).__name__, item_list)
 
     def to_srt(self, strict=True, eol=None):
@@ -293,8 +285,7 @@ def _should_skip_sub(subtitle):
 
 def parse(srt):
     r'''
-    Convert an SRT formatted string (in Python 2, a :class:`unicode` object) to
-    a :term:`generator` of Subtitle objects.
+    Convert an SRT formatted string to a :term:`generator` of Subtitle objects.
 
     This function works around bugs present in many SRT files, most notably
     that it is designed to not bork when presented with a blank line as part of
