@@ -68,7 +68,7 @@ jobs:
     # Run long Hypothesis tests for release/cron
     - if: branch =~ ^release/.*$ or type = cron
       python: '3.8'
-      env: TOXENV=system-release
+      env: TOXENV=py-release
 
 notifications:
   email:
