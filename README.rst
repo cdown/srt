@@ -42,7 +42,7 @@ Why choose this library?
 - Tolerant of many common errors found in real-world SRT files
 - Support for Asian-style SRT formats (ie. "fullwidth" SRT format)
 - Completely Unicode compliant
-- `Released into the public domain`_
+- Released under a highly permissive license (MIT)
 - Real world tested — used in production to process thousands of SRT files
   every day
 - Portable — runs on Linux, OSX, and Windows
@@ -54,7 +54,6 @@ Why choose this library?
 .. _Hypothesis: https://github.com/DRMacIver/hypothesis
 .. _`100% test coverage`: https://coveralls.io/github/cdown/srt?branch=develop
 .. _`Well documented API`: http://srt.readthedocs.org/en/latest/index.html
-.. _`Released into the public domain`: https://cr.yp.to/publicdomain.html
 .. _`~150 lines of code`: https://paste.pound-python.org/raw/3WgFQIvkVVvBZvQI3nm4/
 .. _PyPy: http://pypy.org/
 .. _`~30% faster than pysrt on typical workloads`: https://paste.pound-python.org/raw/8nQKbDW0ROWvS7bOeAb3/
