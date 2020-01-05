@@ -85,6 +85,10 @@ def basic_parser(
             type=lambda arg: dash_to_stream(arg, "output"),
             help="the file to write to (default: stdout)",
         )
+        if not multi_input:
+            parser.add_argument(
+                "--inplace", "-p", action="store_true", help="modify file in place",
+            )
 
     shelp = "allow blank lines in output, your media player may explode"
     if hide_no_strict:
@@ -108,6 +112,15 @@ def basic_parser(
 
 def set_basic_args(args):
     # TODO: dedupe some of this
+    if getattr(args, "inplace", None):
+        if args.input == DASH_STREAM_MAP["input"]:
+            raise ValueError("Cannot use --inplace on stdin")
+
+        if args.output != DASH_STREAM_MAP["output"]:
+            raise ValueError("Cannot use -o and -p together")
+
+        args.output = args.input
+
     for stream_name in ("input", "output"):
         log.debug('Processing stream "%s"', stream_name)
 
