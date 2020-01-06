@@ -9,6 +9,8 @@ import itertools
 import collections
 import os
 
+PROG_NAME = os.path.basename(sys.argv[0]).replace("-", " ", 1)
+
 STDIN_BYTESTREAM = getattr(sys.stdin, "buffer", sys.stdin)
 STDOUT_BYTESTREAM = getattr(sys.stdout, "buffer", sys.stdout)
 
@@ -48,6 +50,7 @@ def basic_parser(
             example_lines.append("    $ {}\n".format(code))
 
     parser = argparse.ArgumentParser(
+        prog=PROG_NAME,
         description=description,
         epilog="\n".join(example_lines),
         formatter_class=argparse.RawDescriptionHelpFormatter,
