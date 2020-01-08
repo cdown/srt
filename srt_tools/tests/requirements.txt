@@ -1,2 +1,1 @@
 shellescape>=3,<4
-parameterized>=0.6,<0.7
