@@ -5,6 +5,7 @@ install: pip install --upgrade tox
 script: tox
 
 # Drop once EOL: https://devguide.python.org/#status-of-python-branches
+# Also bump python_requires in setup.py
 jobs:
   include:
     ## Linux
