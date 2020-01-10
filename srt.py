@@ -108,7 +108,7 @@ class Subtitle:
         item_list = ", ".join("%s=%r" % (k, v) for k, v in vars(self).items())
         return "%s(%s)" % (type(self).__name__, item_list)
 
-    def to_srt(self, strict=True, eol=None):
+    def to_srt(self, strict=True, eol="\n"):
         r"""
         Convert the current :py:class:`Subtitle` to an SRT block.
 
@@ -131,10 +131,10 @@ class Subtitle:
         if strict:
             output_content = make_legal_content(output_content)
 
-        if eol is not None:
-            output_content = output_content.replace("\n", eol)
-        else:
+        if eol is None:
             eol = "\n"
+        elif eol != "\n":
+            output_content = output_content.replace("\n", eol)
 
         template = "{idx}{eol}{start} --> {end}{prop}{eol}{content}{eol}{eol}"
         return template.format(
