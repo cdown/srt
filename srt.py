@@ -152,7 +152,7 @@ def make_legal_content(content):
     Remove illegal content from a content block. Illegal content includes:
 
     * Blank lines
-    * Starting or ending with a newline
+    * Starting or ending with a blank line
 
     .. doctest::
 
@@ -163,11 +163,16 @@ def make_legal_content(content):
     :returns: The legalised content
     :rtype: srt
     """
+    # Optimisation: Usually the content we get is legally valid. Do a quick
+    # check to see if we really need to do anything here. This saves time from
+    # generating legal_content by about 50%.
+    if not content.startswith("\n") and "\n\n" not in content:
+        return content
+
     # We can't use content.splitlines() here since it does all sorts of stuff
     # that we don't want with \x1{c..e}, etc
     legal_content = "\n".join(line for line in content.split("\n") if line)
-    if legal_content != content:
-        LOG.info("Legalised content %r to %r", content, legal_content)
+    LOG.info("Legalised content %r to %r", content, legal_content)
     return legal_content
 
 
