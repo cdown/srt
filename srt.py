@@ -118,7 +118,7 @@ class Subtitle:
         :param bool strict: If disabled, will allow blank lines in the content
                             of the SRT block, which is a violation of the SRT
                             standard and may case your media player to explode
-        :param str eol: The end of line string to use (default "\n")
+        :param str eol: The end of line string to use (default "\\n")
         :returns: The metadata of the current :py:class:`Subtitle` object as an
                   SRT formatted subtitle block
         :rtype: str
