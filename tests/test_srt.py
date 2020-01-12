@@ -133,8 +133,8 @@ def subtitles(strict=True):
     start_timestamp_strategy = timedeltas(min_value=0, max_value=500000)
     end_timestamp_strategy = timedeltas(min_value=500001, max_value=999999)
 
-    # If we want to test \r, we'll test it by ourselves. It makes testing
-    # harder without because we don't get the same outputs as inputs on Unix.
+    # \r is not legal inside Subtitle.content, it should have already been
+    # normalised to \n.
     content_strategy = st.text(min_size=1).filter(lambda x: "\r" not in x)
     proprietary_strategy = st.text().filter(
         lambda x: all(eol not in x for eol in "\r\n")
@@ -198,6 +198,9 @@ def test_can_compose_without_eol_at_all(input_subs):
 
 @given(st.text().filter(is_strictly_legal_content))
 def test_compose_and_parse_strict_mode(content):
+    # sub.content should not have OS-specific line separators, only \n
+    assume("\r" not in content)
+
     content = "\n" + content + "\n\n" + content + "\n"
     sub = CONTENTLESS_SUB(content=content)
 

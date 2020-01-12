@@ -82,7 +82,10 @@ class Subtitle:
     :param end: The time that the subtitle should stop being shown
     :type end: :py:class:`datetime.timedelta`
     :param str proprietary: Proprietary metadata for this subtitle
-    :param str content: The subtitle content
+    :param str content: The subtitle content. Should not contain OS-specific
+                        line separators, only \n. This is taken care of already
+                        if you use :py:func:`srt.parse` to generate Subtitle
+                        objects.
     """
 
     # pylint: disable=R0913
