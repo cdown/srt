@@ -14,12 +14,13 @@ import hypothesis.strategies as st
 
 import srt
 
-SUPPRESSED_CHECKS = [HealthCheck.too_slow]
-
-settings.register_profile("base", settings(suppress_health_check=SUPPRESSED_CHECKS))
-settings.register_profile(
-    "release", settings(max_examples=1000, suppress_health_check=SUPPRESSED_CHECKS)
+REGISTER_SETTINGS = lambda name, **kwargs: settings.register_profile(
+    name, suppress_health_check=[HealthCheck.too_slow], deadline=None, **kwargs
 )
+
+REGISTER_SETTINGS("base")
+REGISTER_SETTINGS("release", max_examples=1000)
+
 settings.load_profile(os.getenv("HYPOTHESIS_PROFILE", "base"))
 
 HOURS_IN_DAY = 24
