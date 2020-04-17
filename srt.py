@@ -26,6 +26,7 @@ RGX_CONTENT = r".*?"
 RGX_POSSIBLE_CRLF = r"\r?\n"
 
 TS_REGEX = re.compile(RGX_TIMESTAMP_PARSEABLE)
+MULTI_WS_REGEX = re.compile(r"\n\n+")
 SRT_REGEX = re.compile(
     r"\s*({idx})\s*{eof}({ts}) +-[ -]> +({ts}) ?({proprietary}){eof}({content})"
     # Many sub editors don't add a blank line to the end, and many editors and
@@ -172,9 +173,7 @@ def make_legal_content(content):
     if not content.startswith("\n") and "\n\n" not in content:
         return content
 
-    # We can't use content.splitlines() here since it does all sorts of stuff
-    # that we don't want with \x1{c..e}, etc
-    legal_content = "\n".join(line for line in content.split("\n") if line)
+    legal_content = MULTI_WS_REGEX.sub("\n", content.strip("\n"))
     LOG.info("Legalised content %r to %r", content, legal_content)
     return legal_content
 
