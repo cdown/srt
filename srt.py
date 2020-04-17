@@ -378,7 +378,9 @@ def _raise_if_not_contiguous(srt, expected_start, actual_start):
         raise SRTParseError(expected_start, actual_start, unmatched_content)
 
 
-def compose(subtitles, reindex=True, start_index=1, strict=True, eol=None):
+def compose(
+    subtitles, reindex=True, start_index=1, strict=True, eol=None, in_place=False
+):
     r"""
     Convert an iterator of :py:class:`Subtitle` objects to a string of joined
     SRT blocks.
@@ -404,10 +406,14 @@ def compose(subtitles, reindex=True, start_index=1, strict=True, eol=None):
     :param str eol: The end of line string to use (default "\\n")
     :returns: A single SRT formatted string, with each input
               :py:class:`Subtitle` represented as an SRT block
+    :param bool in_place: Whether to reindex subs in-place for performance
+                          (version <=1.0.0 behaviour)
     :rtype: str
     """
     if reindex:
-        subtitles = sort_and_reindex(subtitles, start_index=start_index)
+        subtitles = sort_and_reindex(
+            subtitles, start_index=start_index, in_place=in_place
+        )
 
     return "".join(subtitle.to_srt(strict=strict, eol=eol) for subtitle in subtitles)
 
