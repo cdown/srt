@@ -170,7 +170,7 @@ def make_legal_content(content):
     # Optimisation: Usually the content we get is legally valid. Do a quick
     # check to see if we really need to do anything here. This saves time from
     # generating legal_content by about 50%.
-    if not content.startswith("\n") and "\n\n" not in content:
+    if content and content[0] != "\n" and "\n\n" not in content:
         return content
 
     legal_content = MULTI_WS_REGEX.sub("\n", content.strip("\n"))
