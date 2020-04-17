@@ -15,12 +15,12 @@ LOG = logging.getLogger(__name__)
 # files with this delimiter for whatever reason. Many editors and players
 # accept it, so we do too.
 RGX_TIMESTAMP_MAGNITUDE_DELIM = r"[,.:，．。：]"
-RGX_TIMESTAMP_FIELD = r"\d+"
+RGX_TIMESTAMP_FIELD = r"[0-9]+"
 RGX_TIMESTAMP = RGX_TIMESTAMP_MAGNITUDE_DELIM.join([RGX_TIMESTAMP_FIELD] * 4)
 RGX_TIMESTAMP_PARSEABLE = r"^{}$".format(
     RGX_TIMESTAMP_MAGNITUDE_DELIM.join(["(" + RGX_TIMESTAMP_FIELD + ")"] * 4)
 )
-RGX_INDEX = r"-?\d+"
+RGX_INDEX = r"-?[0-9]+"
 RGX_PROPRIETARY = r"[^\r\n]*"
 RGX_CONTENT = r".*?"
 RGX_POSSIBLE_CRLF = r"\r?\n"
