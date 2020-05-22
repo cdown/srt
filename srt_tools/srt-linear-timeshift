@@ -94,7 +94,11 @@ def main():
     srt_tools.utils.set_basic_args(args)
     corrected_subs = linear_correct_subs(args.input, angular, linear)
     output = srt_tools.utils.compose_suggest_on_fail(corrected_subs, strict=args.strict)
-    args.output.write(output)
+
+    try:
+        args.output.write(output)
+    except (UnicodeEncodeError, TypeError):  # Python 2 fallback
+        args.output.write(output.encode(args.encoding))
 
 
 if __name__ == "__main__":  # pragma: no cover
