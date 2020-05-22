@@ -17,7 +17,10 @@ def print_sub(sub, encoding):
     log.debug("Timer woke up to print %s", sub.content)
 
     with output_lock:
-        sys.stdout.write(sub.content + "\n\n")
+        try:
+            sys.stdout.write(sub.content + "\n\n")
+        except UnicodeEncodeError:  # Python 2 fallback
+            sys.stdout.write(sub.content.encode(encoding) + "\n\n")
         sys.stdout.flush()
 
 

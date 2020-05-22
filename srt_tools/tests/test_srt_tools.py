@@ -4,7 +4,11 @@ import os
 import subprocess
 import sys
 import tempfile
-from shlex import quote
+
+try:
+    from shlex import quote
+except ImportError:  # <3.3 fallback
+    from pipes import quote
 
 
 sample_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "files")
