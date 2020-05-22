@@ -8,7 +8,7 @@ with codecs.open("README.rst", encoding="utf8") as readme_f:
 
 setup(
     name="srt",
-    version="3.1.0",
+    version="3.2.1",
     python_requires=">=3.5",
     description="A tiny library for parsing, modifying, and composing SRT files.",
     long_description=README,
