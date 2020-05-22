@@ -261,6 +261,15 @@ def test_parsing_spaced_arrow(subs):
     subs_eq(reparsed_subtitles, subs)
 
 
+@given(st.lists(subtitles()))
+def test_parsing_no_ws_arrow(subs):
+    spaced_block = srt.compose(subs, reindex=False, strict=False).replace(
+        " --> ", "-->"
+    )
+    reparsed_subtitles = srt.parse(spaced_block)
+    subs_eq(reparsed_subtitles, subs)
+
+
 @given(st.text(string.whitespace), st.lists(subtitles()))
 def test_parsing_leading_whitespace(ws, subs):
     prews_block = ws + srt.compose(subs, reindex=False, strict=False)
