@@ -1,12 +1,8 @@
-|travis| |appveyor| |lgtm| |coveralls| |libraries|
+|travis| |lgtm| |coveralls| |libraries|
 
-.. |travis| image:: https://img.shields.io/travis/cdown/srt/develop.svg?label=linux%20%2B%20mac%20tests
+.. |travis| image:: https://img.shields.io/travis/cdown/srt/develop.svg?label=tests
   :target: https://travis-ci.org/cdown/srt
-  :alt: Linux and Mac tests
-
-.. |appveyor| image:: https://img.shields.io/appveyor/ci/cdown/srt/develop.svg?label=windows%20tests
-  :target: https://ci.appveyor.com/project/cdown/srt
-  :alt: Windows tests
+  :alt: Tests
 
 .. |lgtm| image:: https://img.shields.io/lgtm/grade/python/github/cdown/srt.svg?label=code%20quality
   :target: https://lgtm.com/projects/g/cdown/srt/overview/
@@ -40,13 +36,12 @@ Why choose this library?
 - `100% test coverage`_ (including branches)
 - `Well documented API`_, at both a high and low level
 - `~30% faster than pysrt on typical workloads`_
-- Native support for Python 2 and 3
 - Full support for `PyPy`_
 - No dependencies outside of the standard library
 - Tolerant of many common errors found in real-world SRT files
 - Support for Asian-style SRT formats (ie. "fullwidth" SRT format)
 - Completely Unicode compliant
-- `Released into the public domain`_
+- Released under a highly permissive license (MIT)
 - Real world tested — used in production to process thousands of SRT files
   every day
 - Portable — runs on Linux, OSX, and Windows
@@ -58,7 +53,6 @@ Why choose this library?
 .. _Hypothesis: https://github.com/DRMacIver/hypothesis
 .. _`100% test coverage`: https://coveralls.io/github/cdown/srt?branch=develop
 .. _`Well documented API`: http://srt.readthedocs.org/en/latest/index.html
-.. _`Released into the public domain`: https://cr.yp.to/publicdomain.html
 .. _`~150 lines of code`: https://paste.pound-python.org/raw/3WgFQIvkVVvBZvQI3nm4/
 .. _PyPy: http://pypy.org/
 .. _`~30% faster than pysrt on typical workloads`: https://paste.pound-python.org/raw/8nQKbDW0ROWvS7bOeAb3/

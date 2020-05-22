@@ -7,11 +7,9 @@ import logging
 import sys
 import itertools
 import collections
+import os
 
-if sys.version_info < (3,):
-    _open = codecs.open
-else:
-    _open = open
+PROG_NAME = os.path.basename(sys.argv[0]).replace("-", " ", 1)
 
 STDIN_BYTESTREAM = getattr(sys.stdin, "buffer", sys.stdin)
 STDOUT_BYTESTREAM = getattr(sys.stdout, "buffer", sys.stdout)
@@ -52,6 +50,7 @@ def basic_parser(
             example_lines.append("    $ {}\n".format(code))
 
     parser = argparse.ArgumentParser(
+        prog=PROG_NAME,
         description=description,
         epilog="\n".join(example_lines),
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -89,6 +88,10 @@ def basic_parser(
             type=lambda arg: dash_to_stream(arg, "output"),
             help="the file to write to (default: stdout)",
         )
+        if not multi_input:
+            parser.add_argument(
+                "--inplace", "-p", action="store_true", help="modify file in place",
+            )
 
     shelp = "allow blank lines in output, your media player may explode"
     if hide_no_strict:
@@ -112,6 +115,15 @@ def basic_parser(
 
 def set_basic_args(args):
     # TODO: dedupe some of this
+    if getattr(args, "inplace", None):
+        if args.input == DASH_STREAM_MAP["input"]:
+            raise ValueError("Cannot use --inplace on stdin")
+
+        if args.output != DASH_STREAM_MAP["output"]:
+            raise ValueError("Cannot use -o and -p together")
+
+        args.output = args.input
+
     for stream_name in ("input", "output"):
         log.debug('Processing stream "%s"', stream_name)
 
@@ -132,11 +144,16 @@ def set_basic_args(args):
         w_enc = codecs.getwriter(write_encoding)
 
         log.debug("Got %r as stream", stream)
+        # We don't use encoding= option to open because we want to have the
+        # same universal newlines behaviour as STD{IN,OUT}_BYTESTREAM
         if stream in DASH_STREAM_MAP.values():
             log.debug("%s in DASH_STREAM_MAP", stream_name)
             if stream is args.input:
                 args.input = srt.parse(r_enc(args.input).read())
             elif stream is args.output:
+                # Since args.output is not in text mode (since we didn't
+                # earlier know the encoding), we have no universal newline
+                # support and need to do it ourselves
                 args.output = w_enc(args.output)
         else:
             log.debug("%s not in DASH_STREAM_MAP", stream_name)
@@ -147,20 +164,20 @@ def set_basic_args(args):
                             if stream is args.input:
                                 args.input[i] = srt.parse(r_enc(input_fn).read())
                         else:
-                            f = _open(input_fn, "r", encoding=read_encoding)
+                            f = r_enc(open(input_fn, "rb"))
                             with f:
                                 args.input[i] = srt.parse(f.read())
                 else:
-                    f = _open(stream, "r", encoding=read_encoding)
+                    f = r_enc(open(stream, "rb"))
                     with f:
                         args.input = srt.parse(f.read())
             else:
-                args.output = _open(args.output, "w", encoding=write_encoding)
+                args.output = w_enc(open(args.output, "wb"))
 
 
 def compose_suggest_on_fail(subs, strict=True):
     try:
-        return srt.compose(subs, strict=strict)
+        return srt.compose(subs, strict=strict, eol=os.linesep, in_place=True)
     except srt.SRTParseError as thrown_exc:
         log.fatal(
             "Parsing failed, maybe you need to pass a different encoding "

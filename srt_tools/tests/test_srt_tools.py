@@ -2,14 +2,9 @@
 
 import os
 import subprocess
+import sys
 import tempfile
-from nose.tools import assert_true
-from parameterized import parameterized
-
-try:
-    from shlex import quote
-except ImportError:  # <3.3 fallback
-    from shellescape import quote
+from shlex import quote
 
 
 sample_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "files")
@@ -23,14 +18,7 @@ if os.name == "nt":
 def run_srt_util(cmd, shell=False, encoding="utf-8-sig"):
     extra_env = {}
 
-    if os.name == "nt":
-        # Comes from appveyor config
-        path_file = os.path.join(os.environ["TEMP"], "path")
-        with open(path_file, "r") as f:
-            new_path = f.read().strip().split("=", 1)[1]
-        extra_env = {"PATH": new_path}
-
-    env = {"PYTHONPATH": ".", "SystemRoot": "C:\Windows"}
+    env = {"PYTHONPATH": ".", "SystemRoot": r"C:\Windows"}
     env.update(extra_env)
 
     raw_out = subprocess.check_output(cmd, shell=shell, env=env)
@@ -48,10 +36,7 @@ def windows_crappy_quote(data):
 
 def assert_supports_all_io_methods(cmd, exclude_output=False, exclude_stdin=False):
     cmd[0] = "srt_tools/" + cmd[0]
-
-    if os.name == "nt":
-        cmd.insert(0, "python")
-
+    cmd.insert(0, sys.executable)
     in_file = os.path.join(sample_dir, "ascii.srt")
     in_file_gb = os.path.join(sample_dir, "gb2312.srt")
     fd, out_file = tempfile.mkstemp()
@@ -85,13 +70,18 @@ def assert_supports_all_io_methods(cmd, exclude_output=False, exclude_stdin=Fals
                     shell=True,
                     encoding="gb2312",
                 )
-        assert_true(len(set(outputs)) == 1, repr(outputs))
+        assert len(set(outputs)) == 1, repr(outputs)
+
+        if os.name == "nt":
+            assert "\r\n" in outputs[0]
+        else:
+            assert "\r\n" not in outputs[0]
     finally:
         os.remove(out_file)
 
 
-@parameterized(
-    [
+def test_tools_support():
+    matrix = [
         (["srt-normalise"], False),
         (["srt-fixed-timeshift", "--seconds", "5"], False),
         (
@@ -111,9 +101,10 @@ def assert_supports_all_io_methods(cmd, exclude_output=False, exclude_stdin=Fals
         (["srt-lines-matching", "-f", "lambda x: True"], False),
         (["srt-process", "-f", "lambda x: x"], False),
         (["srt-mux"], False, True),
+        (["srt-mux", "-t"], False, True),
         # Need to sort out time/thread issues
         # (('srt-play'), True),
     ]
-)
-def test_tools_support(args, exclude_output=False, exclude_stdin=False):
-    assert_supports_all_io_methods(args, exclude_output, exclude_stdin)
+
+    for args in matrix:
+        assert_supports_all_io_methods(*args)

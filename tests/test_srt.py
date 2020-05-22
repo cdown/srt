@@ -1,39 +1,26 @@
 #!/usr/bin/env python
-# coding=utf8
 
 from __future__ import unicode_literals
 from datetime import timedelta
+import collections
 import functools
 import os
 import string
 from io import StringIO
 
+import pytest
 from hypothesis import given, settings, HealthCheck, assume
 import hypothesis.strategies as st
-from nose.tools import (
-    eq_ as eq,
-    assert_not_equal as neq,
-    assert_raises,
-    assert_false,
-    assert_true,
-    assert_in,
-)
 
 import srt
 
-try:
-    from nose.tools import assert_count_equal
-except ImportError:  # Python 2 fallback
-    from nose.tools import assert_items_equal as assert_count_equal
-
-SUPPRESSED_CHECKS = [HealthCheck.too_slow]
-
-settings.register_profile(
-    "base", settings(suppress_health_check=SUPPRESSED_CHECKS),
+REGISTER_SETTINGS = lambda name, **kwargs: settings.register_profile(
+    name, suppress_health_check=[HealthCheck.too_slow], deadline=None, **kwargs
 )
-settings.register_profile(
-    "release", settings(max_examples=1000, suppress_health_check=SUPPRESSED_CHECKS),
-)
+
+REGISTER_SETTINGS("base")
+REGISTER_SETTINGS("release", max_examples=1000)
+
 settings.load_profile(os.getenv("HYPOTHESIS_PROFILE", "base"))
 
 HOURS_IN_DAY = 24
@@ -67,12 +54,12 @@ def subs_eq(got, expected, any_order=False):
     Compare Subtitle objects using vars() so that differences are easy to
     identify.
     """
-    got_vars = [vars(sub) for sub in got]
-    expected_vars = [vars(sub) for sub in expected]
+    got_vars = [frozenset(vars(sub).items()) for sub in got]
+    expected_vars = [frozenset(vars(sub).items()) for sub in expected]
     if any_order:
-        assert_count_equal(got_vars, expected_vars)
+        assert collections.Counter(got_vars) == collections.Counter(expected_vars)
     else:
-        eq(got_vars, expected_vars)
+        assert got_vars == expected_vars
 
 
 def timedeltas(min_value=0, max_value=TIMEDELTA_MAX_DAYS):
@@ -147,8 +134,8 @@ def subtitles(strict=True):
     start_timestamp_strategy = timedeltas(min_value=0, max_value=500000)
     end_timestamp_strategy = timedeltas(min_value=500001, max_value=999999)
 
-    # If we want to test \r, we'll test it by ourselves. It makes testing
-    # harder without because we don't get the same outputs as inputs on Unix.
+    # \r is not legal inside Subtitle.content, it should have already been
+    # normalised to \n.
     content_strategy = st.text(min_size=1).filter(lambda x: "\r" not in x)
     proprietary_strategy = st.text().filter(
         lambda x: all(eol not in x for eol in "\r\n")
@@ -212,6 +199,9 @@ def test_can_compose_without_eol_at_all(input_subs):
 
 @given(st.text().filter(is_strictly_legal_content))
 def test_compose_and_parse_strict_mode(content):
+    # sub.content should not have OS-specific line separators, only \n
+    assume("\r" not in content)
+
     content = "\n" + content + "\n\n" + content + "\n"
     sub = CONTENTLESS_SUB(content=content)
 
@@ -220,33 +210,33 @@ def test_compose_and_parse_strict_mode(content):
 
     # Strict mode should remove blank lines in content, leading, and trailing
     # newlines.
-    assert_false(parsed_strict.content.startswith("\n"))
-    assert_false(parsed_strict.content.endswith("\n"))
-    assert_false("\n\n" in parsed_strict.content)
+    assert not parsed_strict.content.startswith("\n")
+    assert not parsed_strict.content.endswith("\n")
+    assert "\n\n" not in parsed_strict.content
 
     # When strict mode is false, no processing should be applied to the
     # content (other than \r\n becoming \n).
-    eq(parsed_unstrict.content, sub.content.replace("\r\n", "\n"))
+    assert parsed_unstrict.content == sub.content.replace("\r\n", "\n")
 
 
 @given(st.integers(min_value=1, max_value=TIMEDELTA_MAX_DAYS))
 def test_timedelta_to_srt_timestamp_can_go_over_24_hours(days):
     srt_timestamp = srt.timedelta_to_srt_timestamp(timedelta(days=days))
     srt_timestamp_hours = int(srt_timestamp.split(":")[0])
-    eq(srt_timestamp_hours, days * HOURS_IN_DAY)
+    assert srt_timestamp_hours == days * HOURS_IN_DAY
 
 
 @given(subtitles())
 def test_subtitle_equality(sub_1):
     sub_2 = srt.Subtitle(**vars(sub_1))
-    eq(sub_1, sub_2)
+    assert sub_1 == sub_2
 
 
 @given(subtitles())
 def test_subtitle_inequality(sub_1):
     sub_2 = srt.Subtitle(**vars(sub_1))
     sub_2.index += 1
-    neq(sub_1, sub_2)
+    assert sub_1 != sub_2
 
 
 @given(subtitles())
@@ -260,13 +250,22 @@ def test_subtitle_from_scratch_equality(subtitle):
 
     subs_eq([sub_1], [sub_2])
     # In case subs_eq and eq disagree for some reason
-    eq(sub_1, sub_2)
-    eq(hash(sub_1), hash(sub_2))
+    assert sub_1 == sub_2
+    assert hash(sub_1) == hash(sub_2)
 
 
 @given(st.lists(subtitles()))
 def test_parsing_spaced_arrow(subs):
     spaced_block = srt.compose(subs, reindex=False, strict=False).replace("-->", "- >")
+    reparsed_subtitles = srt.parse(spaced_block)
+    subs_eq(reparsed_subtitles, subs)
+
+
+@given(st.lists(subtitles()))
+def test_parsing_no_ws_arrow(subs):
+    spaced_block = srt.compose(subs, reindex=False, strict=False).replace(
+        " --> ", "-->"
+    )
     reparsed_subtitles = srt.parse(spaced_block)
     subs_eq(reparsed_subtitles, subs)
 
@@ -322,9 +321,8 @@ def test_subs_missing_content_removed(content_subs, contentless_subs, contentles
     # The subtitles should be reindexed starting at start_index, excluding
     # contentless subs
     default_start_index = 1
-    eq(
-        [sub.index for sub in composed_subs],
-        list(range(default_start_index, default_start_index + len(composed_subs))),
+    assert [sub.index for sub in composed_subs] == list(
+        range(default_start_index, default_start_index + len(composed_subs))
     )
 
 
@@ -358,14 +356,13 @@ def test_sort_and_reindex(input_subs, start_index):
     )
 
     # The subtitles should be reindexed starting at start_index
-    eq(
-        [sub.index for sub in reindexed_subs],
-        list(range(start_index, start_index + len(input_subs))),
+    assert [sub.index for sub in reindexed_subs] == list(
+        range(start_index, start_index + len(input_subs))
     )
 
     # The subtitles should be sorted by start time
     expected_sorting = sorted(input_subs, key=lambda sub: sub.start)
-    eq(reindexed_subs, expected_sorting)
+    assert reindexed_subs == expected_sorting
 
 
 @given(st.lists(subtitles()))
@@ -379,7 +376,7 @@ def test_sort_and_reindex_no_skip(input_subs):
     reindexed_subs = list(srt.sort_and_reindex(input_subs, skip=False))
 
     # Nothing should have been skipped
-    eq(len(reindexed_subs), len(input_subs))
+    assert len(reindexed_subs) == len(input_subs)
 
 
 @given(st.lists(subtitles(), min_size=1))
@@ -392,7 +389,7 @@ def test_sort_and_reindex_same_start_time_uses_end(input_subs):
 
     # The subtitles should be sorted by end time when start time is the same
     expected_sorting = sorted(input_subs, key=lambda sub: sub.end)
-    eq(reindexed_subs, expected_sorting)
+    assert reindexed_subs == expected_sorting
 
 
 @given(st.lists(subtitles(), min_size=1), st.integers(min_value=0))
@@ -416,10 +413,10 @@ def test_sort_and_reindex_not_in_place_matches(input_subs, start_index):
     subs_eq(not_in_place_output, in_place_output)
 
     # Not in place sort_and_reindex should have created new subs
-    assert_false(any(id(sub) in nip_ids for sub in not_in_place_output))
+    assert not any(id(sub) in nip_ids for sub in not_in_place_output)
 
     # In place sort_and_reindex should be reusing the same subs
-    assert_true(all(id(sub) in ip_ids for sub in in_place_output))
+    assert all(id(sub) in ip_ids for sub in in_place_output)
 
 
 @given(
@@ -440,7 +437,7 @@ def test_parser_noncontiguous(subs, fake_idx, garbage, fake_timedelta):
         "\n\n", "\n\n%d\n%s %s" % (fake_idx, srt_timestamp, garbage)
     )
 
-    with assert_raises(srt.SRTParseError):
+    with pytest.raises(srt.SRTParseError):
         list(srt.parse(composed))
 
 
@@ -460,7 +457,7 @@ def test_parser_noncontiguous_leading(subs, garbage):
     # checks
     composed = garbage + srt.compose(subs)
 
-    with assert_raises(srt.SRTParseError):
+    with pytest.raises(srt.SRTParseError):
         list(srt.parse(composed))
 
 
@@ -477,16 +474,16 @@ def test_parser_didnt_match_to_end_raises(subs, fake_idx, garbage, fake_timedelt
     srt_blocks.append(garbage)
     composed = "".join(srt_blocks)
 
-    with assert_raises(srt.SRTParseError) as thrown_exc:
+    with pytest.raises(srt.SRTParseError) as thrown_exc:
         list(srt.parse(composed))
 
     # Since we will consume as many \n as needed until we meet the lookahead
     # assertion, leading newlines in `garbage` will be stripped.
     garbage_stripped = garbage.lstrip("\n")
 
-    eq(garbage_stripped, thrown_exc.exception.unmatched_content)
-    eq(len(composed) - len(garbage_stripped), thrown_exc.exception.expected_start)
-    eq(len(composed), thrown_exc.exception.actual_start)
+    assert garbage_stripped == thrown_exc.value.unmatched_content
+    assert len(composed) - len(garbage_stripped) == thrown_exc.value.expected_start
+    assert len(composed) == thrown_exc.value.actual_start
 
 
 @given(st.lists(subtitles()))
@@ -527,8 +524,8 @@ def test_parser_can_parse_with_fullwidth_delimiter(subs):
 def test_repr_doesnt_crash(sub):
     # Not much we can do here, but we should make sure __repr__ doesn't crash
     # or anything and it does at least vaguely look like what we want
-    assert_in("Subtitle", repr(sub))
-    assert_in(str(sub.index), repr(sub))
+    assert "Subtitle" in repr(sub)
+    assert str(sub.index) in repr(sub)
 
 
 @given(st.lists(subtitles()))
@@ -566,14 +563,14 @@ def test_compose_and_parse_strict_custom_eol(input_subs, eol):
 @given(equivalent_timestamps())
 def test_equal_timestamps_despite_different_fields_parsed_as_equal(timestamps):
     ts1, ts2 = timestamps
-    eq(srt.srt_timestamp_to_timedelta(ts1), srt.srt_timestamp_to_timedelta(ts2))
+    assert srt.srt_timestamp_to_timedelta(ts1) == srt.srt_timestamp_to_timedelta(ts2)
 
 
 @given(timedeltas())
 def test_bad_timestamp_format_raises(ts):
     ts = srt.timedelta_to_srt_timestamp(ts)
     ts = ts.replace(":", "t", 1)
-    with assert_raises(srt.TimestampParseError):
+    with pytest.raises(srt.TimestampParseError):
         srt.srt_timestamp_to_timedelta(ts)
 
 

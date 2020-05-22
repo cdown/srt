@@ -1,9 +1,7 @@
 #!/usr/bin/env python
-# coding=utf8
 
 """A tiny library for parsing, modifying, and composing SRT files."""
 
-from __future__ import unicode_literals
 import functools
 import re
 from datetime import timedelta
@@ -11,25 +9,26 @@ import logging
 import io
 
 
-log = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 # "." is not technically valid as a delimiter, but many editors create SRT
 # files with this delimiter for whatever reason. Many editors and players
 # accept it, so we do too.
 RGX_TIMESTAMP_MAGNITUDE_DELIM = r"[,.:，．。：]"
-RGX_TIMESTAMP_FIELD = r"\d+"
+RGX_TIMESTAMP_FIELD = r"[0-9]+"
 RGX_TIMESTAMP = RGX_TIMESTAMP_MAGNITUDE_DELIM.join([RGX_TIMESTAMP_FIELD] * 4)
 RGX_TIMESTAMP_PARSEABLE = r"^{}$".format(
     RGX_TIMESTAMP_MAGNITUDE_DELIM.join(["(" + RGX_TIMESTAMP_FIELD + ")"] * 4)
 )
-RGX_INDEX = r"-?\d+"
+RGX_INDEX = r"-?[0-9]+"
 RGX_PROPRIETARY = r"[^\r\n]*"
 RGX_CONTENT = r".*?"
 RGX_POSSIBLE_CRLF = r"\r?\n"
 
 TS_REGEX = re.compile(RGX_TIMESTAMP_PARSEABLE)
+MULTI_WS_REGEX = re.compile(r"\n\n+")
 SRT_REGEX = re.compile(
-    r"\s*({idx})\s*{eof}({ts}) +-[ -]> +({ts}) ?({proprietary}){eof}({content})"
+    r"\s*({idx})\s*{eof}({ts}) *-[ -]> *({ts}) ?({proprietary}){eof}({content})"
     # Many sub editors don't add a blank line to the end, and many editors and
     # players accept that. We allow it to be missing in input.
     #
@@ -69,15 +68,11 @@ SECONDS_IN_HOUR = 3600
 SECONDS_IN_MINUTE = 60
 HOURS_IN_DAY = 24
 MICROSECONDS_IN_MILLISECOND = 1000
-
-try:
-    FILE_TYPES = (file, io.IOBase)  # pytype: disable=name-error
-except NameError:  # `file` doesn't exist in Python 3
-    FILE_TYPES = (io.IOBase,)
+FILE_TYPES = (io.IOBase,)
 
 
 @functools.total_ordering
-class Subtitle(object):
+class Subtitle:
     r"""
     The metadata relating to a single subtitle. Subtitles are sorted by start
     time by default.
@@ -88,9 +83,13 @@ class Subtitle(object):
     :param end: The time that the subtitle should stop being shown
     :type end: :py:class:`datetime.timedelta`
     :param str proprietary: Proprietary metadata for this subtitle
-    :param str content: The subtitle content
+    :param str content: The subtitle content. Should not contain OS-specific
+                        line separators, only \n. This is taken care of already
+                        if you use :py:func:`srt.parse` to generate Subtitle
+                        objects.
     """
 
+    # pylint: disable=R0913
     def __init__(self, index, start, end, content, proprietary=""):
         self.index = index
         self.start = start
@@ -110,19 +109,17 @@ class Subtitle(object):
         )
 
     def __repr__(self):
-        # Python 2/3 cross compatibility
-        var_items = getattr(vars(self), "iteritems", getattr(vars(self), "items"))
-        item_list = ", ".join("%s=%r" % (k, v) for k, v in var_items())
+        item_list = ", ".join("%s=%r" % (k, v) for k, v in vars(self).items())
         return "%s(%s)" % (type(self).__name__, item_list)
 
-    def to_srt(self, strict=True, eol=None):
+    def to_srt(self, strict=True, eol="\n"):
         r"""
         Convert the current :py:class:`Subtitle` to an SRT block.
 
         :param bool strict: If disabled, will allow blank lines in the content
                             of the SRT block, which is a violation of the SRT
                             standard and may case your media player to explode
-        :param str eol: The end of line string to use (default "\n")
+        :param str eol: The end of line string to use (default "\\n")
         :returns: The metadata of the current :py:class:`Subtitle` object as an
                   SRT formatted subtitle block
         :rtype: str
@@ -138,10 +135,10 @@ class Subtitle(object):
         if strict:
             output_content = make_legal_content(output_content)
 
-        if eol is not None:
-            output_content = output_content.replace("\n", eol)
-        else:
+        if eol is None:
             eol = "\n"
+        elif eol != "\n":
+            output_content = output_content.replace("\n", eol)
 
         template = "{idx}{eol}{start} --> {end}{prop}{eol}{content}{eol}{eol}"
         return template.format(
@@ -159,7 +156,7 @@ def make_legal_content(content):
     Remove illegal content from a content block. Illegal content includes:
 
     * Blank lines
-    * Starting or ending with a newline
+    * Starting or ending with a blank line
 
     .. doctest::
 
@@ -170,11 +167,14 @@ def make_legal_content(content):
     :returns: The legalised content
     :rtype: srt
     """
-    # We can't use content.splitlines() here since it does all sorts of stuff
-    # that we don't want with \x1{c..e}, etc
-    legal_content = "\n".join(line for line in content.split("\n") if line)
-    if legal_content != content:
-        log.info("Legalised content %r to %r", content, legal_content)
+    # Optimisation: Usually the content we get is legally valid. Do a quick
+    # check to see if we really need to do anything here. This saves time from
+    # generating legal_content by about 50%.
+    if content and content[0] != "\n" and "\n\n" not in content:
+        return content
+
+    legal_content = MULTI_WS_REGEX.sub("\n", content.strip("\n"))
+    LOG.info("Legalised content %r to %r", content, legal_content)
     return legal_content
 
 
@@ -202,24 +202,24 @@ def timedelta_to_srt_timestamp(timedelta_timestamp):
     return "%02d:%02d:%02d,%03d" % (hrs, mins, secs, msecs)
 
 
-def srt_timestamp_to_timedelta(ts):
+def srt_timestamp_to_timedelta(timestamp):
     r"""
     Convert an SRT timestamp to a :py:class:`~datetime.timedelta`.
 
     .. doctest::
 
         >>> srt_timestamp_to_timedelta('01:23:04,000')
-        datetime.timedelta(0, 4984)
+        datetime.timedelta(seconds=4984)
 
-    :param str ts: A timestamp in SRT format
+    :param str timestamp: A timestamp in SRT format
     :returns: The timestamp as a :py:class:`~datetime.timedelta`
     :rtype: datetime.timedelta
     :raises TimestampParseError: If the timestamp is not parseable
     """
 
-    match = TS_REGEX.match(ts)
+    match = TS_REGEX.match(timestamp)
     if match is None:
-        raise TimestampParseError("Unparseable timestamp: {}".format(ts))
+        raise TimestampParseError("Unparseable timestamp: {}".format(timestamp))
     hrs, mins, secs, msecs = map(int, match.groups())
     return timedelta(hours=hrs, minutes=mins, seconds=secs, milliseconds=msecs)
 
@@ -244,9 +244,10 @@ def sort_and_reindex(subtitles, start_index=1, in_place=False, skip=True):
         >>> from datetime import timedelta
         >>> one = timedelta(seconds=1)
         >>> two = timedelta(seconds=2)
+        >>> three = timedelta(seconds=3)
         >>> subs = [
-        ...     Subtitle(index=999, start=one, end=one, content='1'),
-        ...     Subtitle(index=0, start=two, end=two, content='2'),
+        ...     Subtitle(index=999, start=one, end=two, content='1'),
+        ...     Subtitle(index=0, start=two, end=three, content='2'),
         ... ]
         >>> list(sort_and_reindex(subs))  # doctest: +ELLIPSIS
         [Subtitle(...index=1...), Subtitle(...index=2...)]
@@ -269,7 +270,7 @@ def sort_and_reindex(subtitles, start_index=1, in_place=False, skip=True):
             try:
                 _should_skip_sub(subtitle)
             except _ShouldSkipException as thrown_exc:
-                log.info("Skipped subtitle at index %d: %s", subtitle.index, thrown_exc)
+                LOG.info("Skipped subtitle at index %d: %s", subtitle.index, thrown_exc)
                 skipped_subs += 1
                 continue
 
@@ -293,8 +294,7 @@ def _should_skip_sub(subtitle):
 
 def parse(srt):
     r'''
-    Convert an SRT formatted string (in Python 2, a :class:`unicode` object) to
-    a :term:`generator` of Subtitle objects.
+    Convert an SRT formatted string to a :term:`generator` of Subtitle objects.
 
     This function works around bugs present in many SRT files, most notably
     that it is designed to not bork when presented with a blank line as part of
@@ -344,7 +344,7 @@ def parse(srt):
             index=int(raw_index),
             start=srt_timestamp_to_timedelta(raw_start),
             end=srt_timestamp_to_timedelta(raw_end),
-            content=content.replace("\r\n", "\n"),
+            content=content,
             proprietary=proprietary,
         )
 
@@ -378,7 +378,9 @@ def _raise_if_not_contiguous(srt, expected_start, actual_start):
         raise SRTParseError(expected_start, actual_start, unmatched_content)
 
 
-def compose(subtitles, reindex=True, start_index=1, strict=True, eol=None):
+def compose(
+    subtitles, reindex=True, start_index=1, strict=True, eol=None, in_place=False
+):
     r"""
     Convert an iterator of :py:class:`Subtitle` objects to a string of joined
     SRT blocks.
@@ -386,13 +388,14 @@ def compose(subtitles, reindex=True, start_index=1, strict=True, eol=None):
     .. doctest::
 
         >>> from datetime import timedelta
-        >>> td = timedelta(seconds=1)
+        >>> start = timedelta(seconds=1)
+        >>> end = timedelta(seconds=2)
         >>> subs = [
-        ...     Subtitle(index=1, start=td, end=td, content='x'),
-        ...     Subtitle(index=2, start=td, end=td, content='y'),
+        ...     Subtitle(index=1, start=start, end=end, content='x'),
+        ...     Subtitle(index=2, start=start, end=end, content='y'),
         ... ]
         >>> compose(subs)  # doctest: +ELLIPSIS
-        '1\n00:00:01,000 --> 00:00:01,000\nx\n\n2\n00:00:01,000 --> ...'
+        '1\n00:00:01,000 --> 00:00:02,000\nx\n\n2\n00:00:01,000 --> ...'
 
     :param subtitles: The subtitles to convert to SRT blocks
     :type subtitles: :term:`iterator` of :py:class:`Subtitle` objects
@@ -403,10 +406,14 @@ def compose(subtitles, reindex=True, start_index=1, strict=True, eol=None):
     :param str eol: The end of line string to use (default "\\n")
     :returns: A single SRT formatted string, with each input
               :py:class:`Subtitle` represented as an SRT block
+    :param bool in_place: Whether to reindex subs in-place for performance
+                          (version <=1.0.0 behaviour)
     :rtype: str
     """
     if reindex:
-        subtitles = sort_and_reindex(subtitles, start_index=start_index)
+        subtitles = sort_and_reindex(
+            subtitles, start_index=start_index, in_place=in_place
+        )
 
     return "".join(subtitle.to_srt(strict=strict, eol=eol) for subtitle in subtitles)
 

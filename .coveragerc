@@ -1,5 +1,0 @@
-[report]
-exclude_lines =
-    except ImportError
-    if argv is None
-    if __name__ == .__main__.:
