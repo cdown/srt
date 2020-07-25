@@ -354,7 +354,9 @@ def parse(srt):
         except ValueError:
             # Index 123.4. Handled separately, since it's a rare case and we
             # don't want to affect general performance.
-            raw_index = int(raw_index.split(".")[0])
+            #
+            # The pytype disable is for the same reason as content, above.
+            raw_index = int(raw_index.split(".")[0])  # pytype: disable=attribute-error
 
         yield Subtitle(
             index=int(raw_index),
