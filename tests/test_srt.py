@@ -450,17 +450,34 @@ def test_parser_noncontiguous(subs, fake_idx, garbage, fake_timedelta):
         list(srt.parse(composed))
 
 
+def _parseable_as_int(text):
+    try:
+        int(text)
+    except ValueError:
+        return False
+    return True
+
+
+def _parseable_as_float(text):
+    try:
+        float(text)
+    except ValueError:
+        return False
+    return True
+
+
 @given(st.lists(subtitles()), st.text(min_size=1))
 def test_parser_noncontiguous_leading(subs, garbage):
     # Issue #50 permits leading whitespace, see test_parsing_leading_whitespace
     assume(not garbage.isspace())
 
-    # Issue #56 permits negative indexes, see test_parsing_negative_index
-    assume(garbage[-1] != "-")
-
-    # It also shouldn't just be a number, because then we'd confuse it with our
+    # Issue #56 permits negative indexes, see test_parsing_negative_index. It
+    # also shouldn't just be a number, because then we'd confuse it with our
     # index...
-    assume(not garbage[-1].isdigit())
+    assume(garbage != ".")
+    assume(garbage != "-")
+    assume(not _parseable_as_int(garbage))
+    assume(not _parseable_as_float(garbage))
 
     # Put some garbage at the beginning that should trigger our noncontiguity
     # checks
