@@ -588,6 +588,20 @@ def test_can_parse_index_trailing_ws(input_subs, whitespace):
     subs_eq(reparsed_subs, input_subs)
 
 
+@given(st.lists(subtitles()))
+def test_can_parse_index_with_dot(input_subs):
+    # Seen in Battlestar Galactica subs
+    out = ""
+
+    for sub in input_subs:
+        lines = sub.to_srt().split("\n")
+        lines[0] = lines[0] + "." + lines[0]
+        out += "\n".join(lines)
+
+    reparsed_subs = srt.parse(out)
+    subs_eq(reparsed_subs, input_subs)
+
+
 @given(st.lists(subtitles()), st.lists(st.just("0")))
 def test_can_parse_index_leading_zeroes(input_subs, zeroes):
     out = ""

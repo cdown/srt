@@ -22,7 +22,7 @@ RGX_TIMESTAMP = RGX_TIMESTAMP_MAGNITUDE_DELIM.join([RGX_TIMESTAMP_FIELD] * 4)
 RGX_TIMESTAMP_PARSEABLE = r"^{}$".format(
     RGX_TIMESTAMP_MAGNITUDE_DELIM.join(["(" + RGX_TIMESTAMP_FIELD + ")"] * 4)
 )
-RGX_INDEX = r"-?[0-9]+"
+RGX_INDEX = r"-?[0-9.]+"
 RGX_PROPRIETARY = r"[^\r\n]*"
 RGX_CONTENT = r".*?"
 RGX_POSSIBLE_CRLF = r"\r?\n"
@@ -348,6 +348,13 @@ def parse(srt):
         # can be None, but they can't realistically be None, since we're using
         # finditer and all match groups are mandatory in the regex.
         content = content.replace("\r\n", "\n")  # pytype: disable=attribute-error
+
+        try:
+            raw_index = int(raw_index)
+        except ValueError:
+            # Index 123.4. Handled separately, since it's a rare case and we
+            # don't want to affect general performance.
+            raw_index = int(raw_index.split(".")[0])
 
         yield Subtitle(
             index=int(raw_index),
