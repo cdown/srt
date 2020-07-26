@@ -474,8 +474,8 @@ def test_parser_noncontiguous_leading(subs, garbage):
     # Issue #56 permits negative indexes, see test_parsing_negative_index. It
     # also shouldn't just be a number, because then we'd confuse it with our
     # index...
-    assume(garbage != ".")
-    assume(garbage != "-")
+    assume(garbage.strip()[0] != ".")
+    assume(garbage.strip()[0] != "-")
     assume(not _parseable_as_int(garbage))
     assume(not _parseable_as_float(garbage))
 
