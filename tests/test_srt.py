@@ -476,8 +476,8 @@ def test_parser_noncontiguous_leading(subs, garbage):
     # index...
     assume(garbage.strip()[0] != ".")
     assume(garbage.strip()[0] != "-")
-    assume(not _parseable_as_int(garbage))
-    assume(not _parseable_as_float(garbage))
+    assume(not _parseable_as_int(garbage.strip()))
+    assume(not _parseable_as_float(garbage.strip()))
 
     # Put some garbage at the beginning that should trigger our noncontiguity
     # checks
