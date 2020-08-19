@@ -30,7 +30,7 @@ the library`_. This library is also used internally by projects like
 Why choose this library?
 ------------------------
 
-- Can parse many broken SRT files which other SRT libraries cannot
+- Can parse many broken SRT files which other SRT libraries cannot, and fix them
 - Extremely lightweight, `~150 lines of code`_ excluding docstrings
 - Simple, intuitive API
 - High quality test suite using Hypothesis_
