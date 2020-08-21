@@ -450,6 +450,22 @@ def test_parser_noncontiguous(subs, fake_idx, garbage, fake_timedelta):
         list(srt.parse(composed))
 
 
+@given(
+    st.lists(subtitles(), min_size=1),
+    st.integers(min_value=0),
+    st.text(min_size=1),
+    timedeltas(),
+)
+def test_parser_noncontiguous_ignore_errors(subs, fake_idx, garbage, fake_timedelta):
+    composed = srt.compose(subs)
+    srt_timestamp = srt.timedelta_to_srt_timestamp(fake_timedelta)
+    composed = composed.replace(
+        "\n\n", "\n\n%d\n%s %s" % (fake_idx, srt_timestamp, garbage)
+    )
+    # Should not raise, we have ignore_errors
+    list(srt.parse(composed, ignore_errors=True))
+
+
 def _parseable_as_int(text):
     try:
         int(text)

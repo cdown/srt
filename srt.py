@@ -22,7 +22,7 @@ RGX_TIMESTAMP = RGX_TIMESTAMP_MAGNITUDE_DELIM.join([RGX_TIMESTAMP_FIELD] * 4)
 RGX_TIMESTAMP_PARSEABLE = r"^{}$".format(
     RGX_TIMESTAMP_MAGNITUDE_DELIM.join(["(" + RGX_TIMESTAMP_FIELD + ")"] * 4)
 )
-RGX_INDEX = r"-?[0-9.]+"
+RGX_INDEX = r"-?[0-9]+\.?[0-9]*"
 RGX_PROPRIETARY = r"[^\r\n]*"
 RGX_CONTENT = r".*?"
 RGX_POSSIBLE_CRLF = r"\r?\n"
@@ -300,7 +300,7 @@ def _should_skip_sub(subtitle):
             raise _ShouldSkipException(info_msg)
 
 
-def parse(srt):
+def parse(srt, ignore_errors=False):
     r'''
     Convert an SRT formatted string (in Python 2, a :class:`unicode` object) to
     a :term:`generator` of Subtitle objects.
@@ -326,9 +326,15 @@ def parse(srt):
 
     :param srt: Subtitles in SRT format
     :type srt: str or a file-like object
+    :param ignore_errors: If True, garbled SRT data will be ignored, and we'll
+                          continue trying to parse the rest of the file,
+                          instead of raising :py:class:`SRTParseError` and
+                          stopping execution.
     :returns: The subtitles contained in the SRT file as :py:class:`Subtitle`
               objects
     :rtype: :term:`generator` of :py:class:`Subtitle` objects
+    :raises SRTParseError: If the matches are not contiguous and
+                           ``ignore_errors`` is False.
     '''
 
     expected_start = 0
@@ -340,8 +346,7 @@ def parse(srt):
 
     for match in SRT_REGEX.finditer(srt):
         actual_start = match.start()
-        _raise_if_not_contiguous(srt, expected_start, actual_start)
-
+        _check_contiguity(srt, expected_start, actual_start, ignore_errors)
         raw_index, raw_start, raw_end, proprietary, content = match.groups()
 
         # pytype sees that this is Optional[str] and thus complains that they
@@ -359,7 +364,7 @@ def parse(srt):
             raw_index = int(raw_index.split(".")[0])  # pytype: disable=attribute-error
 
         yield Subtitle(
-            index=int(raw_index),
+            index=raw_index,
             start=srt_timestamp_to_timedelta(raw_start),
             end=srt_timestamp_to_timedelta(raw_end),
             content=content,
@@ -368,20 +373,22 @@ def parse(srt):
 
         expected_start = match.end()
 
-    _raise_if_not_contiguous(srt, expected_start, len(srt))
+    _check_contiguity(srt, expected_start, len(srt), ignore_errors)
 
 
-def _raise_if_not_contiguous(srt, expected_start, actual_start):
+def _check_contiguity(srt, expected_start, actual_start, warn_only):
     """
-    Raise :py:class:`SRTParseError` with diagnostic info if expected_start does
-    not equal actual_start.
+    If ``warn_only`` is False, raise :py:class:`SRTParseError` with diagnostic
+    info if expected_start does not equal actual_start. Otherwise, log a
+    warning.
 
     :param str srt: The data being matched
     :param int expected_start: The expected next start, as from the last
                                iteration's match.end()
     :param int actual_start: The actual start, as from this iteration's
                              match.start()
-    :raises SRTParseError: If the matches are not contiguous
+    :raises SRTParseError: If the matches are not contiguous and ``warn_only``
+                           is False
     """
     if expected_start != actual_start:
         unmatched_content = srt[expected_start:actual_start]
@@ -393,7 +400,10 @@ def _raise_if_not_contiguous(srt, expected_start, actual_start):
             # intermediate subtitle
             return
 
-        raise SRTParseError(expected_start, actual_start, unmatched_content)
+        if warn_only:
+            LOG.warning("Skipped unparseable SRT data: %r", unmatched_content)
+        else:
+            raise SRTParseError(expected_start, actual_start, unmatched_content)
 
 
 def compose(
