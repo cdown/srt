@@ -263,6 +263,14 @@ def test_parsing_spaced_arrow(subs):
 
 
 @given(st.lists(subtitles()))
+def test_parsing_spaced_ender_arrow(subs):
+    # Seen in BSG subtitles
+    spaced_block = srt.compose(subs, reindex=False, strict=False).replace("-->", "-- >")
+    reparsed_subtitles = srt.parse(spaced_block)
+    subs_eq(reparsed_subtitles, subs)
+
+
+@given(st.lists(subtitles()))
 def test_parsing_no_ws_arrow(subs):
     spaced_block = srt.compose(subs, reindex=False, strict=False).replace(
         " --> ", "-->"
@@ -442,17 +450,50 @@ def test_parser_noncontiguous(subs, fake_idx, garbage, fake_timedelta):
         list(srt.parse(composed))
 
 
+@given(
+    st.lists(subtitles(), min_size=1),
+    st.integers(min_value=0),
+    st.text(min_size=1),
+    timedeltas(),
+)
+def test_parser_noncontiguous_ignore_errors(subs, fake_idx, garbage, fake_timedelta):
+    composed = srt.compose(subs)
+    srt_timestamp = srt.timedelta_to_srt_timestamp(fake_timedelta)
+    composed = composed.replace(
+        "\n\n", "\n\n%d\n%s %s" % (fake_idx, srt_timestamp, garbage)
+    )
+    # Should not raise, we have ignore_errors
+    list(srt.parse(composed, ignore_errors=True))
+
+
+def _parseable_as_int(text):
+    try:
+        int(text)
+    except ValueError:
+        return False
+    return True
+
+
+def _parseable_as_float(text):
+    try:
+        float(text)
+    except ValueError:
+        return False
+    return True
+
+
 @given(st.lists(subtitles()), st.text(min_size=1))
 def test_parser_noncontiguous_leading(subs, garbage):
     # Issue #50 permits leading whitespace, see test_parsing_leading_whitespace
     assume(not garbage.isspace())
 
-    # Issue #56 permits negative indexes, see test_parsing_negative_index
-    assume(garbage[-1] != "-")
-
-    # It also shouldn't just be a number, because then we'd confuse it with our
+    # Issue #56 permits negative indexes, see test_parsing_negative_index. It
+    # also shouldn't just be a number, because then we'd confuse it with our
     # index...
-    assume(not garbage[-1].isdigit())
+    assume(garbage.strip()[0] != ".")
+    assume(garbage.strip()[0] != "-")
+    assume(not _parseable_as_int(garbage.strip()))
+    assume(not _parseable_as_float(garbage.strip()))
 
     # Put some garbage at the beginning that should trigger our noncontiguity
     # checks
@@ -582,6 +623,20 @@ def test_can_parse_index_trailing_ws(input_subs, whitespace):
     for sub in input_subs:
         lines = sub.to_srt().split("\n")
         lines[0] = lines[0] + "".join(whitespace)
+        out += "\n".join(lines)
+
+    reparsed_subs = srt.parse(out)
+    subs_eq(reparsed_subs, input_subs)
+
+
+@given(st.lists(subtitles()))
+def test_can_parse_index_with_dot(input_subs):
+    # Seen in Battlestar Galactica subs
+    out = ""
+
+    for sub in input_subs:
+        lines = sub.to_srt().split("\n")
+        lines[0] = lines[0] + "." + lines[0]
         out += "\n".join(lines)
 
     reparsed_subs = srt.parse(out)

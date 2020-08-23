@@ -108,6 +108,13 @@ def basic_parser(
     )
 
     parser.add_argument(
+        "--ignore-parsing-errors",
+        "-c",
+        action="store_true",
+        help="try to keep going, even if there are parsing errors",
+    )
+
+    parser.add_argument(
         "--encoding", "-e", help="the encoding to read/write files in (default: utf8)"
     )
     return parser
@@ -149,7 +156,9 @@ def set_basic_args(args):
         if stream in DASH_STREAM_MAP.values():
             log.debug("%s in DASH_STREAM_MAP", stream_name)
             if stream is args.input:
-                args.input = srt.parse(r_enc(args.input).read())
+                args.input = srt.parse(
+                    r_enc(args.input).read(), ignore_errors=args.ignore_parsing_errors
+                )
             elif stream is args.output:
                 # Since args.output is not in text mode (since we didn't
                 # earlier know the encoding), we have no universal newline
@@ -162,15 +171,22 @@ def set_basic_args(args):
                     for i, input_fn in enumerate(args.input):
                         if input_fn in DASH_STREAM_MAP.values():
                             if stream is args.input:
-                                args.input[i] = srt.parse(r_enc(input_fn).read())
+                                args.input[i] = srt.parse(
+                                    r_enc(input_fn).read(),
+                                    ignore_errors=args.ignore_parsing_errors,
+                                )
                         else:
                             f = r_enc(open(input_fn, "rb"))
                             with f:
-                                args.input[i] = srt.parse(f.read())
+                                args.input[i] = srt.parse(
+                                    f.read(), ignore_errors=args.ignore_parsing_errors
+                                )
                 else:
                     f = r_enc(open(stream, "rb"))
                     with f:
-                        args.input = srt.parse(f.read())
+                        args.input = srt.parse(
+                            f.read(), ignore_errors=args.ignore_parsing_errors
+                        )
             else:
                 args.output = w_enc(open(args.output, "wb"))
 
@@ -179,6 +195,7 @@ def compose_suggest_on_fail(subs, strict=True):
     try:
         return srt.compose(subs, strict=strict, eol=os.linesep, in_place=True)
     except srt.SRTParseError as thrown_exc:
+        # Since `subs` is actually a generator
         log.fatal(
             "Parsing failed, maybe you need to pass a different encoding "
             "with --encoding?"
