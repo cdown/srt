@@ -38,4 +38,4 @@ texinfo_documents = [
     )
 ]
 
-intersphinx_mapping = {"python": ("https://docs.python.org/3.5", None)}
+intersphinx_mapping = {"python": ("https://docs.python.org/3.8", None)}
