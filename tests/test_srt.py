@@ -570,8 +570,22 @@ def test_repr_doesnt_crash(sub):
     assert str(sub.index) in repr(sub)
 
 
+@given(subtitles(), subtitles())
+def test_parser_accepts_final_no_newline_no_content(sub1, sub2):
+    # Limit size so we know how much to remove
+    sub2.content = ""
+    subs = [sub1, sub2]
+
+    # Remove the last newlines so that there are none. Cannot use rstrip since
+    # there might be other stuff that gets matched in proprietary
+    stripped_srt_blocks = srt.compose(subs, reindex=False)[:-2]
+
+    reparsed_subs = srt.parse(stripped_srt_blocks)
+    subs_eq(reparsed_subs, subs)
+
+
 @given(st.lists(subtitles()))
-def test_parser_accepts_no_newline_no_content(subs):
+def test_parser_accepts_newline_no_content(subs):
     for sub in subs:
         # Limit size so we know how many lines to remove
         sub.content = ""
