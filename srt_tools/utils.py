@@ -90,7 +90,10 @@ def basic_parser(
         )
         if not multi_input:
             parser.add_argument(
-                "--inplace", "-p", action="store_true", help="modify file in place",
+                "--inplace",
+                "-p",
+                action="store_true",
+                help="modify file in place",
             )
 
     shelp = "allow blank lines in output, your media player may explode"
