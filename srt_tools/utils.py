@@ -199,7 +199,7 @@ def compose_suggest_on_fail(subs, strict=True):
         return srt.compose(subs, strict=strict, eol=os.linesep, in_place=True)
     except srt.SRTParseError as thrown_exc:
         # Since `subs` is actually a generator
-        log.fatal(
+        log.critical(
             "Parsing failed, maybe you need to pass a different encoding "
             "with --encoding?"
         )
