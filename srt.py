@@ -30,7 +30,7 @@ RGX_POSSIBLE_CRLF = r"\r?\n"
 TS_REGEX = re.compile(RGX_TIMESTAMP_PARSEABLE)
 MULTI_WS_REGEX = re.compile(r"\n\n+")
 SRT_REGEX = re.compile(
-    r"\s*({idx})\s*{eof}({ts}) *-[ -] *> *({ts}) ?({proprietary}){eof}({content})"
+    r"\s*({idx})\s*{eof}({ts}) *-[ -] *> *({ts}) ?({proprietary})(?:{eof}|\Z)({content})"
     # Many sub editors don't add a blank line to the end, and many editors and
     # players accept that. We allow it to be missing in input.
     #
@@ -90,9 +90,9 @@ class Subtitle(object):
     :type end: :py:class:`datetime.timedelta`
     :param str proprietary: Proprietary metadata for this subtitle
     :param str content: The subtitle content. Should not contain OS-specific
-                        line separators, only \n. This is taken care of already
-                        if you use :py:func:`srt.parse` to generate Subtitle
-                        objects.
+                        line separators, only \\n. This is taken care of
+                        already if you use :py:func:`srt.parse` to generate
+                        Subtitle objects.
     """
 
     # pylint: disable=R0913
