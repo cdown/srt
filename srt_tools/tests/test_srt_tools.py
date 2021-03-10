@@ -39,8 +39,10 @@ def windows_crappy_quote(data):
 
 
 def assert_supports_all_io_methods(cmd, exclude_output=False, exclude_stdin=False):
-    cmd[0] = "srt_tools/" + cmd[0]
-    cmd.insert(0, sys.executable)
+    # TODO: pytype doesn't like the mixed types in the matrix, but this works
+    # fine. Maybe it would be happier with a namedtuple?
+    cmd[0] = "srt_tools/" + cmd[0]  # pytype: disable=unsupported-operands
+    cmd.insert(0, sys.executable)  # pytype: disable=attribute-error
     in_file = os.path.join(sample_dir, "ascii.srt")
     in_file_gb = os.path.join(sample_dir, "gb2312.srt")
     fd, out_file = tempfile.mkstemp()
