@@ -89,6 +89,7 @@ def assert_supports_all_io_methods(cmd, exclude_output=False, exclude_stdin=Fals
 def test_tools_support():
     matrix = [
         (["srt-normalise"], False),
+        (["srt-deduplicate"], False),
         (["srt-fixed-timeshift", "--seconds", "5"], False),
         (
             [
