@@ -15,8 +15,9 @@ jobs:
     - python: '3.5'
     - python: '3.6'
     - python: '3.7'
-    - python: '3.8'
+    - python: '3.8'  # pytype is currently <= 3.8
       env: TOXENV=doctest,black,pylint,pytype,bandit,coverage
+    - python: '3.9'
 
     # PyPy (in official virtualenv)
     - python: pypy
@@ -51,7 +52,7 @@ jobs:
     - os: windows
       language: shell
       env:
-        - TOXENV=py38
+        - TOXENV=py39
       before_install:
         - choco install python --version 3.8.1
         - python --version
