@@ -31,6 +31,7 @@ setup(
         "srt_tools/srt-mux",
         "srt_tools/srt-play",
         "srt_tools/srt-process",
+        "srt_tools/srt-remove"
     ],
     license="Public Domain",
     keywords="srt",

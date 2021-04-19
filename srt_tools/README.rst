@@ -57,6 +57,9 @@ Utilities
   you can naively strip some basic HTML-like markup with ``srt process -m re -f
   'lambda sub: re.sub("<[^<]+?>", "", sub)'``. HTML-like syntax is especially
   prevalant in `SSA/ASS`_ subtitles that have been directly converted to SRT.
+  - *remove* allows removal by index/timestamp in sequential or non-sequential
+  order. By placing indexes/timestamps non-sequentially (i.e 10, 5), you specify
+  to remove all captions past 10 and before 5.
 
 .. _mux: https://en.wikipedia.org/wiki/Multiplexing
 .. _`SSA/ASS`: https://en.wikipedia.org/wiki/SubStation_Alpha

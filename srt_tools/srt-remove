@@ -1,0 +1,199 @@
+#!/usr/bin/env python
+
+"""Remove subtitles by index or timestamp."""
+
+import srt
+import datetime
+import srt_tools.utils
+import logging
+
+log = logging.getLogger(__name__)
+
+def parse_args():
+    examples = {
+        "Remove a single caption at index 10": "srt remove -i example.srt -x 10 11",
+        "Remove captions from index 10 to the end of the file.": "srt remove -i example.srt -x 10",
+        "Remove by timestamp all captions within :05 - :08": "srt remove -i example.srt -t 00:00:5,00 00:00:8,00",
+        "Remove by timestamp non-sequentially": "srt remove -i example.srt -t 00:00:30,00 00:00:10,00"
+    }
+    parser = srt_tools.utils.basic_parser(
+        description=__doc__, examples=examples, multi_input=True
+    )
+    parser.add_argument(
+    "-t",
+    metavar="TIMESTAMP",
+    type=lambda time: srt.srt_timestamp_to_timedelta(time),
+    nargs='*',
+    help="The index or timestamp to start or stop removing at."
+    )
+    parser.add_argument(
+    "-x",
+    metavar="INDEX",
+    type=int,
+    nargs='*',
+    help="The index or timestamp to start or stop removing at."
+    )
+    return parser.parse_args()
+
+def get_timestamp(subs, obj):
+    if isinstance(obj, datetime.timedelta):
+        return obj
+    elif isinstance(obj, int):
+        len_subs = len(list(subs))
+        if (obj >= 0 and obj >= len_subs) or (obj < 0 and abs(obj) > len_subs):
+            raise IndexError("There is no caption at the specified index.")
+        return list(subs)[obj].start
+    else:
+        raise ValueError("You must enter an index or timestamp.")
+
+def binary_search(arr, n, timestamp, at=False, highest=False):
+    """
+    Search for the caption directly after the specified timestamp.
+    If 'at' is True, captions equivalent to the start can be found.
+    In the case of duplicates, return the lowest index unless 'highest' is true.
+    return -1 if no index is found.
+    """
+    found = False
+    low = 0
+    high = n
+    mid = 0
+    while low < high:
+        mid = (high + low) // 2
+        if arr[mid].start < timestamp:
+            low = mid + 1
+        elif arr[mid].start > timestamp or (at and arr[mid].start == timestamp):
+            if not found and mid > 0 and (arr[mid - 1].start > timestamp or (at and arr[mid - 1].start == timestamp)):
+                high = mid
+            elif not found:
+                found = True
+            elif highest and mid + 1 < n and (arr[mid].start == arr[mid + 1].start or (at and arr[mid + 1].start == timestamp)):
+                low = mid + 1
+            else:
+                return mid
+        else:
+            low = mid + 1
+    return -1
+
+def contains_timestamp(caption, timestamp):
+    return caption.start <= timestamp < caption.end
+
+def captions_containing_timestamp(subs, timestamp, sorted=False):
+    # edge cases
+    subs = list(subs)
+    len_subs = len(subs)
+    if len_subs == 0:
+        return []
+
+    subs = list(srt.sort_and_reindex(subs)) if not sorted else subs
+    if timestamp < subs[0].start:
+        return []
+
+    # find the nearest (uncontained) caption that starts after the timestamp
+    ndx = binary_search(subs, len_subs, timestamp, highest=True)
+    ndx = ndx if ndx != -1 else len_subs
+
+    # find captions that contain the timestamp
+    captions = []
+    for i in range(0, ndx):
+        if contains_timestamp(subs[i], timestamp):
+            captions.append(subs[i])
+    return captions
+
+def split(subs, timestamp):
+    subs = list(subs)
+    captions = reversed(captions_containing_timestamp(subs, timestamp))
+    for caption in captions:
+        if caption.start != timestamp and caption.end != timestamp:
+            subs.pop(caption.index - 1)
+            subs.append(srt.Subtitle(caption.index, caption.start, timestamp, caption.content))
+            subs.append(srt.Subtitle(caption.index, timestamp, caption.end, caption.content))
+    return srt.sort_and_reindex(subs)
+
+def remove_caption_index(subs, index_one, index_two=0):
+    subs = list(subs)
+    len_subs = len(subs)
+    if len_subs == 0:
+        return subs
+
+    # check bounds
+    if index_one >= len_subs or (index_one < 0 and -index_one > len_subs) or index_two > len_subs or (index_two < 0 and -index_two > len_subs):
+        raise IndexError
+
+    # convert index to negative equivalent
+    if index_one >= 0:
+        index_one -= len_subs
+    if index_two >= 0:
+        index_two -= len_subs
+
+    if index_one == index_two:
+        subs.clear()
+        return srt.sort_and_reindex(subs)
+    elif index_one > index_two:
+        index_two += len_subs
+
+    for i in range(index_one, index_two):
+        if i < 0:
+            subs.pop(i)
+        else:
+            subs.pop(0)
+    return srt.sort_and_reindex(subs)
+
+def remove_caption_timestamp(subs, timestamp_one, timestamp_two):
+    subs = list(subs)
+    if len(subs) == 0:
+        return subs
+    elif timestamp_one == timestamp_two:
+        return remove_caption_index(subs, 0)
+
+    # Split the caption at the start and end of the block(s).
+    subs = split(subs, timestamp_one)
+    subs = split(subs, timestamp_two)
+    subs = list(subs)
+
+    # Determine the sequential edge case.
+    sequential = timestamp_one < timestamp_two
+    t2_before_first = timestamp_two <= subs[0].start
+    if sequential and t2_before_first:
+        return subs
+
+    # Determine the first bound and it's edge cases.
+    len_subs = len(subs)
+    cdx = binary_search(subs, len_subs, timestamp_one, at=True, highest=False)
+    t1_after_last = True if cdx == -1 else False
+    if sequential and t1_after_last:
+        return subs
+    elif not sequential and t2_before_first and t1_after_last:
+        return subs
+
+    # Determine the second bound and it's edge cases.
+    cdx2 = binary_search(subs, len_subs, timestamp_two, at=True, highest=False)
+    t2_after_last = True if cdx2 == -1 else False
+    if sequential and timestamp_one <= subs[0].start and t2_after_last:
+        subs.clear()
+        return srt.sort_and_reindex(subs)
+    cdx2 = cdx2 - 1 if timestamp_two < subs[cdx2].start else cdx2
+    return remove_caption_index(subs, cdx, cdx2)
+
+
+def main():
+    args = parse_args()
+    logging.basicConfig(level=args.log_level)
+    srt_tools.utils.set_basic_args(args)
+
+    subs = list(args.input[0])
+    time_args = args.x if args.x else args.t
+    if len(time_args) == 1 and isinstance(time_args[0], int):
+        subs = remove_caption_index(subs, time_args[0])
+    else:
+        timestamps = (get_timestamp(subs, time_args[0]), get_timestamp(subs, time_args[1]))
+        subs = remove_caption_timestamp(subs, timestamps[0], timestamps[1])
+
+    output = srt_tools.utils.compose_suggest_on_fail(subs, strict=args.strict)
+
+    try:
+        args.output.write(output)
+    except (UnicodeEncodeError, TypeError):  # Python 2 fallback
+        args.output.write(output.encode(args.encoding))
+
+if __name__ == "__main__":  # pragma: no cover
+    main()
