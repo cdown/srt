@@ -21,7 +21,7 @@ def parse_args():
     }
     parser = srt_tools.utils.basic_parser(description=__doc__, examples=examples)
     parser.add_argument(
-    "--t",
+    "-t",
     metavar=("INDEX or TIMESTAMP"),
     nargs="+",
     required=True,
@@ -49,84 +49,47 @@ def get_timestamp(subs, obj):
             raise ValueError("You must enter a whole number index or timestamp (hh:mm:ss,ms) for caption arguments.")
 
 
-def binary_search(arr, n, timestamp, at=False, highest=False):
-    """
-    Search for the index of the caption directly after the specified timestamp.
-    If 'at' is True, captions equivalent to the start can be found.
-    If 'highest' is True, return the highest indexed caption in the case of duplicates
-    instead of the lowest indexed duplicate.
-
-    return -1 if no index found.
-    """
-    found = False
-    low = 0
-    high = n
-    mid = 0
-    while low < high:
-        mid = (high + low) // 2
-        if arr[mid].start < timestamp:
-            low = mid + 1
-        elif arr[mid].start > timestamp or (at and arr[mid].start == timestamp):
-            if not found and mid > 0 and (
-                    arr[mid - 1].start > timestamp or (at and arr[mid - 1].start == timestamp)):
-                high = mid
-            elif not found:
-                found = True
-            elif highest and mid + 1 < n and (arr[mid].start == arr[mid + 1].start or (at and arr[mid + 1].start == timestamp)):
-                low = mid + 1
-            else:
-                return mid
-        else:
-            low = mid + 1
-    return -1
-
-
-def contains_timestamp(caption, timestamp):
-    return caption.start <= timestamp < caption.end
-
-
-def captions_containing_timestamp(subs, timestamp, sorted=False):
-    """
-    Find the nearest uncontained caption before and after the given timestamp.
-    If sorted=True, subtitles are assumed to be sorted.
-
-    :rtype: array
-    """
-    # edge cases
-    subs = subs if isinstance(subs, list) else list(subs)
-    len_subs = len(subs)
-    if len_subs == 0:
-        return []
-    elif timestamp < subs[0].start:
-        return []
-    elif not sorted:
-        subs.sort()
-
-    # find the nearest (uncontained) caption that starts after the timestamp
-    ndx = binary_search(subs, len_subs, timestamp, highest=True)
-    ndx = ndx if ndx != -1 else len_subs
-
-    # find captions that contain the timestamp
-    captions = []
-    for i in range(0, ndx):
-        if contains_timestamp(subs[i], timestamp):
-            captions.append(subs[i])
-    return captions
-
-
 def split(subs, timestamp):
     """
     Splits subtitles at a given timestamp.
     :rtype: :term:`generator` of :py:class:`Subtitle` objects
     """
-    subs = subs if isinstance(subs, list) else list(subs)
-    captions = captions_containing_timestamp(subs, timestamp)
-    for caption in captions:
-        if caption.start != timestamp and caption.end != timestamp:
-            subs.pop(caption.index - 1)
-            subs.append(srt.Subtitle(0, caption.start, timestamp, caption.content))
-            subs.append(srt.Subtitle(0, timestamp, caption.end, caption.content))
-    return srt.sort_and_reindex(subs)
+    from types import GeneratorType
+    subs = (x for x in subs) if not isinstance(subs, GeneratorType) else subs # ensures list compatibility
+    split_subs = []
+    idx = 1
+
+    # yield unsplit captions before the timestamp
+    break_subtitle = None
+    for subtitle in subs:
+        if subtitle.start < timestamp and timestamp < subtitle.end:
+            yield srt.Subtitle(idx, subtitle.start, timestamp, subtitle.content)
+            subtitle.start = timestamp
+            split_subs.append(subtitle)
+            idx += 1
+        elif subtitle.start == timestamp:
+            split_subs.append(subtitle)
+        elif subtitle.start > timestamp:
+            break_subtitle = subtitle
+            break
+        else:
+            yield subtitle
+            idx += 1
+
+    # yield split captions (sort to adjust index first)
+    split_subs.sort()
+    for subtitle in split_subs:
+        yield srt.Subtitle(idx, timestamp, subtitle.end, subtitle.content)
+        idx += 1
+
+    # yield unsplit captions after the timestamp
+    if break_subtitle:
+        yield srt.Subtitle(idx, break_subtitle.start, break_subtitle.end, break_subtitle.content)
+        idx += 1
+
+    for subtitle in subs:
+        yield srt.Subtitle(idx, subtitle.start, subtitle.end, subtitle.content)
+        idx += 1
 
 
 def remove_caption_index(subs, index_one, index_two=0):
@@ -139,10 +102,9 @@ def remove_caption_index(subs, index_one, index_two=0):
     :param int index_two: The exclusive index to remove to.
     :rtype: :term:`generator` of :py:class:`Subtitle` objects
     """
-    # use a deque for O(1) removal in non-sequential cases
-    from collections import deque
-    subs = deque(subs)
-    len_subs = len(subs)
+    subs = list(subs)
+    len_subs = len(subs) # find length to allow for negative index via list
+    subs = (x for x in subs)
 
     # check bounds
     index_one_positive = index_one >= 0
@@ -160,18 +122,36 @@ def remove_caption_index(subs, index_one, index_two=0):
     # remove the captions
     if index_one == index_two:
         return
-    elif index_one > index_two:
-        [subs.popleft() for i in range(index_two)]
-        [subs.pop() for i in range(index_one, len_subs)]
-        yield from srt.sort_and_reindex(subs)
-        return
 
-    for i in range(index_two - 1, index_one - 1, -1):
-        del subs[i]
-    yield from srt.sort_and_reindex(subs)
+    idx = 1
+    if index_one < index_two:
+        for i in range(index_one):
+            yield next(subs)
+            idx += 1
+
+        # remove captions after index one but before index two
+        for i in range(index_one, index_two):
+            next(subs)
+
+        for subtitle in subs:
+            yield srt.Subtitle(idx, subtitle.start, subtitle.end, subtitle.content)
+            idx += 1
+    else:
+        # remove captions before index two
+        for i in range(index_two):
+            next(subs)
+
+        for i in range(index_two, index_one):
+            subtitle = next(subs)
+            yield srt.Subtitle(idx, subtitle.start, subtitle.end, subtitle.content)
+            idx += 1
+
+        # remove captions after index one
+        for subtitle in subs:
+            pass
 
 
-def remove_caption_timestamp(subs, timestamp_one, timestamp_two=datetime.timedelta()):
+def remove_caption_timestamp(subs, timestamp_one, timestamp_two):
     """
     Removes captions from subtitles by timestamp.
     When timestamp one > timestamp two, captions up to index two will be removed
@@ -181,38 +161,72 @@ def remove_caption_timestamp(subs, timestamp_one, timestamp_two=datetime.timedel
     :param int index_two: The exclusive index to remove to.
     :rtype: :term:`generator` of :py:class:`Subtitle` objects
     """
+    # ensures list compatibility
+    from types import GeneratorType
+    subs = (x for x in subs) if not isinstance(subs, GeneratorType) else subs
+
+    # edge case
+    sequential = timestamp_one < timestamp_two
+    try:
+        first_subtitle = next(subs)
+    except StopIteration:
+        return
     if timestamp_one == timestamp_two:
+        return
+    elif sequential and timestamp_two <= first_subtitle.start:
+        yield first_subtitle
+        yield from subs
+        return
+    elif not sequential and timestamp_one <= first_subtitle.start:
         return
 
     # Split the caption at the start and end of the block(s).
     subs = split(subs, timestamp_one)
     subs = split(subs, timestamp_two)
-    subs = subs if isinstance(subs, list) else list(subs)
-    len_subs = len(subs)
-    if len_subs == 0:
-        return
 
-    # Determine the sequential edge case.
-    sequential = timestamp_one < timestamp_two
-    t2_before_first = timestamp_two <= subs[0].start
-    if sequential and t2_before_first:
-        yield from subs
-        return
+    # remove the captions
+    idx = 1
+    if timestamp_one < timestamp_two:
+        if first_subtitle.start < timestamp_one:
+            yield first_subtitle
+            idx += 1
+            for subtitle in subs:
+                if timestamp_one <= subtitle.start:
+                    break
+                yield subtitle
+                idx += 1
 
-    # Determine the first bound and it's edge cases.
-    cdx = binary_search(subs, len_subs, timestamp_one, at=True, highest=False)
-    t1_after_last = True if cdx == -1 else False
-    if (sequential and t1_after_last) or (not sequential and t2_before_first and t1_after_last):
-        yield from subs
-        return
+        # remove captions after timestamp one but before timestamp two
+        for subtitle in subs:
+            if timestamp_two <= subtitle.start:
+                yield srt.Subtitle(idx, subtitle.start, subtitle.end, subtitle.content)
+                idx += 1
+                break
 
-    # Determine the second bound and it's edge cases.
-    cdx2 = binary_search(subs, len_subs, timestamp_two, at=True, highest=False)
-    t2_after_last = True if cdx2 == -1 else False
-    if sequential and timestamp_one <= subs[0].start and t2_after_last:
-        return
-    cdx2 = cdx2 - 1 if timestamp_two < subs[cdx2].start else cdx2
-    yield from remove_caption_index(subs, cdx, cdx2)
+        for subtitle in subs:
+            yield srt.Subtitle(idx, subtitle.start, subtitle.end, subtitle.content)
+            idx += 1
+    else:
+        # remove captions before timestamp two
+        if first_subtitle.start < timestamp_two:
+            for subtitle in subs:
+                if timestamp_two <= subtitle.start :
+                    yield subtitle
+                    idx += 1
+                    break
+        else:
+            yield first_subtitle
+            idx += 1
+
+        for subtitle in subs:
+            if timestamp_one <= subtitle.start:
+                break
+            yield srt.Subtitle(idx, subtitle.start, subtitle.end, subtitle.content)
+            idx += 1
+
+        # remove captions after timestamp one
+        for subtitle in subs:
+            pass
 
 
 def main():
