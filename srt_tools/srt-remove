@@ -11,21 +11,32 @@ log = logging.getLogger(__name__)
 
 def parse_args():
     examples = {
-        "Remove a single caption at index 10": "srt remove -i example.srt -t 10 11",
-        "Remove captions within :05 - :08": "srt remove -i example.srt -t 00:00:5,00 00:00:8,00",
-        "Remove captions from index 10 to the end of the file.": "srt remove -i example.srt -t 10",
-        "Remove captions from :16 to the end of the file.": "srt remove -i example.srt -t 00:00:16,00",
-        "Remove captions from index 2 to the 3rd to last index:": "srt remove -i example.srt -t 2 -3",
-        "Remove captions from index 5 to timestamp :17": "srt remove -i example.srt -t 5 00:00:17,00",
-        "Remove captions non-sequentially": "srt remove -i example.srt -t 24 6"
+        "Remove a single caption at index 10": "srt remove -i example.srt --t1 10 --t2 11",
+        "Remove captions within :05 - :08": "srt remove -i example.srt --t1 00:00:5,00 --t2 00:00:8,00",
+        "Remove captions from index 10 to the end of the file.": "srt remove -i example.srt --t1 10",
+        "Remove captions from index 0 to index 10.": "srt remove -i example.srt --t2 10",
+        "Remove captions from :16 to the end of the file.": "srt remove -i example.srt --t1 00:00:16,00",
+        "Remove captions from index 2 to the 3rd to last index:": "srt remove -i example.srt --t1 2 --t2 -3",
+        "Remove captions from index 5 to timestamp :17": "srt remove -i example.srt --t1 5 --t2 00:00:17,00",
+        "Remove captions non-sequentially": "srt remove -i example.srt --t1 24 --t2 6",
+        "Remove every caption": "srt remove -i example.srt"
     }
-    parser = srt_tools.utils.basic_parser(description=__doc__, examples=examples)
+    parser = srt_tools.utils.basic_parser(description=__doc__, examples=examples, multi_input=True)
     parser.add_argument(
-    "-t",
+    "--start",
+    "--t1",
     metavar=("INDEX or TIMESTAMP"),
-    nargs="+",
-    required=True,
-    help="The index (from 0) or timestamp to start or stop removing at."
+    default=0,
+    nargs='?',
+    help="The index (from 0) or timestamp to start removing from."
+    )
+    parser.add_argument(
+    "--end",
+    "--t2",
+    metavar=("INDEX or TIMESTAMP"),
+    default=0,
+    nargs='?',
+    help="The index (from 0) or timestamp to stop removing at."
     )
     return parser.parse_args()
 
@@ -54,13 +65,14 @@ def split(subs, timestamp):
     Splits subtitles at a given timestamp.
     :rtype: :term:`generator` of :py:class:`Subtitle` objects
     """
+    # ensures list compatibility
     from types import GeneratorType
-    subs = (x for x in subs) if not isinstance(subs, GeneratorType) else subs # ensures list compatibility
-    split_subs = []
-    idx = 1
+    subs = (x for x in subs) if not isinstance(subs, GeneratorType) else subs
 
     # yield unsplit captions before the timestamp
+    idx = 1
     break_subtitle = None
+    split_subs = []
     for subtitle in subs:
         if subtitle.start < timestamp and timestamp < subtitle.end:
             yield srt.Subtitle(idx, subtitle.start, timestamp, subtitle.content)
@@ -92,85 +104,27 @@ def split(subs, timestamp):
         idx += 1
 
 
-def remove_caption_index(subs, index_one, index_two=0):
-    """
-    Removes captions from subtitles by index.
-    When index one > index two, captions up to index two will be removed
-    and captions after index one will be removed.
-
-    :param int index_one: The inclusive index to remove from.
-    :param int index_two: The exclusive index to remove to.
-    :rtype: :term:`generator` of :py:class:`Subtitle` objects
-    """
-    subs = list(subs)
-    len_subs = len(subs) # find length to allow for negative index via list
-    subs = (x for x in subs)
-
-    # check bounds
-    index_one_positive = index_one >= 0
-    index_two_positive = index_two >= 0
-    if (len_subs == 0 or (index_one_positive and index_one >= len_subs)
-        or (not index_one_positive and -index_one > len_subs)
-        or (index_two_positive and index_two > len_subs)
-        or (not index_two_positive and -index_two > len_subs + 1)):
-        raise IndexError
-
-    # convert index to positive equivalent
-    index_one = index_one % len_subs if not index_one_positive and index_one != len_subs else index_one
-    index_two = index_two % len_subs if not index_two_positive and index_two != len_subs else index_two
-
-    # remove the captions
-    if index_one == index_two:
-        return
-
-    idx = 1
-    if index_one < index_two:
-        for i in range(index_one):
-            yield next(subs)
-            idx += 1
-
-        # remove captions after index one but before index two
-        for i in range(index_one, index_two):
-            next(subs)
-
-        for subtitle in subs:
-            yield srt.Subtitle(idx, subtitle.start, subtitle.end, subtitle.content)
-            idx += 1
-    else:
-        # remove captions before index two
-        for i in range(index_two):
-            next(subs)
-
-        for i in range(index_two, index_one):
-            subtitle = next(subs)
-            yield srt.Subtitle(idx, subtitle.start, subtitle.end, subtitle.content)
-            idx += 1
-
-        # remove captions after index one
-        for subtitle in subs:
-            pass
-
-
-def remove_caption_timestamp(subs, timestamp_one, timestamp_two):
+def remove_caption_timestamp(subs, timestamp_one=datetime.timedelta(0), timestamp_two=datetime.timedelta(0)):
     """
     Removes captions from subtitles by timestamp.
     When timestamp one > timestamp two, captions up to index two will be removed
     and captions after index one will be removed.
 
-    :param int index_one: The inclusive index to remove from.
-    :param int index_two: The exclusive index to remove to.
+    :param int timestamp_one: The timestamp to remove from.
+    :param int timestamp_two: The timestamp to remove to.
     :rtype: :term:`generator` of :py:class:`Subtitle` objects
     """
     # ensures list compatibility
     from types import GeneratorType
     subs = (x for x in subs) if not isinstance(subs, GeneratorType) else subs
 
-    # edge case
+    # edge cases
     sequential = timestamp_one < timestamp_two
     try:
         first_subtitle = next(subs)
     except StopIteration:
         return
+
     if timestamp_one == timestamp_two:
         return
     elif sequential and timestamp_two <= first_subtitle.start:
@@ -184,9 +138,10 @@ def remove_caption_timestamp(subs, timestamp_one, timestamp_two):
     subs = split(subs, timestamp_one)
     subs = split(subs, timestamp_two)
 
-    # remove the captions
+    # remove the captions using a generator.
     idx = 1
-    if timestamp_one < timestamp_two:
+    if sequential:
+        # keep captions before timestamp one
         if first_subtitle.start < timestamp_one:
             yield first_subtitle
             idx += 1
@@ -203,6 +158,7 @@ def remove_caption_timestamp(subs, timestamp_one, timestamp_two):
                 idx += 1
                 break
 
+        # keep captions after timestamp two
         for subtitle in subs:
             yield srt.Subtitle(idx, subtitle.start, subtitle.end, subtitle.content)
             idx += 1
@@ -218,6 +174,7 @@ def remove_caption_timestamp(subs, timestamp_one, timestamp_two):
             yield first_subtitle
             idx += 1
 
+        # keep captions after timestamp two but before timestamp one
         for subtitle in subs:
             if timestamp_one <= subtitle.start:
                 break
@@ -234,14 +191,8 @@ def main():
     logging.basicConfig(level=args.log_level)
     srt_tools.utils.set_basic_args(args)
 
-    subs = list(args.input)
-    args.t[0] = get_timestamp(subs, args.t[0])
-    if len(args.t) == 1:
-        removed_subs = remove_caption_timestamp(subs, args.t[0])
-    else:
-        len_subs = len(subs)
-        args.t[1] = len_subs if isinstance(args.t[1], int) and len_subs == args.t[1] else get_timestamp(subs, args.t[1])
-        removed_subs = remove_caption_timestamp(subs, args.t[0], args.t[1])
+    subs = list(args.input[0]) # TODO: require single input
+    removed_subs = remove_caption_timestamp(subs, get_timestamp(subs, args.start), get_timestamp(subs, args.end))
 
     output = srt_tools.utils.compose_suggest_on_fail(removed_subs, strict=args.strict)
 
