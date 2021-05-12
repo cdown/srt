@@ -264,6 +264,8 @@ def sort_and_reindex(subtitles, start_index=1, in_place=False, skip=True):
     :param int start_index: The index to start from
     :param bool in_place: Whether to modify subs in-place for performance
                           (version <=1.0.0 behaviour)
+                          `https://en.wikipedia.org/wiki/in-place_algorithm
+                          <https://en.wikipedia.org/wiki/in-place_algorithm/>`_.
     :param bool skip: Whether to skip subtitles considered not useful (see
                       above for rules)
     :returns: The sorted subtitles
