@@ -48,43 +48,6 @@ def sort(subs):
     return list(srt.sort_and_reindex(subs))
 
 
-class TestHelpers(unittest.TestCase):
-    def setUp(self):
-        self.subs = create_blocks
-        self.x = list(create_blocks())
-        self.y = list(create_blocks(1))
-        self.r = self.x[0]
-
-    def tearDown(self):
-        pass
-
-    def test_get_timestamp(self):
-        # Indexes
-        self.assertEqual(get_timestamp(self.subs(), 0), self.x[0].start)
-        self.assertEqual(get_timestamp(self.subs(), 4), self.x[4].start)
-        self.assertEqual(get_timestamp(self.subs(), -1), self.x[-1].start)
-        self.assertEqual(get_timestamp(self.subs(), -4), self.x[-4].start)
-        self.assertEqual(get_timestamp(self.subs(), -5), self.x[0].start)
-        with self.assertRaises(IndexError):
-            get_timestamp(self.subs(), 5)
-            get_timestamp(self.subs(), -6)
-
-        # Strings
-        self.assertEqual(get_timestamp(
-            self.subs(), t('00:00:11,000')), self.x[0].start)
-        self.assertEqual(get_timestamp(
-            self.subs(), t('00:00:0,000')), t('00:00:0,000'))
-        self.assertEqual(get_timestamp(
-            self.subs(), t('00:00:30,000')), t('00:00:30,000'))
-        with self.assertRaises(srt.TimestampParseError):
-            self.assertEqual(get_timestamp(self.subs(), t('-00:00:50,000')))
-            self.assertEqual(get_timestamp(self.subs(), t('00:00:-10,000')))
-
-        # Date Time
-        self.assertEqual(get_timestamp(
-            self.subs(), t('00:00:11,000')), self.x[0].start)
-
-
 class TestCaptionTools(unittest.TestCase):
     def setUp(self):
         self.subs = create_blocks

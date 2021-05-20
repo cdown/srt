@@ -11,53 +11,32 @@ log = logging.getLogger(__name__)
 
 def parse_args():
     examples = {
-        "Remove a single caption at index 10": "srt remove -i example.srt --t1 10 --t2 11",
         "Remove captions within :05 - :08": "srt remove -i example.srt --t1 00:00:5,00 --t2 00:00:8,00",
-        "Remove captions from index 10 to the end of the file.": "srt remove -i example.srt --t1 10",
-        "Remove captions from index 0 to index 10.": "srt remove -i example.srt --t2 10",
+        "Remove captions non-sequentially": "srt remove -i example.srt --t1 00:00:8,00 --t2 00:00:5,00",
         "Remove captions from :16 to the end of the file.": "srt remove -i example.srt --t1 00:00:16,00",
-        "Remove captions from index 2 to the 3rd to last index:": "srt remove -i example.srt --t1 2 --t2 -3",
-        "Remove captions from index 5 to timestamp :17": "srt remove -i example.srt --t1 5 --t2 00:00:17,00",
-        "Remove captions non-sequentially": "srt remove -i example.srt --t1 24 --t2 6",
+        "Remove captions from :00 to :16": "srt remove -i example.srt --t2 00:00:16,00",
         "Remove every caption": "srt remove -i example.srt"
     }
     parser = srt_tools.utils.basic_parser(description=__doc__, examples=examples)
     parser.add_argument(
     "--start",
     "--t1",
-    metavar=("INDEX or TIMESTAMP"),
-    default=0,
+    metavar=("TIMESTAMP"),
+    type=lambda arg: srt.srt_timestamp_to_timedelta(arg),
+    default=datetime.timedelta(0),
     nargs='?',
-    help="The index (from 0) or timestamp to start removing from."
+    help="The timestamp to start removing from."
     )
     parser.add_argument(
     "--end",
     "--t2",
-    metavar=("INDEX or TIMESTAMP"),
-    default=0,
+    metavar=("TIMESTAMP"),
+    type=lambda arg: srt.srt_timestamp_to_timedelta(arg),
+    default=datetime.timedelta(0),
     nargs='?',
-    help="The index (from 0) or timestamp to stop removing at."
+    help="The timestamp to stop removing at."
     )
     return parser.parse_args()
-
-
-def get_timestamp(subs, obj):
-    """Parse an object for a datetime.timedelta"""
-    if isinstance(obj, datetime.timedelta):
-        return obj
-
-    try:
-        idx = int(obj)
-        list_subs = subs if isinstance(subs, list) else list(subs)
-        len_subs = len(list_subs)
-        if (idx >= 0 and idx >= len_subs) or (idx < 0 and -idx > len_subs):
-            raise IndexError("There is no caption at the specified index.")
-        return list_subs[idx].start
-    except ValueError:
-        try:
-            return srt.srt_timestamp_to_timedelta(obj)
-        except srt.TimestampParseError:
-            raise ValueError("You must enter a whole number index or timestamp (hh:mm:ss,ms) for caption arguments.")
 
 
 def split(subs, timestamp):
@@ -107,8 +86,8 @@ def split(subs, timestamp):
 def remove_caption_timestamp(subs, timestamp_one=datetime.timedelta(0), timestamp_two=datetime.timedelta(0)):
     """
     Removes captions from subtitles by timestamp.
-    When timestamp one > timestamp two, captions up to index two will be removed
-    and captions after index one will be removed.
+    When timestamp one > timestamp two, captions up to timestamp two will be removed
+    and captions after timestamp one will be removed.
 
     :param int timestamp_one: The timestamp to remove from.
     :param int timestamp_two: The timestamp to remove to.
@@ -191,8 +170,7 @@ def main():
     logging.basicConfig(level=args.log_level)
     srt_tools.utils.set_basic_args(args)
 
-    subs = list(args.input)
-    removed_subs = remove_caption_timestamp(subs, get_timestamp(subs, args.start), get_timestamp(subs, args.end))
+    removed_subs = remove_caption_timestamp(args.input, args.start, args.end)
 
     output = srt_tools.utils.compose_suggest_on_fail(removed_subs, strict=args.strict)
 
