@@ -21,7 +21,7 @@ def parse_args():
         "Remove captions non-sequentially": "srt remove -i example.srt --t1 24 --t2 6",
         "Remove every caption": "srt remove -i example.srt"
     }
-    parser = srt_tools.utils.basic_parser(description=__doc__, examples=examples, multi_input=True)
+    parser = srt_tools.utils.basic_parser(description=__doc__, examples=examples)
     parser.add_argument(
     "--start",
     "--t1",
@@ -191,7 +191,7 @@ def main():
     logging.basicConfig(level=args.log_level)
     srt_tools.utils.set_basic_args(args)
 
-    subs = list(args.input[0]) # TODO: require single input
+    subs = list(args.input)
     removed_subs = remove_caption_timestamp(subs, get_timestamp(subs, args.start), get_timestamp(subs, args.end))
 
     output = srt_tools.utils.compose_suggest_on_fail(removed_subs, strict=args.strict)

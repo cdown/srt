@@ -1,10 +1,28 @@
 import unittest
-
 import srt
 from srt import srt_timestamp_to_timedelta as t
-### TODO: Need to import srt_remove
+
+# import srt-remove as a source file.
+from importlib.util import spec_from_loader, module_from_spec
+from importlib.machinery import SourceFileLoader
+import os
+folder_path = os.path.normpath(os.path.join(
+                os.path.normpath(os.path.join(__file__, os.pardir)), os.pardir))
+file_path = os.path.normpath(os.path.join(folder_path, 'srt-remove'))
+spec = spec_from_loader("srt-remove", SourceFileLoader("srt-remove", file_path))
+module = module_from_spec(spec)
+spec.loader.exec_module(module)
+
+# emulate `from module import *`
+if "__all__" in module.__dict__:
+    names = module.__dict__["__all__"]
+else:
+    names = [x for x in module.__dict__ if not x.startswith("_")]
+
+globals().update({k: getattr(module, k) for k in names})
 
 
+# helper methods
 def create_blocks(setting=0):
     """Creates a generator of subtitles for testing purposes"""
     subs = []
@@ -75,49 +93,6 @@ class TestCaptionTools(unittest.TestCase):
 
     def tearDown(self):
         pass
-
-    def test_remove_caption_index(self):
-        a = sort([self.x[0], self.x[2], self.x[3], self.x[4]])
-
-        result = remove_caption_index(self.subs(), 1, 2)
-        self.assertEqual(list(result), a)
-
-        result = remove_caption_index(self.subs(), 1, -3)
-        self.assertEqual(list(result), a)
-
-        result = remove_caption_index(self.subs(), 1, 3)
-        self.assertEqual(list(result), sort([self.x[0], self.x[3], self.x[4]]))
-
-        result = remove_caption_index(self.subs(), 2, 5)
-        self.assertEqual(list(result), sort([self.x[0], self.x[1]]))
-
-        result = remove_caption_index(self.subs(), -2, 3)
-        self.assertEqual(list(result), [])
-        with self.assertRaises(IndexError):
-            result = list(remove_caption_index((y for y in []), 0, 1))
-            result = list(remove_caption_index(self.subs(), 1, 8))
-            result = list(remove_caption_index(self.subs(), -7, 4))
-            result = list(remove_caption_index(self.subs(), 5, 4))
-
-        result = remove_caption_index(self.subs(), 3, 1)  # reverse
-        self.assertEqual(list(result), sort([self.x[1], self.x[2]]))
-
-        result = remove_caption_index(self.subs(), 2, 0)  # reverse
-        self.assertEqual(list(result), sort([self.x[0], self.x[1]]))
-
-        a = sort([self.x[2], self.x[3]])
-        result = remove_caption_index(self.subs(), -1, -3)  # reverse
-        self.assertEqual(list(result), a)
-
-        result = remove_caption_index(self.subs(), 4, 2)  # reverse
-        self.assertEqual(list(result), a)
-
-        # single parameter
-        result = remove_caption_index(self.subs(), 0)
-        self.assertEqual(list(result), [])
-
-        result = remove_caption_index(self.subs(), 2)
-        self.assertEqual(list(result), sort([self.x[0], self.x[1]]))
 
     def test_remove_caption_timestamp(self):
         result = remove_caption_timestamp(
