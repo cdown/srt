@@ -6,6 +6,7 @@ from datetime import timedelta
 import collections
 import functools
 import os
+import re
 import string
 from io import StringIO
 
@@ -559,6 +560,23 @@ def test_parser_can_parse_with_fullwidth_delimiter(subs):
 
     composed_with_fullwidth = "".join(dot_srt_blocks)
     reparsed_subs = srt.parse(composed_with_fullwidth)
+    subs_eq(reparsed_subs, subs)
+
+
+@given(st.lists(subtitles()))
+def test_parser_can_parse_with_no_msec(subs):
+    original_srt_blocks = [sub.to_srt() for sub in subs]
+    srt_blocks = []
+
+    for srt_block in original_srt_blocks:
+        srt_lines = srt_block.split("\n")
+        # We should only do the first two, as it might also be in the
+        # proprietary metadata, causing this test to fail.
+        srt_lines[1] = re.sub(",[0-9]+", "", srt_lines[1], 2)
+        srt_blocks.append("\n".join(srt_lines))
+
+    composed = "".join(srt_blocks)
+    reparsed_subs = srt.parse(composed)
     subs_eq(reparsed_subs, subs)
 
 
