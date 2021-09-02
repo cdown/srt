@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""Merge multiple subtitles together into one."""
+"""Deduplicate repeated subtitles."""
 
 import datetime
 import srt_tools.utils
