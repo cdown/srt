@@ -26,6 +26,9 @@ example:
 Utilities
 ---------
 
+- *deduplicate* removes subtitles with duplicate content. If you have subtitles
+  which mistakenly repeat the same content in different subs at roughly the
+  same time, you can run this tool to remove them.
 - *fixed-timeshift* does fixed time correction. For example, if you have a
   movie that is consistently out of sync by two seconds, you can run this tool
   to shift the entire subtitle two seconds ahead or behind.

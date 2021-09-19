@@ -1,5 +1,5 @@
 pytest==4.*; python_version < '3.0'
-pytest==5.*; python_version >= '3.0'
+pytest==6.*; python_version >= '3.0'
 pytest-cov==2.*
-hypothesis==4.*; python_version < '3.0'
-hypothesis==5.*; python_version >= '3.0'
+hypothesis==4.*; python_version < '3.6'
+hypothesis==6.*; python_version >= '3.6'
