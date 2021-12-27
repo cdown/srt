@@ -18,10 +18,11 @@ the library. `Detailed API documentation`_ is also available.
 
 Want to see some examples of its use? Take a look at the `tools shipped with
 the library`_. This library is also used internally by projects like
-`subsync`_, `bw_plex`_, and many more.
+`subsync`_, `manim`_, `bw_plex`_, and many more.
 
 .. _subsync: https://github.com/smacke/subsync
 .. _bw_plex: https://github.com/Hellowlol/bw_plex
+.. _manim: https://github.com/ManimCommunity/manim
 
 Why choose this library?
 ------------------------
