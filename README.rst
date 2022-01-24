@@ -1,7 +1,7 @@
 |travis| |lgtm| |coveralls|
 
-.. |travis| image:: https://img.shields.io/travis/com/cdown/srt/develop?label=tests
-  :target: https://app.travis-ci.com/github/cdown/srt
+.. |travis| image:: https://img.shields.io/github/workflow/status/cdown/srt/CI/develop?label=tests
+  :target: https://github.com/cdown/srt/actions
   :alt: Tests
 
 .. |lgtm| image:: https://img.shields.io/lgtm/grade/python/github/cdown/srt.svg?label=code%20quality
