@@ -106,30 +106,13 @@ See the srt_tools/ directory for more information.
 Library
 =======
 
-`Detailed API documentation`_ is available, but here are the basics:
+`Detailed API documentation`_ is available, but here are the basics.
+
+Here's how you convert SRT input to Subtitle objects which you can manipulate:
 
 .. code:: python
 
-    >>> # list() is needed as srt.parse creates a generator
-    >>> subs = list(srt.parse('''\
-    ... 1
-    ... 00:00:33,843 --> 00:00:38,097
-    ... 地球上只有3%的水是淡水
-    ...
-    ... 2
-    ... 00:00:40,641 --> 00:00:44,687
-    ... 可是这些珍贵的淡水中却充满了惊奇
-    ...
-    ... 3
-    ... 00:00:57,908 --> 00:01:03,414
-    ... 所有陆地生命归根结底都依赖於淡水
-    ...
-    ... '''))
-    >>> subs
-    [Subtitle(index=1, start=datetime.timedelta(0, 33, 843000), end=datetime.timedelta(0, 38, 97000), content='地球上只有3%的水是淡水', proprietary=''),
-     Subtitle(index=2, start=datetime.timedelta(0, 40, 641000), end=datetime.timedelta(0, 44, 687000), content='可是这些珍贵的淡水中却充满了惊奇', proprietary=''),
-     Subtitle(index=3, start=datetime.timedelta(0, 57, 908000), end=datetime.timedelta(0, 63, 414000), content='所有陆地生命归根结底都依赖於淡水', proprietary='')]
-    >>> print(srt.compose(subs))
+    >>> data = '''\
     1
     00:00:33,843 --> 00:00:38,097
     地球上只有3%的水是淡水
@@ -137,6 +120,32 @@ Library
     2
     00:00:40,641 --> 00:00:44,687
     可是这些珍贵的淡水中却充满了惊奇
+
+    3
+    00:00:57,908 --> 00:01:03,414
+    所有陆地生命归根结底都依赖於淡水
+
+    '''
+    >>> for sub in srt.parse(data):
+    ...     print(sub)
+    Subtitle(index=1, start=datetime.timedelta(seconds=33, microseconds=843000), end=datetime.timedelta(seconds=38, microseconds=97000), content='地球上只有3%的水是淡水', proprietary='')
+    Subtitle(index=2, start=datetime.timedelta(seconds=40, microseconds=641000), end=datetime.timedelta(seconds=44, microseconds=687000), content='可是这些珍贵的淡水中却充满了惊奇', proprietary='')
+    Subtitle(index=3, start=datetime.timedelta(seconds=57, microseconds=908000), end=datetime.timedelta(seconds=63, microseconds=414000), content='所有陆地生命归根结底都依赖於淡水', proprietary='')
+
+And here's how you go back from Subtitle objects to SRT output:
+
+.. code:: python
+
+    >>> subs = list(srt.parse(data))
+    >>> subs[1].content = "Changing subtitle data is easy!"
+    >>> print(srt.compose(subs))
+    1
+    00:00:33,843 --> 00:00:38,097
+    地球上只有3%的水是淡水
+
+    2
+    00:00:40,641 --> 00:00:44,687
+    Changing subtitle data is easy!
 
     3
     00:00:57,908 --> 00:01:03,414
