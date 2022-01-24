@@ -1,0 +1,34 @@
+name: CI
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, windows-2019, macos-10.15]
+        python-version: ['2.7', '3.5', '3.6', '3.7', '3.8', '3.9', '3.10', 'pypy-2.7', 'pypy-3.8']
+
+    steps:
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: python --version
+
+      - uses: BSFishy/pip-action@v1
+        with:
+          packages: tox
+          upgrade: true
+
+      - uses: actions/checkout@v2
+
+      - if: matrix.python-version == '3.9' && startsWith(matrix.os, 'ubuntu-')
+        run: |
+          echo "TOXENV=doctest,black,pylint,pytype,bandit,coverage" >> "$GITHUB_ENV"
+
+      - run: tox
+        env:
+          TOXENV: ${{ env.TOXENV }}
+
+      - if: matrix.python-version == '3.9' && startsWith(matrix.os, 'ubuntu-')
+        uses: AndreMiras/coveralls-python-action@develop
