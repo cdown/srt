@@ -686,3 +686,14 @@ def test_can_parse_index_leading_zeroes(input_subs, zeroes):
 
     reparsed_subs = srt.parse(out)
     subs_eq(reparsed_subs, input_subs)
+
+
+@given(st.lists(subtitles(), min_size=1))
+def test_parse_file_with_missing_index_on_first_line(input_subs):  # cf. issue #51
+    block = srt.compose(input_subs, reindex=False)
+    block = block[block.find("\n") + 1 :]
+
+    with pytest.raises(srt.SRTParseError):
+        list(srt.parse(block))
+
+    assert list(srt.parse(block, ignore_errors=True)) == input_subs[1:]
