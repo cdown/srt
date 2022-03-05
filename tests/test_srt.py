@@ -389,6 +389,21 @@ def test_sort_and_reindex_no_skip(input_subs):
     assert len(reindexed_subs) == len(input_subs)
 
 
+@given(st.lists(subtitles()))
+def test_sort_and_reindex_handles_no_index(input_subs):
+    # end time > start time should not trigger a skip if skip=False
+    for sub in input_subs:
+        old_start = sub.start
+        sub.start = sub.end
+        sub.end = old_start
+        sub.index = None
+
+    reindexed_subs = list(srt.sort_and_reindex(input_subs))
+
+    # Everything should have been skipped
+    assert not reindexed_subs
+
+
 @given(st.lists(subtitles(), min_size=1))
 def test_sort_and_reindex_same_start_time_uses_end(input_subs):
     for sub in input_subs:
@@ -686,3 +701,38 @@ def test_can_parse_index_leading_zeroes(input_subs, zeroes):
 
     reparsed_subs = srt.parse(out)
     subs_eq(reparsed_subs, input_subs)
+
+
+@given(st.lists(subtitles(), min_size=1))
+def test_parse_file_with_missing_index(input_subs):  # cf. issue #51
+    out_no_index = ""
+    out_zero_index = ""
+
+    for sub in input_subs:
+        block = sub.to_srt()
+        block = block[block.index("\n") + 1 :]
+        out_no_index += block
+
+    input_subs_copy = [srt.Subtitle(**vars(sub)) for sub in input_subs]
+    for sub in input_subs_copy:
+        # sub.index == None will get rendered in to_srt as 0
+        sub.index = 0
+        out_zero_index += sub.to_srt()
+
+    subs_no_index = list(srt.parse(out_no_index))
+    subs_zero_index = list(srt.parse(out_zero_index))
+
+    # One should have index == None, one should have index == 0...
+    assert subs_no_index
+    assert subs_zero_index
+    assert all(sub.index == None for sub in subs_no_index)
+    assert all(sub.index == 0 for sub in subs_zero_index)
+    assert subs_no_index != subs_zero_index
+
+    # ...but they should render the same...
+    assert srt.compose(subs_no_index, reindex=False) == srt.compose(
+        subs_zero_index, reindex=False
+    )
+
+    # ...and sort the same.
+    assert srt.compose(subs_no_index) == srt.compose(subs_zero_index)

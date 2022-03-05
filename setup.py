@@ -13,7 +13,7 @@ with codecs.open("README.rst", encoding="utf8") as readme_f:
 
 setup(
     name="srt",
-    version="3.5.1",
+    version="3.5.2",
     python_requires=">=2.7",
     description="A tiny library for parsing, modifying, and composing SRT files.",
     long_description=README,
@@ -32,12 +32,12 @@ setup(
         "srt_tools/srt-play",
         "srt_tools/srt-process",
     ],
-    license="Public Domain",
+    license="MIT",
     keywords="srt",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
-        "License :: Public Domain",
+        "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
         "Programming Language :: Python :: 2",
         "Programming Language :: Python :: 2.7",
