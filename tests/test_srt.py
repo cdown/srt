@@ -11,7 +11,7 @@ import string
 from io import StringIO
 
 import pytest
-from hypothesis import given, settings, HealthCheck, assume
+from hypothesis import given, settings, HealthCheck, assume, example
 import hypothesis.strategies as st
 
 import srt
@@ -705,6 +705,16 @@ def test_can_parse_index_leading_zeroes(input_subs, zeroes):
 
 @given(st.lists(subtitles(), min_size=1))
 def test_parse_file_with_missing_index(input_subs):  # cf. issue #51
+    for sub in input_subs:
+        try:
+            int(sub.content.strip().split("\n")[-1])
+        except ValueError:
+            pass
+        else:
+            # If the final line with actual content is a number, we'll parse it
+            # as the index, so ignore that
+            assume(False)
+
     out_no_index = ""
     out_zero_index = ""
 
