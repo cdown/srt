@@ -2,11 +2,7 @@
 
 import codecs
 
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
-
+from setuptools import setup
 
 with codecs.open("README.rst", encoding="utf8") as readme_f:
     README = readme_f.read()
