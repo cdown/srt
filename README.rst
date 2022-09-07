@@ -30,7 +30,7 @@ Why choose this library?
 ------------------------
 
 - Can parse many broken SRT files which other SRT libraries cannot, and fix them
-- Extremely lightweight, `~150 lines of code`_ excluding docstrings
+- Extremely lightweight, ~200 lines of code excluding docstrings
 - Simple, intuitive API
 - High quality test suite using Hypothesis_
 - `100% test coverage`_ (including branches)
@@ -53,7 +53,6 @@ Why choose this library?
 .. _Hypothesis: https://github.com/DRMacIver/hypothesis
 .. _`100% test coverage`: https://coveralls.io/github/cdown/srt?branch=develop
 .. _`Well documented API`: http://srt.readthedocs.org/en/latest/index.html
-.. _`~150 lines of code`: https://paste.pound-python.org/raw/3WgFQIvkVVvBZvQI3nm4/
 .. _PyPy: http://pypy.org/
 .. _`~30% faster than pysrt on typical workloads`: https://paste.pound-python.org/raw/8nQKbDW0ROWvS7bOeAb3/
 
