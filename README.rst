@@ -1,6 +1,6 @@
 |travis| |lgtm| |coveralls|
 
-.. |travis| image:: https://img.shields.io/github/workflow/status/cdown/srt/CI/develop?label=tests
+.. |travis| image:: https://img.shields.io/github/actions/workflow/status/cdown/srt/main.yml?branch=develop&label=tests
   :target: https://github.com/cdown/srt/actions
   :alt: Tests
 
