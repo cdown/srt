@@ -1,12 +1,8 @@
-|travis| |lgtm| |coveralls|
+|travis| |coveralls|
 
 .. |travis| image:: https://img.shields.io/github/actions/workflow/status/cdown/srt/main.yml?branch=develop&label=tests
   :target: https://github.com/cdown/srt/actions
   :alt: Tests
-
-.. |lgtm| image:: https://img.shields.io/lgtm/grade/python/github/cdown/srt.svg?label=code%20quality
-  :target: https://lgtm.com/projects/g/cdown/srt/overview/
-  :alt: LGTM
 
 .. |coveralls| image:: https://img.shields.io/coveralls/cdown/srt/develop.svg?label=test%20coverage
   :target: https://coveralls.io/github/cdown/srt?branch=develop
