@@ -5,7 +5,7 @@ jobs:
       matrix:
         # Pin to 20.04 for 3.6: https://github.com/actions/setup-python/issues/544
         os: [ubuntu-20.04, macos-latest, windows-latest]
-        python-version: ['2.7.18', '3.5.10', '3.6.15', '3.7.16', '3.8.16', '3.9.16', '3.10.10', '3.11.2']
+        python-version: ['2.7', '3.5', '3.6', '3.7', '3.8', '3.9', '3.10', '3.11']
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -16,12 +16,10 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - run: python --version
 
-      - uses: BSFishy/pip-action@v1
-        with:
-          packages: tox
-          upgrade: true
+      - run: pip install -U pip
+      - run: pip install -U tox
 
-      - if: matrix.python-version == '3.9.16' && startsWith(matrix.os, 'ubuntu-')
+      - if: matrix.python-version == '3.9' && startsWith(matrix.os, 'ubuntu-')
         run: |
           echo "TOXENV=doctest,black,pylint,pytype,bandit,coverage" >> "$GITHUB_ENV"
 
@@ -29,7 +27,7 @@ jobs:
         env:
           TOXENV: ${{ env.TOXENV }}
 
-      - if: matrix.python-version == '3.9.16' && startsWith(matrix.os, 'ubuntu-')
+      - if: matrix.python-version == '3.9' && startsWith(matrix.os, 'ubuntu-')
         uses: AndreMiras/coveralls-python-action@develop
 
 on:
