@@ -1,0 +1,38 @@
+jobs:
+  build_and_test:
+    name: CI
+    strategy:
+      matrix:
+        # Pin to 20.04 for 3.6: https://github.com/actions/setup-python/issues/544
+        os: [ubuntu-20.04, macos-latest, windows-latest]
+        python-version: ['2.7.18', '3.5.10', '3.6.15', '3.7.16', '3.8.16', '3.9.16', '3.10.10', '3.11.2']
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: python --version
+
+      - uses: BSFishy/pip-action@v1
+        with:
+          packages: tox
+          upgrade: true
+
+      - if: matrix.python-version == '3.9.16' && startsWith(matrix.os, 'ubuntu-')
+        run: |
+          echo "TOXENV=doctest,black,pylint,pytype,bandit,coverage" >> "$GITHUB_ENV"
+
+      - run: tox
+        env:
+          TOXENV: ${{ env.TOXENV }}
+
+      - if: matrix.python-version == '3.9.16' && startsWith(matrix.os, 'ubuntu-')
+        uses: AndreMiras/coveralls-python-action@develop
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
