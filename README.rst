@@ -1,7 +1,7 @@
 |ghactions| |coveralls|
 
-.. |ghactions| image:: https://img.shields.io/github/actions/workflow/status/cdown/exifrename/ci.yml?branch=develop
-  :target: https://github.com/cdown/exifrename/actions?query=branch%3Adevelop
+.. |ghactions| image:: https://img.shields.io/github/actions/workflow/status/cdown/srt/ci.yml?branch=develop
+  :target: https://github.com/cdown/srt/actions?query=branch%3Adevelop
   :alt: Tests
 
 .. |coveralls| image:: https://img.shields.io/coveralls/cdown/srt/develop.svg?label=test%20coverage
