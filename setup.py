@@ -2,18 +2,14 @@
 
 import codecs
 
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
-
+from setuptools import setup
 
 with codecs.open("README.rst", encoding="utf8") as readme_f:
     README = readme_f.read()
 
 setup(
     name="srt",
-    version="3.5.2",
+    version="3.5.3",
     python_requires=">=2.7",
     description="A tiny library for parsing, modifying, and composing SRT files.",
     long_description=README,
@@ -48,6 +44,7 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
         "Topic :: Multimedia :: Video",
         "Topic :: Software Development :: Libraries",
         "Topic :: Text Processing",

@@ -11,7 +11,7 @@ import string
 from io import StringIO
 
 import pytest
-from hypothesis import given, settings, HealthCheck, assume
+from hypothesis import given, settings, HealthCheck, assume, example
 import hypothesis.strategies as st
 
 import srt
@@ -356,10 +356,11 @@ def test_subs_starts_before_zero_removed(positive_subs, negative_subs, negative_
 @given(st.lists(subtitles(), min_size=1), st.integers(min_value=0))
 def test_sort_and_reindex(input_subs, start_index):
     for sub in input_subs:
-        # Pin all subs to same end time so that start time is compared only,
-        # must be guaranteed to be < sub.start, see how
+        # Pin all subs to same end time and index so that start time is
+        # compared only, must be guaranteed to be < sub.start, see how
         # start_timestamp_strategy is done
         sub.end = timedelta(500001)
+        sub.index = 1
 
     reindexed_subs = list(
         srt.sort_and_reindex(input_subs, start_index=start_index, in_place=True)
@@ -407,13 +408,31 @@ def test_sort_and_reindex_handles_no_index(input_subs):
 @given(st.lists(subtitles(), min_size=1))
 def test_sort_and_reindex_same_start_time_uses_end(input_subs):
     for sub in input_subs:
-        # Pin all subs to same start time so that end time is compared only
+        # Pin all subs to same start time and index so that end time is
+        # compared only
         sub.start = timedelta(1)
+        sub.index = 1
 
     reindexed_subs = list(srt.sort_and_reindex(input_subs, in_place=True))
 
     # The subtitles should be sorted by end time when start time is the same
     expected_sorting = sorted(input_subs, key=lambda sub: sub.end)
+    assert reindexed_subs == expected_sorting
+
+
+@given(st.lists(subtitles(), min_size=1))
+def test_sort_and_reindex_same_start_and_end_time_uses_index(input_subs):
+    for sub in input_subs:
+        # Pin all subs to same start and end time so that index is compared
+        # only
+        sub.start = timedelta(1)
+        sub.end = timedelta(2)
+
+    reindexed_subs = list(srt.sort_and_reindex(input_subs, in_place=True))
+
+    # The subtitles should be sorted by index when start and end time are the
+    # same
+    expected_sorting = sorted(input_subs, key=lambda sub: sub.index)
     assert reindexed_subs == expected_sorting
 
 
@@ -705,6 +724,16 @@ def test_can_parse_index_leading_zeroes(input_subs, zeroes):
 
 @given(st.lists(subtitles(), min_size=1))
 def test_parse_file_with_missing_index(input_subs):  # cf. issue #51
+    for sub in input_subs:
+        try:
+            int(sub.content.strip().split("\n")[-1])
+        except ValueError:
+            pass
+        else:
+            # If the final line with actual content is a number, we'll parse it
+            # as the index, so ignore that
+            assume(False)
+
     out_no_index = ""
     out_zero_index = ""
 

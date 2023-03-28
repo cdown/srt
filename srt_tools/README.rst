@@ -38,8 +38,8 @@ Utilities
   the SRT, resyncing it with the video.
 - *lines-matching* takes a function and removes lines that don't return true
   when passed to it. For example, you can keep only lines that contain Chinese
-  by installing the hanzidentifier_ package, and running ``srt lines-matching
-  -m hanzidentifier -f hanzidentifier.has_chinese < input``.
+  by installing the hanzidentifier_ package, and running
+  ``srt lines-matching -m hanzidentifier -f hanzidentifier.has_chinese < input``.
 - *mux* can mux_ multiple subtitles together into one. For example, if you
   have a Chinese subtitle and an English subtitle, and you want to have one
   subtitle file that contains both, this tool can do that for you. It also
@@ -54,9 +54,10 @@ Utilities
   *fixed-timeshift*.
 - *process* allows processing text freely. It takes a function, similarly to
   *lines-matching*, and changes SRT content into the return value. For example,
-  you can naively strip some basic HTML-like markup with ``srt process -m re -f
-  'lambda sub: re.sub("<[^<]+?>", "", sub)'``. HTML-like syntax is especially
-  prevalant in `SSA/ASS`_ subtitles that have been directly converted to SRT.
+  you can naively strip some basic HTML-like markup with
+  ``srt process -m re -f 'lambda sub: re.sub("<[^<]+?>", "", sub)'``. HTML-like
+  syntax is especially prevalant in `SSA/ASS`_ subtitles that have been
+  directly converted to SRT.
 
 .. _mux: https://en.wikipedia.org/wiki/Multiplexing
 .. _`SSA/ASS`: https://en.wikipedia.org/wiki/SubStation_Alpha

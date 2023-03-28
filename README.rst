@@ -1,12 +1,8 @@
-|travis| |lgtm| |coveralls|
+|ghactions| |coveralls|
 
-.. |travis| image:: https://img.shields.io/github/workflow/status/cdown/srt/CI/develop?label=tests
-  :target: https://github.com/cdown/srt/actions
+.. |ghactions| image:: https://img.shields.io/github/actions/workflow/status/cdown/srt/ci.yml?branch=develop
+  :target: https://github.com/cdown/srt/actions?query=branch%3Adevelop
   :alt: Tests
-
-.. |lgtm| image:: https://img.shields.io/lgtm/grade/python/github/cdown/srt.svg?label=code%20quality
-  :target: https://lgtm.com/projects/g/cdown/srt/overview/
-  :alt: LGTM
 
 .. |coveralls| image:: https://img.shields.io/coveralls/cdown/srt/develop.svg?label=test%20coverage
   :target: https://coveralls.io/github/cdown/srt?branch=develop
@@ -18,9 +14,10 @@ the library. `Detailed API documentation`_ is also available.
 
 Want to see some examples of its use? Take a look at the `tools shipped with
 the library`_. This library is also used internally by projects like
-`subsync`_, `manim`_, `kinobot`_, `bw_plex`_, and many more.
+`subsync`_, `NVIDIA RAD-TTS`_, `manim`_, `kinobot`_, `bw_plex`_, and many more.
 
 .. _subsync: https://github.com/smacke/subsync
+.. _`NVIDIA RAD-TTS`: https://github.com/NVIDIA/radtts
 .. _bw_plex: https://github.com/Hellowlol/bw_plex
 .. _manim: https://github.com/ManimCommunity/manim
 .. _kinobot: https://github.com/vitiko98/kinobot
@@ -29,7 +26,7 @@ Why choose this library?
 ------------------------
 
 - Can parse many broken SRT files which other SRT libraries cannot, and fix them
-- Extremely lightweight, `~150 lines of code`_ excluding docstrings
+- Extremely lightweight, ~200 lines of code excluding docstrings
 - Simple, intuitive API
 - High quality test suite using Hypothesis_
 - `100% test coverage`_ (including branches)
@@ -52,7 +49,6 @@ Why choose this library?
 .. _Hypothesis: https://github.com/DRMacIver/hypothesis
 .. _`100% test coverage`: https://coveralls.io/github/cdown/srt?branch=develop
 .. _`Well documented API`: http://srt.readthedocs.org/en/latest/index.html
-.. _`~150 lines of code`: https://paste.pound-python.org/raw/3WgFQIvkVVvBZvQI3nm4/
 .. _PyPy: http://pypy.org/
 .. _`~30% faster than pysrt on typical workloads`: https://paste.pound-python.org/raw/8nQKbDW0ROWvS7bOeAb3/
 

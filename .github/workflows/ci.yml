@@ -1,26 +1,23 @@
-name: CI
-on: [push, pull_request, workflow_dispatch]
-
 jobs:
-  test:
-    runs-on: ${{ matrix.os }}
+  build_and_test:
+    name: CI
     strategy:
       matrix:
-        os: [ubuntu-20.04, windows-2019, macos-10.15]
-        python-version: ['2.7', '3.5', '3.6', '3.7', '3.8', '3.9', '3.10', 'pypy-2.7', 'pypy-3.8']
+        # Pin to 20.04 for 3.6: https://github.com/actions/setup-python/issues/544
+        os: [ubuntu-20.04, macos-latest, windows-latest]
+        python-version: ['2.7', '3.5', '3.6', '3.7', '3.8', '3.9', '3.10', '3.11']
+    runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
       - run: python --version
 
-      - uses: BSFishy/pip-action@v1
-        with:
-          packages: tox
-          upgrade: true
-
-      - uses: actions/checkout@v2
+      - run: pip install -U pip
+      - run: pip install -U tox
 
       - if: matrix.python-version == '3.9' && startsWith(matrix.os, 'ubuntu-')
         run: |
@@ -32,3 +29,8 @@ jobs:
 
       - if: matrix.python-version == '3.9' && startsWith(matrix.os, 'ubuntu-')
         uses: AndreMiras/coveralls-python-action@develop
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
