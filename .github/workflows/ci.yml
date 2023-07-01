@@ -5,7 +5,8 @@ jobs:
       matrix:
         # Pin to 20.04 for 3.6: https://github.com/actions/setup-python/issues/544
         os: [ubuntu-20.04, macos-latest, windows-latest]
-        python-version: ['2.7', '3.5', '3.6', '3.7', '3.8', '3.9', '3.10', '3.11']
+        # 2.7 not on setup-python: https://github.com/actions/setup-python/issues/672
+        python-version: ['3.5', '3.6', '3.7', '3.8', '3.9', '3.10', '3.11']
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -29,6 +30,23 @@ jobs:
 
       - if: matrix.python-version == '3.9' && startsWith(matrix.os, 'ubuntu-')
         uses: AndreMiras/coveralls-python-action@develop
+
+  build_and_test_27:
+    name: "CI 2.7"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up Python 2.7
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python2.7 python2.7-dev python2-pip-whl
+          sudo ln -sf python2.7 /usr/bin/python
+          export PYTHONPATH=$(echo /usr/share/python-wheels/pip-*py2*.whl)
+          sudo --preserve-env=PYTHONPATH python -m pip install --upgrade pip setuptools wheel
+          sudo --preserve-env=PYTHONPATH python -m pip install --upgrade tox
+          sudo chown -R "$USER" /usr/local/lib/python2.7
+
+      - run: tox
 
 on:
   push:
