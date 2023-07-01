@@ -12,9 +12,10 @@ srt is a tiny but featureful Python library for parsing, modifying, and
 composing `SRT files`_. Take a look at the quickstart_ for a basic overview of
 the library. `Detailed API documentation`_ is also available.
 
-Want to see some examples of its use? Take a look at the `tools shipped with
-the library`_. This library is also used internally by projects like
-`subsync`_, `NVIDIA RAD-TTS`_, `manim`_, `kinobot`_, `bw_plex`_, and many more.
+Want to see some examples of how to use the library? Take a look at the `tools
+shipped in the srt_tools directory`_. This library is also used internally by
+projects like `subsync`_, `NVIDIA RAD-TTS`_, `manim`_, `kinobot`_, `bw_plex`_,
+and many more.
 
 .. _subsync: https://github.com/smacke/subsync
 .. _`NVIDIA RAD-TTS`: https://github.com/NVIDIA/radtts
@@ -35,7 +36,7 @@ Why choose this library?
 - Full support for `PyPy`_
 - No dependencies outside of the standard library
 - Tolerant of many common errors found in real-world SRT files
-- Support for Asian-style SRT formats (ie. "fullwidth" SRT format)
+- Support for Asian-style SRT formats ("fullwidth" SRT format)
 - Completely Unicode compliant
 - Released under a highly permissive license (MIT)
 - Real world tested — used in production to process thousands of SRT files
@@ -87,7 +88,7 @@ non-Chinese lines:
 
 These tools are easy to chain together, for example, say you have one subtitle
 with Chinese and English, and other with French, but you want Chinese and
-French only. Oh, and the Chinese one is 5 seconds later than it should be.
+French only. Oh, and the Chinese subtitle is 5 seconds later than it should be.
 That's easy enough to sort out:
 
 .. code::
