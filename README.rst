@@ -15,13 +15,14 @@ the library. `Detailed API documentation`_ is also available.
 Want to see some examples of how to use the library? Take a look at the `tools
 shipped in the srt_tools directory`_. This library is also used internally by
 projects like `subsync`_, `NVIDIA RAD-TTS`_, `manim`_, `kinobot`_, `bw_plex`_,
-and many more.
+`audapolis`_, and many more.
 
 .. _subsync: https://github.com/smacke/subsync
 .. _`NVIDIA RAD-TTS`: https://github.com/NVIDIA/radtts
 .. _bw_plex: https://github.com/Hellowlol/bw_plex
 .. _manim: https://github.com/ManimCommunity/manim
 .. _kinobot: https://github.com/vitiko98/kinobot
+.. _audapolis: https://github.com/bugbakery/audapolis
 
 Why choose this library?
 ------------------------
