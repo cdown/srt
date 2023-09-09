@@ -242,6 +242,11 @@ def test_subtitle_inequality(sub_1):
 
 
 @given(subtitles())
+def test_subtitle_inequality_to_none(sub_1):
+    assert sub_1 != None
+
+
+@given(subtitles())
 def test_subtitle_from_scratch_equality(subtitle):
     srt_block = subtitle.to_srt()
 

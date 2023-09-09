@@ -126,7 +126,7 @@ class Subtitle(object):
         return hash(frozenset(vars(self).items()))
 
     def __eq__(self, other):
-        return vars(self) == vars(other)
+        return other and vars(self) == vars(other)
 
     def __lt__(self, other):
         return (self.start, self.end, self.index) < (
