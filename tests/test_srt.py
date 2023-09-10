@@ -242,8 +242,9 @@ def test_subtitle_inequality(sub_1):
 
 
 @given(subtitles())
-def test_subtitle_inequality_to_none(sub_1):
+def test_subtitle_inequality_to_non_matching_type(sub_1):
     assert sub_1 != None
+    assert sub_1 != 1
 
 
 @given(subtitles())
