@@ -5,7 +5,7 @@ jobs:
       matrix:
         # Pin to 20.04 for 3.6: https://github.com/actions/setup-python/issues/544
         os: [ubuntu-20.04, macos-latest, windows-latest]
-        python-version: ['2.7', '3.5', '3.6', '3.7', '3.8', '3.9', '3.10', '3.11']
+        python-version: ['3.5', '3.6', '3.7', '3.8', '3.9', '3.10', '3.11']
     runs-on: ${{ matrix.os }}
 
     steps:
