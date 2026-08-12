@@ -250,7 +250,16 @@ def srt_timestamp_to_timedelta(timestamp):
     if match is None:
         raise TimestampParseError("Unparseable timestamp: {}".format(timestamp))
     hrs, mins, secs, msecs = [int(m) if m else 0 for m in match.groups()]
-    return timedelta(hours=hrs, minutes=mins, seconds=secs, milliseconds=msecs)
+    try:
+        return timedelta(hours=hrs, minutes=mins, seconds=secs, milliseconds=msecs)
+    except OverflowError as thrown_exc:
+        # The timestamp fields are unbounded digit runs, so a huge value like
+        # "9999999999999999999:00:00,000" matches the regex but overflows
+        # timedelta's C-level day count. Report it like any other unparseable
+        # timestamp instead of leaking OverflowError.
+        raise TimestampParseError(
+            "Timestamp is out of range: {}".format(timestamp)
+        ) from thrown_exc
 
 
 def sort_and_reindex(subtitles, start_index=1, in_place=False, skip=True):

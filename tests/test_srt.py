@@ -688,6 +688,22 @@ def test_bad_timestamp_format_raises(ts):
         srt.srt_timestamp_to_timedelta(ts)
 
 
+@pytest.mark.parametrize(
+    "ts",
+    [
+        "9999999999999999999:00:00,000",
+        "00:00:9999999999999999999,000",
+        "00:00:00,9999999999999999999",
+    ],
+)
+def test_out_of_range_timestamp_raises(ts):
+    # The fields are unbounded digit runs, so an absurdly large value matches
+    # the regex but overflows timedelta. It must raise TimestampParseError
+    # rather than leaking OverflowError.
+    with pytest.raises(srt.TimestampParseError):
+        srt.srt_timestamp_to_timedelta(ts)
+
+
 @given(st.lists(subtitles()), st.lists(st.sampled_from(string.whitespace)))
 def test_can_parse_index_trailing_ws(input_subs, whitespace):
     out = ""
