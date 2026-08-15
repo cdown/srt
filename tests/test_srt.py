@@ -688,6 +688,18 @@ def test_bad_timestamp_format_raises(ts):
         srt.srt_timestamp_to_timedelta(ts)
 
 
+def test_out_of_range_timestamp_raises():
+    # A field big enough to overflow timedelta used to leak OverflowError
+    with pytest.raises(srt.TimestampParseError):
+        srt.srt_timestamp_to_timedelta("9999999999999999:00:00,000")
+
+
+def test_parse_out_of_range_timestamp_raises():
+    over_range = "1\n9999999999999999:00:00,000 --> 00:00:01,000\nhi\n\n"
+    with pytest.raises(srt.TimestampParseError):
+        list(srt.parse(over_range))
+
+
 @given(st.lists(subtitles()), st.lists(st.sampled_from(string.whitespace)))
 def test_can_parse_index_trailing_ws(input_subs, whitespace):
     out = ""

@@ -250,7 +250,15 @@ def srt_timestamp_to_timedelta(timestamp):
     if match is None:
         raise TimestampParseError("Unparseable timestamp: {}".format(timestamp))
     hrs, mins, secs, msecs = [int(m) if m else 0 for m in match.groups()]
-    return timedelta(hours=hrs, minutes=mins, seconds=secs, milliseconds=msecs)
+    try:
+        return timedelta(hours=hrs, minutes=mins, seconds=secs, milliseconds=msecs)
+    except OverflowError:
+        # timedelta only holds up to ~2.7 million years, so a field with enough
+        # digits blows past that. This is still a bad timestamp as far as we're
+        # concerned, so surface it as one rather than leaking OverflowError.
+        raise TimestampParseError(
+            "Timestamp is too large to represent: {}".format(timestamp)
+        )
 
 
 def sort_and_reindex(subtitles, start_index=1, in_place=False, skip=True):
