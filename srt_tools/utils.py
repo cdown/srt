@@ -199,8 +199,26 @@ def set_basic_args(args):
                         args.input = srt.parse(
                             f.read(), ignore_errors=args.ignore_parsing_errors
                         )
-            else:
+            elif not getattr(args, "inplace", False):
                 args.output = w_enc(open(args.output, "wb"))
+
+
+def write_output(args, output):
+    """Write composed output, delaying in-place truncation until encoding succeeds.
+
+    This protects against parsing, processing, and encoding errors, but not
+    errors during the file write itself. Opening the existing file preserves
+    its inode and follows links, just as the original in-place write did.
+    """
+    if getattr(args, "inplace", False):
+        encoded = output.encode(args.encoding or "utf-8")
+        with open(args.output, "wb") as output_file:
+            output_file.write(encoded)
+    else:
+        try:
+            args.output.write(output)
+        except (UnicodeEncodeError, TypeError):  # Python 2 fallback
+            args.output.write(output.encode(args.encoding))
 
 
 def compose_suggest_on_fail(subs, strict=True):
