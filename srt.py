@@ -74,6 +74,10 @@ SRT_REGEX = re.compile(
     re.DOTALL,
 )
 
+# Used by _iter_srt_matches: SRT_REGEX, but only at positions where no match
+# could have started one character earlier.
+_SRT_REGEX_NOT_AFTER_WS = re.compile(r"(?<!\s)" + SRT_REGEX.pattern, re.DOTALL)
+
 ZERO_TIMEDELTA = timedelta(0)
 
 # Info message if truthy return -> Function taking a Subtitle, skip if True
@@ -370,7 +374,7 @@ def parse(srt, ignore_errors=False):
     if isinstance(srt, FILE_TYPES):
         srt = srt.read()
 
-    for match in SRT_REGEX.finditer(srt):
+    for match in _iter_srt_matches(srt):
         actual_start = match.start()
         _check_contiguity(srt, expected_start, actual_start, ignore_errors)
         raw_index, raw_start, raw_end, proprietary, content = match.groups()
@@ -404,6 +408,29 @@ def parse(srt, ignore_errors=False):
         expected_start = match.end()
 
     _check_contiguity(srt, expected_start, len(srt), ignore_errors)
+
+
+def _iter_srt_matches(srt):
+    """
+    Yield the same matches as ``SRT_REGEX.finditer(srt)``, in linear rather
+    than quadratic time on long whitespace runs that contain no subtitle.
+
+    ``SRT_REGEX`` starts with ``\\s*``, so if a match starts at position ``p``
+    and ``srt[p - 1]`` is whitespace, a match also starts at ``p - 1``. The
+    leftmost match at or after ``pos`` therefore either starts at ``pos`` or
+    at a position not preceded by whitespace. ``finditer`` retries every
+    position inside a whitespace run, and each retry rescans the rest of the
+    run; ``_SRT_REGEX_NOT_AFTER_WS`` skips those positions in constant time.
+    """
+    pos = 0
+    while pos <= len(srt):
+        match = SRT_REGEX.match(srt, pos)
+        if match is None:
+            match = _SRT_REGEX_NOT_AFTER_WS.search(srt, pos + 1)
+            if match is None:
+                return
+        yield match
+        pos = match.end()
 
 
 def _check_contiguity(srt, expected_start, actual_start, warn_only):
