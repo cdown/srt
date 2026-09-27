@@ -8,6 +8,7 @@ import functools
 import os
 import re
 import string
+import time
 from io import StringIO
 
 import pytest
@@ -239,6 +240,12 @@ def test_subtitle_inequality(sub_1):
     sub_2 = srt.Subtitle(**vars(sub_1))
     sub_2.index += 1
     assert sub_1 != sub_2
+
+
+@given(subtitles())
+def test_subtitle_inequality_to_non_matching_type(sub_1):
+    assert sub_1 != None
+    assert sub_1 != 1
 
 
 @given(subtitles())
@@ -765,3 +772,24 @@ def test_parse_file_with_missing_index(input_subs):  # cf. issue #51
 
     # ...and sort the same.
     assert srt.compose(subs_no_index) == srt.compose(subs_zero_index)
+
+
+@given(st.text(alphabet=" \t\r\n0123456789:,->x﻿", max_size=60))
+def test_iter_srt_matches_same_as_finditer(text):
+    # _iter_srt_matches is a faster finditer; it must find exactly the same
+    # matches, including on garbage and whitespace between subtitles.
+    subs_text = "1\n00:00:01,000 --> 00:00:02,000\nhello\n\n"
+    for srt_data in (text, subs_text + text, text + subs_text):
+        expected = [(m.span(), m.groups()) for m in srt.SRT_REGEX.finditer(srt_data)]
+        actual = [(m.span(), m.groups()) for m in srt._iter_srt_matches(srt_data)]
+        assert actual == expected
+
+
+def test_parse_long_whitespace_is_not_quadratic():
+    # Each finditer retry inside a whitespace run used to rescan the rest of
+    # the run: about 20 seconds for 32000 spaces.
+    for srt_data in (" " * 32000, "\n" * 32000, "x" + " " * 32000):
+        start = time.perf_counter()
+        subs = list(srt.parse(srt_data, ignore_errors=True))
+        assert time.perf_counter() - start < 1
+        assert subs == []
