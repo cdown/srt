@@ -411,6 +411,39 @@ def test_sort_and_reindex_handles_no_index(input_subs):
     assert not reindexed_subs
 
 
+@pytest.mark.parametrize(
+    "indices",
+    [(None, 1), (1, None), (-1, None), (None, -1), (None, None), (0, None), (None, 0)],
+)
+def test_sort_and_reindex_same_times_with_missing_indices(indices):
+    subs = [
+        CONTENTLESS_SUB(index=index, content=str(position))
+        for position, index in enumerate(indices)
+    ]
+    expected = sorted(subs, key=lambda sub: sub.index or 0)
+
+    result = list(srt.sort_and_reindex(subs))
+
+    assert [sub.content for sub in result] == [sub.content for sub in expected]
+    assert [sub.index for sub in result] == [1, 2]
+    assert [sub.index for sub in subs] == list(indices)
+
+
+@pytest.mark.parametrize("reverse", [False, True])
+def test_compose_parsed_same_times_with_missing_index(reverse):
+    blocks = [
+        "00:00:01,000 --> 00:00:02,000\nUnindexed\n\n",
+        "1\n00:00:01,000 --> 00:00:02,000\nIndexed\n\n",
+    ]
+    if reverse:
+        blocks.reverse()
+
+    result = list(srt.parse(srt.compose(srt.parse("".join(blocks)))))
+
+    assert [sub.content for sub in result] == ["Unindexed", "Indexed"]
+    assert [sub.index for sub in result] == [1, 2]
+
+
 @given(st.lists(subtitles(), min_size=1))
 def test_sort_and_reindex_same_start_time_uses_end(input_subs):
     for sub in input_subs:
