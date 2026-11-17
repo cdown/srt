@@ -129,6 +129,8 @@ class Subtitle(object):
         return isinstance(other, Subtitle) and vars(self) == vars(other)
 
     def __lt__(self, other):
+        if not isinstance(other, Subtitle):
+            return NotImplemented
         return (self.start, self.end, self.index) < (
             other.start,
             other.end,
